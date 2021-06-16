@@ -24,7 +24,7 @@ include(post_hs.m4i)
 
 include(../at_most_of.m4i)
 
-axiom one_actor_per_role: "All actor actor2 nc nc2 role #i #j. Instance(nc, actor, role)@i & Instance(nc2, actor2, role)@j ==> actor = actor2"
+restriction one_actor_per_role: "All actor actor2 nc nc2 role #i #j. Instance(nc, actor, role)@i & Instance(nc2, actor2, role)@j ==> actor = actor2"
 
 rule in_out:
 [MessageOut(m)]-->[F_MessageIn(m)]
@@ -35,7 +35,7 @@ define(<!LEMMAS!>, <!!>)
 define(<!create_lemma!>, <!
 define(<!AXIOMS!>, AXIOMS <!
 at_most_of($2, $1, 1)
-axiom one_$1_per_tid:
+restriction one_$1_per_tid:
     "All tid #i #j. $1(tid)@i & $1(tid)@j ==> #i = #j"
 
 !>)
