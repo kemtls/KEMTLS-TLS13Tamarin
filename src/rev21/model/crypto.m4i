@@ -73,3 +73,18 @@ define(<!application_traffic_secret_0!>, <!Derive_Secret(ms, '$1ats', <!<!HashVa
 define(<!exporter_master_secret!>, <!Derive_Secret(ms, 'ems', <!<!HashValue!>!>)!>)
 define(<!resumption_master_secret!>, <!Derive_Secret(ms, 'rms', <!<!HashValue!>!>)!>)
 !>)
+
+
+dnl KEM operations
+functions: kempk/2,kemencaps/3,kemdecaps/3
+
+dnl(
+/*
+    kempk(group, secret) = pk
+    kemencaps(group, ss, pk) = ct
+    kemdecaps(group, ct, sk) = ss
+*/
+)
+
+equations:
+    kemdecaps(g, kemencaps(g, ss, kempk(g, sk)), sk) = ss

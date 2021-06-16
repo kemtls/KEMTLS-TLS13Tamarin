@@ -43,14 +43,15 @@ let
     // We reuse the client nonce to be a thread identifier
     tid = nc
 
-    // Group, DH exponent, key share
+    // Group=kem alg, KEM private key, key share
+    // this has some legacy from when this was based on dh
     g1 = $g1
     g2 = $g2
     sg = <g1, g2>
     client_sg = <g1, g2>
     g = g1
     x = ~x
-    gx = g^x
+    gx = kempk(g, x)
 
     messages = <messages, ClientHello>
     es = EarlySecret
@@ -92,7 +93,7 @@ let
 
     new_x = ~new_x
     x = new_x
-    gx = g^x
+    gx = kempk(g, x)
 
 
     // PSK after HRR has its own rule (see recv_hello_retry_request_psk)
@@ -135,10 +136,11 @@ let
     S = $S
 
     // equivalent to checking gy in <$g>
-    gy = g^new_y
+    ss = <gx, new_y>
+    gy = kemencaps(g, ss, gx)
 
     // Derive the shared secret
-    gxy = gy^x
+    gxy = kemdecaps(g, gy, x)
 
     // Received a basic server hello - abandon PSK mode (if attempted)
     psk_ke_mode = 'na'

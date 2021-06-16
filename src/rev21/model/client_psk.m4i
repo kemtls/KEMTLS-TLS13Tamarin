@@ -69,7 +69,7 @@ let
     // Group, DH exponent, key share
     g = g1
     x = ~x
-    gx = g^x
+    gx = kempk(g, x)
 
     es = EarlySecret
     binder = '0'
@@ -132,7 +132,7 @@ let
     new_nc = ~new_nc
     new_x = ~new_x
     x = new_x
-    gx = g^x
+    gx = kempk(g, x)
     nc = new_nc
 
     es = EarlySecret
@@ -185,10 +185,11 @@ let
     C = $C
     S = $S
 
-    gy = g^new_y
+    ss = <gx, new_y>
+    gy = kemencaps(g, ss, gx)
 
     // Derive the shared secret
-    gxy = gy^x
+    gxy = kemdecaps(g, gy, x)
 
     identity = psk_id
 

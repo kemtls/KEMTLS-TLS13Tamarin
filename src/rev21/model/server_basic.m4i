@@ -59,7 +59,7 @@ let
     nc = new_nc
     gx = new_gx
     g = $new_g
-    gx = g^new_x
+    gx = kempk(g, new_x)
 
     // Abstract client identity - does not currently correspond to
     // anything concrete
@@ -124,7 +124,7 @@ define(<!ServerHelloExtensions!>, <!<SignatureSchemeList, KeyShareSH>!>)
 rule server_hello:
 let
     prev_g = $prev_g
-    prev_gx = prev_g^some_x
+    prev_gx = kempk(prev_g, some_x)
     set_state()
 
     // Server continuing in normal mode (no PSK mode)
@@ -136,8 +136,9 @@ let
 
     // Group, DH exponent, key share
     y = ~y
-    gy = g^y
-    gxy = gx^y
+    ss = <gx, y>
+    gy = kemencaps(g, ss, gx)
+    gxy = ss
 
     es = EarlySecret
     messages = <messages, ServerHello>
