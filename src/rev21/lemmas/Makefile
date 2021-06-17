@@ -35,8 +35,8 @@ proofs:
 	#   - invariant_post_hs (quick: solve for RunningRMS then CommitIdentity)
 	#   - handshake_secret (the big one)
 
-	bash -c "$(TAM) lemma.spthy --prove=secret_session_keys* --output=../proofs/lemmas.1.spthy $(PIPE)"
-	bash -c "$(TAM) lemma.spthy --prove=unique_session_keys --heuristic=c --output=../proofs/lemmas.2.spthy --bound=10 $(PIPE)"
+	#bash -c "$(TAM) lemma.spthy --prove=secret_session_keys* --output=../proofs/lemmas.1.spthy $(PIPE)"
+	#bash -c "$(TAM) lemma.spthy --prove=unique_session_keys --heuristic=c --output=../proofs/lemmas.2.spthy --bound=10 $(PIPE)"
 
 
 	# To prove manually:

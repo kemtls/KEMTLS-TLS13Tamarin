@@ -470,3 +470,24 @@ lemma rev_dh_before_hs  [reuse, heuristic=I]:
 !>)
 //NTS: RevDH < RRMS
 //May have to add tid's to RevDH. 
+
+define(<!lemma_one_kem_per_x!>, <!
+lemma one_kem_per_x [reuse, heuristic=C]:
+  "All tid tid2 g x a a2 #i #j.
+    Kem(tid, a, g, x)@i & Kem(tid2, a2, g, x)@j ==> #i = #j"
+!>)
+
+define(<!lemma_kem_pk_can_be_decapsed!>,<!
+lemma kem_pk_can_be_decapsed [reuse]:
+  exists-trace
+  "Ex tid a g x gxy #i #j.
+     Kem(tid, a, g, x)@#i 
+     & KemDecaps(tid, a, g, x, gxy)@#j 
+     & not (Ex #r. RevKemSk(tid, a, g, x)@#r & #r < #j)"
+!>)
+
+define(<!lemma_kem_sk_secret!>, <!
+lemma kem_rev_secret_ordering [reuse]:
+  "All g x tid a #i #j.
+    RevKemSk(tid, a, g, x)@i & Kem(g, x, tid, a)@j ==> #j < #i"
+!>)
