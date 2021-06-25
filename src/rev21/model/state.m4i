@@ -31,6 +31,7 @@ esk, dnl kex private KEM key
 epk, dnl kex public key
 ect, dnl kex ciphertext
 ess, dnl kex shared secret
+eseed, dnl kex encaps seed
 psk_ke_mode, dnl psk key exchange mode
 psk_id, dnl psk identity/ticket
 edi, dnl early data indication
@@ -60,6 +61,7 @@ esk = '0'
 epk = '0'
 ect = '0'
 ess = '0'
+eseed = '0'
 psk_ke_mode = 'na'
 psk_id = '0'
 edi = '0'
@@ -88,6 +90,7 @@ prev_esk, dnl
 prev_epk, dnl
 prev_ect, dnl
 prev_ess, dnl
+prev_eseed, dnl
 prev_psk_ke_mode, dnl
 prev_psk_id, dnl
 prev_edi, dnl
@@ -115,6 +118,7 @@ esk = prev_esk
 epk = prev_epk
 ect = prev_ect
 ess = prev_ess
+eseed = prev_eseed
 hrr = prev_hrr
 psk_ke_mode = prev_psk_ke_mode
 psk_id = prev_psk_id

@@ -94,8 +94,8 @@ let
     S = $S
 
     // Kem ct
-    fv = ~fv   dnl fresh value
-    ess = <epk, fv>
+    eseed = ~eseed   dnl fresh value
+    ess = <ekem, eseed>
     ect = kemencaps(ekem, ess, epk)
 
     identity = psk_id
@@ -105,7 +105,7 @@ let
     messages = <messages, ServerHello>
 in
     [ State(S1, tid, S, C, PrevServerState),
-      Fr(y)
+      Fr(eseed)
     ]
   --[ S1_PSK_DHE(tid),
       Neq(epk, ekem),

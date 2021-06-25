@@ -51,7 +51,7 @@ let
     client_sekem = <k1, k2>
     ekem = k1
     esk = ~esk
-    epk = kempk(g, esk)
+    epk = kempk(ekem, esk)
 
     messages = <messages, ClientHello>
     es = EarlySecret
@@ -69,7 +69,7 @@ in
     ]->
     [
       State(C1, tid, C, S, ClientState),
-      KemSk(ekem, esk, tid, C),
+      KemSk(esk, tid, C),
       // Write the ClientHelloMsg onto the wire *presumably* with destination S
       Out(ClientHello)
     ]
@@ -107,16 +107,16 @@ in
     [ State(C1, tid, C, S, PrevClientState),
       Fr(new_esk),
       In(HelloRetryRequest),
-      KemSk(ekem, prev_esk, tid, C)
+      KemSk(prev_esk, tid, C)
     ]
   --[ C1_retry(tid),
       Neq(k1, k2),
       Instance(tid, C, 'client'),
-      DeleteDH(tid, C, prev_esk),
+      DeleteKemSk(tid, C, prev_ekem, prev_esk),
       Kem(tid, C, ekem, esk)
     ]->
     [ Out(ClientHello),
-      KemSk(ekem, esk, tid, C),
+      KemSk(esk, tid, C),
       State(C1, tid, C, S, ClientState)
     ]
 
@@ -137,7 +137,7 @@ let
 
     // equivalent to checking kempk in <$ekem>
     // pattern matches through In(SH)
-    ess = kemss(epk)
+    ess = <ekem, eseed>
     ect = kemencaps(ekem, ess, epk)
 
     // Derive the shared secret
@@ -179,13 +179,13 @@ let
 
 in
     [ State(C2a, tid, C, S, PrevClientState)[no_precomp],
-      KemSk(ekem, esk, tid, C)
+      KemSk(esk, tid, C)
     ]
   --[ C2a(tid),
       Instance(tid, C, 'client'),
       running_client(MS, ms),
-      running_client(HS, hs)
-      DeleteDH(tid, C, x)  dnl XXX: ???
+      running_client(HS, hs),
+      DeleteKemSk(tid, C, ekem, esk)  dnl models that the ephemeral key is thrown away here.
     ]->
     [
       State(C2b, tid, C, S, ClientState)

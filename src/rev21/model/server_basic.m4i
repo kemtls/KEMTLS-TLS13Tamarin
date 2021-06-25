@@ -135,15 +135,15 @@ let
     S = $S
 
     // Kem ct 
-    fv = ~fv  dnl fresh value
-    ess = <epk, fv>
-    ect = kemencaps(ekem, ess, kempk)
+    eseed = ~eseed dnl fresh value
+    ess = <ekem, eseed>
+    ect = kemencaps(ekem, ess, epk)
 
     es = EarlySecret
     messages = <messages, ServerHello>
 in
     [ State(S1, tid, S, C, PrevServerState),
-      Fr(fv)
+      Fr(eseed)
     ]
   --[ S1(tid),
       Eq(ekem, sekem),

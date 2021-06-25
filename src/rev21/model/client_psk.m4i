@@ -94,7 +94,7 @@ in
       State(C1, tid, C, S, ClientState),
       CachePSK(tid, S, prev_res_psk, prev_auth_status, NewSessionTicket, psk_type),
       EarlySendStream(tid, C, S, auth_status, ead_keyc, edi),
-      KemSk(ekem, esk, tid, C),
+      KemSk(esk, tid, C),
       // Write the ClientHelloMsg onto the wire *presumably* with destination S
       Out(ClientHello)
     ]
@@ -153,11 +153,11 @@ in
       Neq(k1, k2),
       Instance(tid, C, 'client'),
       running_client(PSK, S, prev_res_psk, prev_auth_status),
-      DeleteDH(tid, C, prev_x),  dnl XXX:???
+      DeleteKemSk(tid, C, prev_ekem, prev_esk),
       Kem(tid, C, ekem, esk)
     ]->
     [ Out(ClientHello),
-      KemSk(ekem, esk, tid, C),
+      KemSk(esk, tid, C),
       State(C1, tid, C, S, ClientState)
     ]
 
@@ -184,7 +184,7 @@ let
     C = $C
     S = $S
 
-    ess = kemss(epk)
+    ess = <ekem, eseed>
     ect = kemencaps(ekem, ess, epk)
 
     // Derive the shared secret

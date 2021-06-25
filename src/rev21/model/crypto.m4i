@@ -80,11 +80,11 @@ functions: kempk/2,kemencaps/3,kemdecaps/3
 
 dnl(
 /*
-    kempk(group, secret) = pk
-    kemencaps(group, <g, k>, pk) = ct
-    kemdecaps(group, ct, sk) = <g, ~k>
+    kempk(kem, secret) = pk
+    kemencaps(kem, <g, ~k>, pk) = ct
+    kemdecaps(kem, ct, sk) = <g, ~k>
 */
 )
 
 equations:
-    kemdecaps(g, kemencaps(g, <g, k>, kempk(g, sk)), sk) = <g, k>
+    kemdecaps(kem, kemencaps(kem, <kem, k>, kempk(kem, sk)), sk) = <kem, k>

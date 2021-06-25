@@ -25,7 +25,7 @@ lemma one_start_per_tid [reuse, heuristic=SC]:
   TYPING LEMMAS
 */
 define(<!lemma_cert_req_origin!>, <!
-lemma cert_req_origin [typing]:
+lemma cert_req_origin [sources]:
   "All certificate_request_context certificate_extensions keys #i.
     KU(senc{handshake_record('13', certificate_request_context, certificate_extensions)}keys)@i ==> 
       (Ex #j. KU(certificate_request_context)@j & #j < #i) |
@@ -33,7 +33,7 @@ lemma cert_req_origin [typing]:
 !>)
 
 define(<!lemma_nst_source!>, <!
-lemma nst_source [typing]:
+lemma nst_source [sources]:
   "All ticket ticket_age_add tkt_lt tkt_exts app_key #i.
     KU(senc{handshake_record('4', tkt_lt, ticket_age_add, ticket, tkt_exts)}app_key)@i ==>
       (Ex #j #k. KU(ticket)@j & KU(ticket_age_add)@k & #j < #i & #k < #i) |
@@ -111,12 +111,12 @@ lemma dh_chal_dual [reuse]:
 
 define(<!lemma_ku_hs!>, <!
 lemma ku_hs [reuse]:
-  "All tid actor role es hs res_psk gxy #i #j.
+  "All tid actor role es hs res_psk ekem ess #i #j.
     running(HS, actor, role, hs)@i &
     hs = HandshakeSecret &
     es = EarlySecret &
     KU(hs)@j ==>
-      Ex #k #l. KU(gxy)@k & KU(res_psk)@l & #k < #j & #l < #j"
+      Ex #k #l. KU(ekem, ess)@k & KU(res_psk)@l & #k < #j & #l < #j"
 !>)
 
 define(<!lemma_ku_ltk!>, <!
@@ -454,11 +454,11 @@ lemma one_dh_per_x  [reuse, heuristic=C]:
 !>)
 
 define(<!lemma_rev_dh_ordering!>, <!
-lemma rev_dh_ordering  [reuse, use_induction, heuristic=C]:
-  "All tid actor x #j. 
-    DeleteDH(tid, actor, x)@j==>
-      ((Ex #i. DH(tid, actor, x) @ i & i < j) & 
-       (All #r. RevDHExp(tid, actor, x) @ r  ==>  r < j))"
+lemma rev_ekem_ordering  [reuse, use_induction, heuristic=C]:
+  "All tid actor k x #j. 
+    DeleteKemSk(tid, actor, k, x)@j==>
+      ((Ex #i. KemSk(tid, actor, k, x) @ i & i < j) & 
+       (All #r. RevKemSk(tid, actor, k, x) @ r  ==>  r < j))"
 !>)
 
 define(<!lemma_rev_dh_before_hs!>, <!
@@ -480,11 +480,17 @@ lemma one_kem_per_x [reuse, heuristic=C]:
 // this lemma helps us show that decaps/encaps works
 define(<!lemma_kem_pk_can_be_decapsed!>,<!
 lemma kem_pk_can_be_decapsed:
-  exists-trace
   "Ex tid a ekem esk ess #i #j.
      Kem(tid, a, ekem, esk)@#i
      & KemDecaps(tid, a, ekem, esk, ess)@#j 
-     & not (Ex #r. RevKemSk(tid, a, esk, ess)@#r & #r < #j)"
+     & not (Ex #r. RevKemSk(tid, a, ekem, esk)@#r & #r < #j)"
+!>)
+
+define(<!lemma_kem_sk_can_be_revealed!>,<!
+lemma kem_sk_can_be_revealed:
+  exists-trace
+  "Ex tid a ekem esk #i #j.
+    Kem(tid, a, ekem, esk)@#i & RevKemSk(tid, a, ekem, esk)@#j & #i < #j"
 !>)
 
 define(<!lemma_kem_sk_secret!>, <!

@@ -6,4 +6,4 @@ rule Reveal_PSK:
 
 // Reveal the KEM secret key
 rule Reveal_KemSk:
-    [ KemSk($ekem, ~esk, ~tid, $A) ] --[ RevKemSk(~tid, $A, $ekem, ~esk) ]-> [ Out(~esk), KemSk($ekem, ~esk, ~tid, $A) ]
+    [ KemSk(~esk, ~tid, $A) ] --[ RevKemSk(~tid, $A, $ekem, ~esk) ]-> [ Out(~esk), KemSk(~esk, ~tid, $A) ]

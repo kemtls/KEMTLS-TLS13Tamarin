@@ -25,7 +25,7 @@ define(<!SupportedVersions!>, <!Extension('43', '0x0304')!>)
 define(<!NamedGroupList!>, <!Extension('10', client_sekem)!>)
 define(<!SignatureSchemeList!>, <!Extension('13', $sig_algs)!>)
 define(<!KeyShareCH!>, <!Extension('40', ekem, epk)!>)
-define(<!KeyShareSH!>, <!Extension('40', ekem, ct)!>)
+define(<!KeyShareSH!>, <!Extension('40', ekem, ect)!>)
 define(<!KeyShareHRR!>, <!Extension('40', new_ekem)!>)
 
 dnl identities should be a list of pairs <~identity, obfuscated_ticket_age>
