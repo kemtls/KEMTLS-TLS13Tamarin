@@ -1,6 +1,6 @@
 # Enables simpler model
-# export FLAGS=-D SIMPLE_MODEL
-export FLAGS=-D COMPACT_LABELS
+export FLAGS=-D SIMPLE_MODEL
+#export FLAGS=-D COMPACT_LABELS
 
 # Disables the pause step after each proof file is completed
 # export NO_PAUSE=1

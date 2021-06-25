@@ -32,7 +32,7 @@ let
     init_state()
 
     tid = ~tid
-    sg = $g
+    sekem = $sekem
 in
     [ Fr(tid)
     ]
@@ -53,13 +53,13 @@ rule recv_client_hello:
 let
     set_state()
     psk_ke_mode = 'na'
-    g1 = $g1
-    g2 = $g2
-    client_sg = <g1, g2>
+    k1 = $k1
+    k2 = $k2
+    client_sekem = <k1, k2>
     nc = new_nc
-    gx = new_gx
-    g = $new_g
-    gx = kempk(g, new_x)
+    epk = new_epk
+    ekem = $new_ekem
+    epk = kempk(ekem, new_epk)
 
     // Abstract client identity - does not currently correspond to
     // anything concrete
@@ -82,7 +82,7 @@ in
       State(S0, tid, S, C, PrevServerState)[no_precomp]
     ]
   --[ S0(tid),
-      Neq(g1, g2)
+      Neq(k1, k2)
     ]->
     [
       State(S1, tid, S, C, ServerState)
@@ -93,12 +93,12 @@ rule hello_retry_request:
 let
     // Cannot HRR twice in a handshake
     prev_hrr = '0'
-    prev_sg = $prev_sg
+    prev_sekem = $prev_sekem
     // Copies across all values from PrevServerState to ServerState
     set_state()
     hrr = 'hrr'
-    new_g = sg
-    g = sg
+    new_ekem = sekem
+    ekem = sekem
 
     C = $C
     S = $S
@@ -109,7 +109,7 @@ in
     [ State(S1, tid, S, C, PrevServerState)[no_precomp]
     ]
   --[ S1_retry(tid),
-      Neq(prev_g, sg),
+      Neq(prev_ekem, sekem),
       Instance(tid, S, 'server')
     ]->
     [ Out(HelloRetryRequest),
@@ -123,8 +123,8 @@ dnl Extensions definitions for vanilla ServerHello
 define(<!ServerHelloExtensions!>, <!<SignatureSchemeList, KeyShareSH>!>)
 rule server_hello:
 let
-    prev_g = $prev_g
-    prev_gx = kempk(prev_g, some_x)
+    prev_ekem = $prev_ekem
+    prev_epk = kempk(prev_ekem, some_esk)
     set_state()
 
     // Server continuing in normal mode (no PSK mode)
@@ -134,30 +134,27 @@ let
     C = $C
     S = $S
 
-    // Group, DH exponent, key share
-    y = ~y
-    ss = <gx, y>
-    gy = kemencaps(g, ss, gx)
-    gxy = ss
+    // Kem ct 
+    fv = ~fv  dnl fresh value
+    ess = <epk, fv>
+    ect = kemencaps(ekem, ess, kempk)
 
     es = EarlySecret
     messages = <messages, ServerHello>
 in
     [ State(S1, tid, S, C, PrevServerState),
-      Fr(y)
+      Fr(fv)
     ]
   --[ S1(tid),
-      Eq(g, sg),
-      Neq(gx, g),
-      Neq(gxy, g),
+      Eq(ekem, sekem),
+      Neq(epk, ekem),
+      Neq(ess, ekem),
       Instance(tid, S, 'server'),
       running_server(Nonces, nc, ns),
-      DHChal(g, some_x, y, gx, gy, gxy),
-      DH(tid, S, y)
+      KemChal(some_esk, epk, ect, ess)
     ]->
     [
       State(S2a, tid, S, C, ServerState),
-      DHExp(y, tid, S),
       Out(ServerHello)
     ]
 
@@ -174,15 +171,13 @@ let
     hs_keys = keygen(handshake_traffic_secret(server), hs_key_label())
     hs_keyc = keygen(handshake_traffic_secret(client), hs_key_label())
 in
-    [ State(S2a, tid, S, C, PrevServerState)[no_precomp],
-      DHExp(y, tid, S)
+    [ State(S2a, tid, S, C, PrevServerState)[no_precomp]
     ]
   --[ S2a(tid),
       MasterSecret(tid, ms),
       Instance(tid, S, 'server'),
       running_server(HS, hs),
-      running_server(MS, ms),
-      DeleteDH(tid, S, y)
+      running_server(MS, ms)
    ]->
     [ State(S2b, tid, S, C, ServerState)
     ]

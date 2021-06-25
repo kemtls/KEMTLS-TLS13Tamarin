@@ -61,15 +61,15 @@ let
     // We reuse the client nonce to be a thread identifier
     tid = nc
 
-    g1 = $g1
-    g2 = $g2
-    sg= <g1, g2>
-    client_sg = <g1, g2>
+    k1 = $k1
+    k2 = $k2
+    sekem = <k1, k2>
+    client_sekem = <k1, k2>
 
-    // Group, DH exponent, key share
-    g = g1
-    x = ~x
-    gx = kempk(g, x)
+    // KEM Keygen
+    ekem = k1
+    esk = ~esk
+    epk = kempk(ekem, esk)
 
     es = EarlySecret
     binder = '0'
@@ -80,7 +80,7 @@ let
     ead_keyc = keygen(early_traffic_secret(client), early_app_key_label())
 in
     [ Fr(nc),
-      Fr(x),
+      Fr(esk),
       // XXX: For some reason using oob PSK explodes memory usage...
       !ClientPSK(C, S, prev_res_psk, prev_auth_status, NewSessionTicket, psk_type)
     ]
@@ -88,29 +88,28 @@ in
       Start(tid, C, 'client'),
       running_client(PSK, S, prev_res_psk, prev_auth_status),
       Neq(prev_res_psk, '0'),
-      DH(tid, C, x)
+      Kem(tid, C, ekem, esk)
     ]->
     [
       State(C1, tid, C, S, ClientState),
       CachePSK(tid, S, prev_res_psk, prev_auth_status, NewSessionTicket, psk_type),
       EarlySendStream(tid, C, S, auth_status, ead_keyc, edi),
-      DHExp(x, tid, C),
-    // Write the ClientHelloMsg onto the wire *presumably* with destination S
+      KemSk(ekem, esk, tid, C),
+      // Write the ClientHelloMsg onto the wire *presumably* with destination S
       Out(ClientHello)
     ]
 
 define(<!HelloRetryRequestExtensions!>, <!<KeyShareHRR>!>)
 rule recv_hello_retry_request_psk:
 let
-    g1 = $g1
-    g2 = $g2
-    prev_sg = <g1, g2>
-    prev_g = g1
+    k1 = $k1
+    k2 = $k2
+    prev_sekem = <k1, k2>
+    prev_ekem = k2
     prev_hrr = '0'
 
     prev_psk_ke_mode = <psk_ke, psk_dhe_ke>
     set_state()
-
 
     // Set resumption values from ClientPSK
     res_psk = prev_res_psk
@@ -122,17 +121,17 @@ let
     edi = no_early_data_indication()
 
     hrr = 'hrr'
-    new_g = g2
-    g = g2
-    client_sg = <g1, g2>
+    new_ekem = k2
+    ekem = k2
+    client_sekem = <k1, k2>
 
     C = $C
     S = $S
 
     new_nc = ~new_nc
-    new_x = ~new_x
-    x = new_x
-    gx = kempk(g, x)
+    new_esk = ~new_esk
+    esk = new_esk
+    epk = kempk(ekem, esk)
     nc = new_nc
 
     es = EarlySecret
@@ -146,19 +145,19 @@ in
     [ State(C1, tid, C, S, PrevClientState)[no_precomp],
       CachePSK(tid, S, prev_res_psk, prev_auth_status, NewSessionTicket, psk_type),
       Fr(new_nc),
-      Fr(new_x),
-      DHExp(prev_x, tid, C),
+      Fr(new_esk),
+      Kem(tid, C, ekem, esk),
       In(HelloRetryRequest)
     ]
   --[ C1_retry_PSK(tid),
-      Neq(g1, g2),
+      Neq(k1, k2),
       Instance(tid, C, 'client'),
       running_client(PSK, S, prev_res_psk, prev_auth_status),
-      DeleteDH(tid, C, prev_x),
-      DH(tid, C, x)
+      DeleteDH(tid, C, prev_x),  dnl XXX:???
+      Kem(tid, C, ekem, esk)
     ]->
     [ Out(ClientHello),
-      DHExp(x, tid, C),
+      KemSk(ekem, esk, tid, C),
       State(C1, tid, C, S, ClientState)
     ]
 
@@ -171,25 +170,25 @@ define(<!ServerHelloExtensions!>, <!< dnl
 >!>)
 rule recv_server_hello_psk_dhe:
 let
-    prev_g = $g
-    prev_x = ~x
+    prev_ekem = $k
+    prev_esk = ~esk
     prev_psk_ke_mode = <psk_ke, psk_dhe_ke>
     prev_psk_id = ~ticket
 
     set_state()
     ns = new_ns
-    gy = new_gy
+    ect = new_ect
 
     psk_ke_mode = psk_dhe_ke
 
     C = $C
     S = $S
 
-    ss = <gx, new_y>
-    gy = kemencaps(g, ss, gx)
+    ess = kemss(epk)
+    ect = kemencaps(ekem, ess, epk)
 
     // Derive the shared secret
-    gxy = kemdecaps(g, gy, x)
+    ess = kemdecaps(ekem, ect, esk)
 
     identity = psk_id
 
@@ -199,9 +198,9 @@ in
       In(ServerHello)
     ]
   --[ C1_PSK_DHE(tid),
-      Neq(gy, g),
+      Neq(ect, ekem),
       Instance(tid, C, 'client'),
-      DHChal(g, x, new_y, gx, gy, gxy),
+      KemChal(esk, epk, ect, ess),
       running_client(Nonces, nc, ns)
     ]->
     [

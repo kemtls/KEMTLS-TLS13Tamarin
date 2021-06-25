@@ -11,13 +11,13 @@ rule recv_client_hello_psk:
 let
     set_state()
     nc = new_nc
-    g1 = $g1
-    g2 = $g2
-    client_sg = <g1, g2>
+    k1 = $k1
+    k2 = $k2
+    client_sekem = <k1, k2>
     nc = new_nc
-    gx = new_gx
-    g = $new_g
-    gx = g^new_x
+    epk = new_epk
+    ekem = $new_ekem
+    epk = kempk(ekem, new_esk)
 
     ticket_age_add = ~ticket_age_add
     ticket = ~ticket
@@ -58,7 +58,7 @@ in
       !ServerPSK(S, C, psk_res_psk, psk_auth_status, NewSessionTicket, psk_type)
     ]
   --[ S0_PSK(tid),
-      Neq(g1, g2),
+      Neq(k1, k2),
       Eq(unmask(obfuscated_ticket_age, ticket_age_add), '1'),
       Eq(binder_check, binder),
       running_server(PSK, C, psk_res_psk, psk_auth_status),
@@ -80,8 +80,8 @@ define(<!ServerHelloExtensions!>, <!< dnl
 >!>)
 rule server_hello_psk_dhe:
 let
-    prev_g = $g
-    prev_gx = prev_g^some_x
+    prev_ekem = $k
+    prev_epk = kempk(prev_g, some_esk)
     prev_psk_ke_mode = <psk_ke, psk_dhe_ke> dnl <'0', '1'>
     prev_ns = ~ns
     prev_psk_id = ~ticket
@@ -93,10 +93,10 @@ let
     C = $C
     S = $S
 
-    // Group, DH exponent, key share
-    y = ~y
-    gy = g^y
-    gxy = gx^y
+    // Kem ct
+    fv = ~fv   dnl fresh value
+    ess = <epk, fv>
+    ect = kemencaps(ekem, ess, epk)
 
     identity = psk_id
 
@@ -108,16 +108,13 @@ in
       Fr(y)
     ]
   --[ S1_PSK_DHE(tid),
-      Neq(gx, g),
-      Neq(x, inv(y)),
+      Neq(epk, ekem),
       Instance(tid, S, 'server'),
-      DHChal(g, some_x, y, gx, gy, gxy),
-      running_server(Nonces, nc, ns),
-      DH(tid, S, y)
+      KemChal(some_esk, epk, ect, ess),
+      running_server(Nonces, nc, ns)
     ]->
     [
       State(S2a, tid, S, C, ServerState),
-      DHExp(y, tid, S),
       Out(ServerHello)
     ]
 define(<!ServerHelloExtensions!>, <!< dnl
@@ -149,12 +146,10 @@ in
     ]
   --[ S1_PSK(tid),
       Instance(tid, S, 'server'),
-      running_server(Nonces, nc, ns),
-      DH(tid, S, y)
+      running_server(Nonces, nc, ns)
     ]->
     [
       State(S2a, tid, S, C, ServerState),
-      DHExp(y, tid, S),
       Out(ServerHello)
     ]
 

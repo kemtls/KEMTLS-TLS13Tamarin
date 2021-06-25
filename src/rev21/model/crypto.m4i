@@ -24,7 +24,7 @@ define(<!EarlySecret!>, <!Extract(res_psk, '0')!>)
 define(<!binder_key!>, <!Derive_Secret(es, binder_key_label(psk_type), '0')!>)
 define(<!early_traffic_secret!>, <!Derive_Secret(es, 'TLS13clientearlytrafficsecret', <!<!HashValue!>!>)!>)
 define(<!early_exporter_master_secret!>, <!Derive_Secret(es, 'TLS13earlyexportermastersecret', <!<!HashValue!>!>)!>)
-define(<!HandshakeSecret!>, <!Extract(gxy, es)!>)
+define(<!HandshakeSecret!>, <!Extract(ess, es)!>)
 define(<!handshake_traffic_secret!>, <!Derive_Secret(hs, 'TLS13$1handshaketrafficsecret', <!<!HashValue!>!>)!>)
 define(<!MasterSecret!>, <!Extract('0', hs)!>)
 define(<!application_traffic_secret_0!>, <!Derive_Secret(ms, 'TLS13$1applicationtrafficsecret', <!<!HashValue!>!>)!>)
@@ -81,10 +81,10 @@ functions: kempk/2,kemencaps/3,kemdecaps/3
 dnl(
 /*
     kempk(group, secret) = pk
-    kemencaps(group, ss, pk) = ct
-    kemdecaps(group, ct, sk) = ss
+    kemencaps(group, <g, k>, pk) = ct
+    kemdecaps(group, ct, sk) = <g, ~k>
 */
 )
 
 equations:
-    kemdecaps(g, kemencaps(g, ss, kempk(g, sk)), sk) = ss
+    kemdecaps(g, kemencaps(g, <g, k>, kempk(g, sk)), sk) = <g, k>

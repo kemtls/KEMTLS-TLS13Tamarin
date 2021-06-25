@@ -45,55 +45,55 @@ let
 
     // Group=kem alg, KEM private key, key share
     // this has some legacy from when this was based on dh
-    g1 = $g1
-    g2 = $g2
-    sg = <g1, g2>
-    client_sg = <g1, g2>
-    g = g1
-    x = ~x
-    gx = kempk(g, x)
+    k1 = $k1
+    k2 = $k2
+    sekem = <k1, k2>
+    client_sekem = <k1, k2>
+    ekem = k1
+    esk = ~esk
+    epk = kempk(g, esk)
 
     messages = <messages, ClientHello>
     es = EarlySecret
 in
     [ Fr(nc),
-      Fr(x)
+      Fr(esk)
     ]
   --[ C0(tid),
       Start(tid, C, 'client'),
       running_client(Identity, C),
-      Neq(g1, g2),
-      DH(tid, C, x),
-      HonestUse(~x),
-      HonestUse(gx)
+      Neq(k1, k2),
+      Kem(tid, C, ekem, esk),
+      HonestUse(~esk),
+      HonestUse(epk)
     ]->
     [
       State(C1, tid, C, S, ClientState),
-      DHExp(x, tid, C),
-    // Write the ClientHelloMsg onto the wire *presumably* with destination S
+      KemSk(ekem, esk, tid, C),
+      // Write the ClientHelloMsg onto the wire *presumably* with destination S
       Out(ClientHello)
     ]
 
 define(<!HelloRetryRequestExtensions!>, <!<KeyShareHRR>!>)
 rule recv_hello_retry_request:
 let
-    g1 = $g1
-    g2 = $g2
-    prev_sg = <g1, g2>
-    prev_g = g1
+    k1 = $k1
+    k2 = $k2
+    prev_sekem = <k1, k2>
+    prev_ekem = k1
     prev_hrr = '0'
     set_state()
     hrr = 'hrr'
-    new_g = g2
-    g = g2
-    client_sg = <g1, g2>
+    new_ekem = k2
+    ekem = k2
+    client_sekem = <k1, k2>
 
     C = $C
     S = $S
 
-    new_x = ~new_x
-    x = new_x
-    gx = kempk(g, x)
+    new_esk = ~new_esk
+    esk = new_esk
+    epk = kempk(ekem, esk)
 
 
     // PSK after HRR has its own rule (see recv_hello_retry_request_psk)
@@ -105,18 +105,18 @@ let
     es = EarlySecret
 in
     [ State(C1, tid, C, S, PrevClientState),
-      Fr(new_x),
+      Fr(new_esk),
       In(HelloRetryRequest),
-      DHExp(prev_x, tid, C)
+      KemSk(ekem, prev_esk, tid, C)
     ]
   --[ C1_retry(tid),
-      Neq(g1, g2),
+      Neq(k1, k2),
       Instance(tid, C, 'client'),
-      DeleteDH(tid, C, prev_x),
-      DH(tid, C, x)
+      DeleteDH(tid, C, prev_esk),
+      Kem(tid, C, ekem, esk)
     ]->
     [ Out(ClientHello),
-      DHExp(x, tid, C),
+      KemSk(ekem, esk, tid, C),
       State(C1, tid, C, S, ClientState)
     ]
 
@@ -125,22 +125,23 @@ dnl Extensions definitions for basic ServerHello
 define(<!ServerHelloExtensions!>, <!<SignatureSchemeList, KeyShareSH>!>)
 rule recv_server_hello:
 let
-    prev_g = $g
-    prev_x = ~x
+    prev_ekem = $k1
+    prev_esk = ~esk
 
     set_state()
     ns = new_ns
-    gy = new_gy
+    ect = new_ect
 
     C = $C
     S = $S
 
-    // equivalent to checking gy in <$g>
-    ss = <gx, new_y>
-    gy = kemencaps(g, ss, gx)
+    // equivalent to checking kempk in <$ekem>
+    // pattern matches through In(SH)
+    ess = kemss(epk)
+    ect = kemencaps(ekem, ess, epk)
 
     // Derive the shared secret
-    gxy = kemdecaps(g, gy, x)
+    ess = kemdecaps(ekem, ect, esk)
 
     // Received a basic server hello - abandon PSK mode (if attempted)
     psk_ke_mode = 'na'
@@ -153,9 +154,10 @@ in
     ]
   --[ C1(tid),
       Instance(tid, C, 'client'),
-      Neq(gy, g),
-      Neq(gxy, g),
-      DHChal(g, x, new_y, gx, gy, gxy),
+      Neq(ect, ekem),
+      Neq(ess, ekem),
+      KemChal(esk, epk, ect, ess),
+      KemDecaps(tid, C, ekem, esk, ess),
       running_client(Nonces, nc, ns)
     ]->
     [
@@ -177,13 +179,13 @@ let
 
 in
     [ State(C2a, tid, C, S, PrevClientState)[no_precomp],
-      DHExp(x, tid, C)
+      KemSk(ekem, esk, tid, C)
     ]
   --[ C2a(tid),
       Instance(tid, C, 'client'),
       running_client(MS, ms),
-      running_client(HS, hs),
-      DeleteDH(tid, C, x)
+      running_client(HS, hs)
+      DeleteDH(tid, C, x)  dnl XXX: ???
     ]->
     [
       State(C2b, tid, C, S, ClientState)

@@ -24,14 +24,13 @@ res_psk, dnl resumption PSK
 messages, dnl message transcript
 nc, dnl client nonce
 ns, dnl server nonce
-g, dnl chosen DH group
-sg, dnl supported DH groups
+ekem, dnl chosen kex KEM
+sekem, dnl supported kex KEMs
 hrr, dnl tracks whether HRR has been sent 
-x, dnl client private DH key
-y, dnl server private DH key
-gx, dnl client DH share
-gy, dnl server DH share
-gxy, dnl derived DH value
+esk, dnl kex private KEM key
+epk, dnl kex public key
+ect, dnl kex ciphertext
+ess, dnl kex shared secret
 psk_ke_mode, dnl psk key exchange mode
 psk_id, dnl psk identity/ticket
 edi, dnl early data indication
@@ -54,14 +53,13 @@ messages = '0'
 res_psk = '0'
 nc = '0'
 ns = '0'
-g = '0'
-sg = '0'
+ekem = '0'
+sekem = '0'
 hrr = '0'
-x = '0'
-y = '0'
-gx = '0'
-gy = '0'
-gxy = '0'
+esk = '0'
+epk = '0'
+ect = '0'
+ess = '0'
 psk_ke_mode = 'na'
 psk_id = '0'
 edi = '0'
@@ -83,14 +81,13 @@ prev_res_psk, dnl
 prev_messages, dnl
 prev_nc, dnl
 prev_ns, dnl
-prev_g, dnl
-prev_sg, dnl
+prev_ekem, dnl
+prev_sekem, dnl
 prev_hrr, dnl
-prev_x, dnl
-prev_y, dnl
-prev_gx, dnl
-prev_gy, dnl
-prev_gxy, dnl
+prev_esk, dnl
+prev_epk, dnl
+prev_ect, dnl
+prev_ess, dnl
 prev_psk_ke_mode, dnl
 prev_psk_id, dnl
 prev_edi, dnl
@@ -112,13 +109,12 @@ define(<!set_state!>, <!
 res_psk = prev_res_psk
 nc = prev_nc
 ns = prev_ns
-g = prev_g
-sg = prev_sg
-x = prev_x
-y = prev_y
-gx = prev_gx
-gy = prev_gy
-gxy = prev_gxy
+ekem = prev_ekem
+sekem = prev_sekem
+esk = prev_esk
+epk = prev_epk
+ect = prev_ect
+ess = prev_ess
 hrr = prev_hrr
 psk_ke_mode = prev_psk_ke_mode
 psk_id = prev_psk_id
