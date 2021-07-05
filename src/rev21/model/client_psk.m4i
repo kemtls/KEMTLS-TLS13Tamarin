@@ -184,8 +184,7 @@ let
     C = $C
     S = $S
 
-    ess = <ekem, eseed>
-    ect = kemencaps(ekem, ess, epk)
+    ect = kemencaps(ekem, <ekem, new_eseed>, epk)
 
     // Derive the shared secret
     ess = kemdecaps(ekem, ect, esk)
