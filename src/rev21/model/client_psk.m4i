@@ -88,13 +88,13 @@ in
       Start(tid, C, 'client'),
       running_client(PSK, S, prev_res_psk, prev_auth_status),
       Neq(prev_res_psk, '0'),
-      Kem(tid, C, ekem, esk)
+      EKem(tid, C, ekem, esk)
     ]->
     [
       State(C1, tid, C, S, ClientState),
       CachePSK(tid, S, prev_res_psk, prev_auth_status, NewSessionTicket, psk_type),
       EarlySendStream(tid, C, S, auth_status, ead_keyc, edi),
-      KemSk(esk, tid, C),
+      EKemSk(esk, tid, C),
       // Write the ClientHelloMsg onto the wire *presumably* with destination S
       Out(ClientHello)
     ]
@@ -146,18 +146,18 @@ in
       CachePSK(tid, S, prev_res_psk, prev_auth_status, NewSessionTicket, psk_type),
       Fr(new_nc),
       Fr(new_esk),
-      Kem(tid, C, ekem, esk),
+      EKem(tid, C, ekem, esk),
       In(HelloRetryRequest)
     ]
   --[ C1_retry_PSK(tid),
       Neq(k1, k2),
       Instance(tid, C, 'client'),
       running_client(PSK, S, prev_res_psk, prev_auth_status),
-      DeleteKemSk(tid, C, prev_ekem, prev_esk),
-      Kem(tid, C, ekem, esk)
+      DelEKemSk(tid, C, prev_ekem, prev_esk),
+      EKem(tid, C, ekem, esk)
     ]->
     [ Out(ClientHello),
-      KemSk(esk, tid, C),
+      EKemSk(esk, tid, C),
       State(C1, tid, C, S, ClientState)
     ]
 
@@ -200,7 +200,7 @@ in
   --[ C1_PSK_DHE(tid),
       Neq(ect, ekem),
       Instance(tid, C, 'client'),
-      KemChal(esk, epk, ect, ess),
+      KemChal(ekem, esk, epk, ect, ess),
       running_client(Nonces, nc, ns)
     ]->
     [

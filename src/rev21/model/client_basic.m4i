@@ -63,13 +63,13 @@ in
       Start(tid, C, 'client'),
       running_client(Identity, C),
       Neq(k1, k2),
-      Kem(tid, C, ekem, esk),
+      EKem(tid, C, ekem, esk),
       HonestUse(~esk),
       HonestUse(epk)
     ]->
     [
       State(C1, tid, C, S, ClientState),
-      KemSk(esk, tid, C),
+      EKemSk(esk, tid, C),
       // Write the ClientHelloMsg onto the wire *presumably* with destination S
       Out(ClientHello)
     ]
@@ -107,16 +107,16 @@ in
     [ State(C1, tid, C, S, PrevClientState),
       Fr(new_esk),
       In(HelloRetryRequest),
-      KemSk(prev_esk, tid, C)
+      EKemSk(prev_esk, tid, C)
     ]
   --[ C1_retry(tid),
       Neq(k1, k2),
       Instance(tid, C, 'client'),
-      DeleteKemSk(tid, C, prev_ekem, prev_esk),
-      Kem(tid, C, ekem, esk)
+      DelEKemSk(tid, C, prev_ekem, prev_esk),
+      EKem(tid, C, ekem, esk)
     ]->
     [ Out(ClientHello),
-      KemSk(esk, tid, C),
+      EKemSk(esk, tid, C),
       State(C1, tid, C, S, ClientState)
     ]
 
@@ -154,9 +154,7 @@ in
     ]
   --[ C1(tid),
       Instance(tid, C, 'client'),
-      Neq(ect, ekem),
-      Neq(ess, ekem),
-      KemChal(esk, epk, ect, ess),
+      KemChal(ekem, esk, epk, ect, ess),
       KemDecaps(tid, C, ekem, esk, ess),
       running_client(Nonces, nc, ns)
     ]->
@@ -179,13 +177,13 @@ let
 
 in
     [ State(C2a, tid, C, S, PrevClientState)[no_precomp],
-      KemSk(esk, tid, C)
+      EKemSk(esk, tid, C)
     ]
   --[ C2a(tid),
       Instance(tid, C, 'client'),
       running_client(MS, ms),
       running_client(HS, hs),
-      DeleteKemSk(tid, C, ekem, esk)  dnl models that the ephemeral key is thrown away here.
+      DelEKemSk(tid, C, ekem, esk)  dnl models that the ephemeral key is thrown away here.
     ]->
     [
       State(C2b, tid, C, S, ClientState)

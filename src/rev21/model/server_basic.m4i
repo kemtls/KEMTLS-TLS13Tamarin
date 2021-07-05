@@ -147,11 +147,9 @@ in
     ]
   --[ S1(tid),
       Eq(ekem, sekem),
-      Neq(epk, ekem),
-      Neq(ess, ekem),
       Instance(tid, S, 'server'),
       running_server(Nonces, nc, ns),
-      KemChal(some_esk, epk, ect, ess)
+      KemChal(ekem, some_esk, epk, ect, ess)
     ]->
     [
       State(S2a, tid, S, C, ServerState),

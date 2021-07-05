@@ -23,6 +23,7 @@ proofs:
 	bash -c "$(TAM) invariants.spthy --prove=one_start* --output=../proofs/invariants.2.spthy $(PIPE)"
 	bash -c "$(TAM) uniqueness.spthy --prove --output=../proofs/uniqueness.spthy $(PIPE)"
 	bash -c "$(TAM) auth_helpers.spthy --prove=matching* --prove=consistent* --prove=invariant* --output=../proofs/auth_helpers.spthy $(PIPE)"
+	bash -c "$(TAM) kem_chal.spthy --prove=one_* --prove=kem* --output=../proofs/kem_chal.spthy $(PIPE)"
 	bash -c "$(TAM) dh_inj.spthy  --prove=dh_exp* --prove=one_dh* --prove=rev_dh* --output=../proofs/dh_inj.spthy $(PIPE)"
 	bash -c "$(TAM) dh_chal.spthy --prove=dh_chal_dual --heuristic=cccccccccsssssssssssssssssssss --output=../proofs/dh_chal.spthy $(PIPE)"
 	bash -c "$(TAM) secret_helpers.spthy --prove=tid* --prove=ku* --prove=hsms* --prove=sig_origin* --prove=posths_rms* --heuristic=S --output=../proofs/secret_helpers.1.spthy $(PIPE)"

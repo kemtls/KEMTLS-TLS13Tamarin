@@ -108,9 +108,8 @@ in
       Fr(eseed)
     ]
   --[ S1_PSK_DHE(tid),
-      Neq(epk, ekem),
       Instance(tid, S, 'server'),
-      KemChal(some_esk, epk, ect, ess),
+      KemChal(ekem, some_esk, epk, ect, ess),
       running_server(Nonces, nc, ns)
     ]->
     [
