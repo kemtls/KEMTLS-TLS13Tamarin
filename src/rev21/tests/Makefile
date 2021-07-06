@@ -53,23 +53,23 @@ TEST_RULES=C0 \
 MAKE_RULES=$(TEST_RULES)
 
 RULE_FILES= $(foreach rule,$(TEST_RULES),$(rule).spthy)
-PROOF_FILES= $(foreach rule,$(TEST_RULES),$(rule)-proof.spthy)
+PROOF_FILES= $(foreach rule,$(TEST_RULES),$(rule).proof)
 
-.PHONY: all
 all: $(RULE_FILES)
+
+test: $(PROOF_FILES)
 
 %.spthy: reachability.m4 ../model/*.m4* ../*.m4
 	m4 -Q $(FLAGS) -I ../ -I../model -I . -D RULE=$* reachability.m4 > $@
-	perl -0777pi -e 's/\n{3,}/\n\n/g' $@
+	@perl -0777pi -e 's/\n{3,}/\n\n/g' $@
 
-%-proof.spthy: %.spthy
-	tamarin-prover --heuristic=S --prove=exists_* $< --output=$@ +RTS -N$(nproc) -H75G -M150G -RTS 2> $*-output.log | tee output.log
-	@grep -q verified output.log
-
-.PHONY: test
-test: $(PROOF_FILES)
+%.proof: %.spthy
+	tamarin-prover --heuristic=S --prove=exists_* $< --output=$@.wip +RTS -N$(nproc) -H40G -M50G -RTS 2> $*-output.log | tee $*-stdout.log
+	@grep -q verified $*-stdout.log
+	rm $*-stdout.log
+	mv $@.wip $@
 
 clean:
-	rm -f *.spthy *.log
+	rm -f *.spthy *.proof *.log *.wip
 
 .PHONY: clean test all
