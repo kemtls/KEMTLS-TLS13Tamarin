@@ -120,12 +120,12 @@ lemma ekem_chal_dual [reuse]:
     EKemChal(ekem, esk, epk, ect, ess)@#j & Instance(tid2, actor2, 'server')@#j &
     KU(ess)@#r
     ==>
-    (Ex. #p. (RevEKemSk(tid, actor, ekem, esk)@#p & #p < #r))"
+    (Ex #p. (RevEKemSk(tid, actor, esk)@#p & #p < #r))"
 !>)
 
 define(<!lemma_ku_hs!>, <!
 lemma ku_hs [reuse]:
-  "All tid actor role es hs res_psk ekem ess #i #j.
+  "All tid actor role es hs res_psk ess #i #j.
     running(HS, actor, role, hs)@i &
     hs = HandshakeSecret &
     es = EarlySecret &
@@ -235,7 +235,7 @@ lemma matching_sessinos [reuse, use_induction, hide_lemma=posths_rms]:
     not (role = role2) &
     KU(rms)@#k
     ==>
-    (Ex tid3 ekem esk #r. RevEKemSk(tid3, actor, ekem, esk)@r & #r < #i) |
+    (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i) |
     (Ex rms2 #r. RevealPSK(actor, rms2)@#r & #r < #k) |
     (Ex rms2 #r. RevealPSK(peer, rms2)@#r  & #r < #k)"
 !>)
@@ -310,8 +310,8 @@ lemma handshake_secret [reuse, use_induction, hide_lemma=posths_rms_weak]:
     commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
     KU(hs)@k ==>
         (Ex #r. RevLtk(peer)@r & #r < #i) |
-        (Ex tid3 ekem esk #r. RevEKemSk(tid3, peer, ekem, esk)@r & #r < #i) |
-        (Ex tid4 ekem esk #r. RevEKemSk(tid4, actor, ekem, esk)@r & #r < #i) |  dnl is actor the client here?
+        (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) |
+        (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) |  dnl is actor the client here?
         (Ex rms #r. RevealPSK(actor, rms)@r & #r < #k) |
         (Ex rms #r. RevealPSK(peer, rms)@r & #r < #k)"
 !>)
@@ -325,8 +325,8 @@ lemma pfs_handshake_secret [reuse, hide_lemma=posths_rms_weak]:
     KU(hs)@k &
     (not psk_ke_mode = psk_ke) ==>
         (Ex #r. RevLtk(peer)@r & #r < #i) |
-        (Ex tid3 ekem esk #r. RevEKemSk(tid3, peer, ekem, esk)@r & #r < #i) |
-        (Ex tid4 ekem esk #r. RevEKemSk(tid4, actor, ekem, esk)@r & #r < #i) |
+        (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) |
+        (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) |
         (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) |
         (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i)"
 !>)
@@ -340,8 +340,8 @@ lemma secret_session_keys [hide_lemma=sig_origin,hide_lemma=posths_rms]:
   "All tid actor peer kw kr pas #i.
       SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i & 
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 ekem esk #r. RevEKemSk(tid3, peer, ekem, esk)@r & #r < #i) &
-      not (Ex tid4 ekem esk #r. RevEKemSk(tid4, actor, ekem, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
+      not (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
     ==> not Ex #j. K(kr)@j"
@@ -353,8 +353,8 @@ lemma secret_session_keys_pfs [hide_lemma=sig_origin,hide_lemma=posths_rms]:
       SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i & 
       running(Mode, actor, role, psk_ke_mode)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 ekem esk #r. RevDHExp(tid3, peer, ekem, esk)@r & #r < #i) &
-      not (Ex tid4 ekem esk #r. RevDHExp(tid4, actor, ekem, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevDHExp(tid3, peer, esk)@r & #r < #i) &
+      not (Ex tid4 esk #r. RevDHExp(tid4, actor, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i) &
       not (psk_ke_mode = psk_ke)
@@ -370,7 +370,7 @@ lemma session_key_agreement [hide_lemma=sig_origin]:
      running2(Nonces, peer, 'server', nonces)@l &
       // not (Ex #r. RevLtk(actor)@r & #r < #i) &
       not (Ex #r. RevLtk(peer)@r & #r < #i & #r < #k) &
-      not (Ex tid3 ekem esk #r. RevEKemSk(tid3, peer, ekem, esk)@r & #r < #i & #r < #k) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i & #r < #k) &
       not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i & #r < #k) &
       not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i & #r < #k)
       ==>
@@ -394,7 +394,7 @@ lemma entity_authentication [reuse, use_induction]:
   "All tid actor peer nonces cas #i. 
       commit(Nonces, actor, 'client', nonces)@i & commit(Identity, actor, 'client', peer, <cas, 'auth'>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 ekem esk #r. RevEKemSk(tid3, peer, ekem, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
           ==> (Ex tid2 #j. running2(Nonces, peer, 'server', nonces)@j & #j < #i)"
@@ -408,7 +408,7 @@ lemma transcript_agreement [reuse]:
   "All tid actor peer transcript cas #i.
       commit(Transcript, actor, 'client', transcript)@i & commit(Identity, actor, 'client', peer, <cas, 'auth'>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 ekem esk #r. RevEKemSk(tid3, actor, x)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, x)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
           ==> (Ex tid2 #j. running2(Transcript, peer, 'server', transcript)@j & #j < #i)"
@@ -422,7 +422,7 @@ lemma mutual_entity_authentication [reuse, use_induction]:
   "All tid actor peer nonces sas #i.
       commit(Nonces, actor, 'server', nonces)@i & commit(Identity, actor, 'server', peer, <sas, 'auth'>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 ekem esk #r. RevEKemSk(tid3, peer, ekem, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
           ==> (Ex tid2 #j. running2(Nonces, peer, 'client', nonces)@j & #j < #i)"
@@ -436,7 +436,7 @@ lemma mutual_transcript_agreement [reuse]:
   "All tid actor transcript peer sas #i.
       commit(Transcript, actor, 'server', transcript)@i & commit(Identity, actor, 'server', peer, <sas, 'auth'>)@i & 
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 ekem esk #r. RevEKemSk(tid3, peer, ekem, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
           ==> (Ex tid2 #j. running2(Transcript, peer, 'client', transcript)@j & #j < #i)"
@@ -451,8 +451,8 @@ lemma injective_mutual_entity_authentication [reuse, hide_lemma=posths_rms]:
   "All tid actor peer role nonces aas #i.
       commit(Nonces, actor, role, nonces)@i & commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 ekem esk #r. RevEKemSk(tid3, peer, ekem, esk)@r & #r < #i) &
-      not (Ex tid4 ekem esk #r. RevEKemSk(tid4, actor, ekem, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
+      not (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
           ==> 
@@ -467,29 +467,29 @@ lemma injective_mutual_entity_authentication [reuse, hide_lemma=posths_rms]:
 
 define(<!lemma_ekem_sk_invariant!>, <!
 lemma ekem_sk_invariant  [use_induction, reuse, heuristic=C]:
-  "All tid actor ekem esk #i. RevEKemSk(tid, actor, ekem, esk)@#i ==>
-    Ex #j. EKem(tid, actor, ekem, esk)@#j & #j < #i"
+  "All tid actor esk #i. 
+    RevEKemSk(tid, actor, esk)@#i ==> Ex #j. EKem(tid, actor, esk)@#j & #j < #i"
 !>)
 
 define(<!lemma_ekem_sk_secret_ordering!>, <!
 lemma ekem_rev_secret_ordering [reuse, heuristic=s]:
-  "All ekem esk tid a #i #j.
-    RevEKemSk(tid, a, ekem, esk)@#i & EKem(ekem, esk, tid, a)@#j ==> #j < #i"
+  "All esk tid a #i #j.
+    RevEKemSk(tid, a, esk)@#i & EKem(tid, a, esk)@#j ==> #j < #i"
 !>)
 
 define(<!lemma_rev_ekem_ordering!>, <!
 lemma rev_ekem_ordering  [reuse, use_induction, heuristic=C]:
-  "All tid actor ekem esk #j. 
-    DelEKemSk(tid, actor, ekem, esk)@#j==>
-      ((Ex #i. EKem(tid, actor, ekem, esk)@#i & #i < #j) & 
-       (All #r. RevEKemSk(tid, actor, ekem, esk)@#r  ==>  #r < #j))"
+  "All tid actor esk #j. 
+    DelEKemSk(tid, actor, esk)@#j==>
+      ((Ex #i. EKem(tid, actor, esk)@#i & #i < #j) & 
+       (All #r. RevEKemSk(tid, actor, esk)@#r  ==>  #r < #j))"
 !>)
 
 define(<!lemma_rev_ekem_before_hs!>, <!
 lemma rev_ekem_before_hs  [reuse, heuristic=I]:
   "All tid actor role hs x #i #j.
     running(HS, actor, role, hs)@j &
-    RevEKemSk(tid, actor, ekem, esk)@i ==>
+    RevEKemSk(tid, actor, esk)@i ==>
     #i < #j"
 !>)
 //NTS: RevDH < RRMS
@@ -497,23 +497,23 @@ lemma rev_ekem_before_hs  [reuse, heuristic=I]:
 
 define(<!lemma_one_ekem_per_x!>, <!
 lemma one_ekem_per_x [reuse, heuristic=C]:
-  "All tid tid2 ekem esk a a2 #i #j.
-    EKem(tid, a, ekem, esk)@i & EKem(tid2, a2, ekem, esk)@j ==> #i = #j"
+  "All tid tid2 esk a a2 #i #j.
+    EKem(tid, a, esk)@i & EKem(tid2, a2, esk)@j ==> #i = #j"
 !>)
 
 // this lemma helps us show that decaps/encaps works
 define(<!lemma_ekem_pk_can_be_decapsed!>,<!
 lemma ekem_pk_can_be_decapsed:
   exists-trace
-  "Ex tid a ekem esk ess #i #j.
-     EKem(tid, a, ekem, esk)@#i
+  "Ex tid a esk ekem ess #i #j.
+     EKem(tid, a, esk)@#i
      & KemDecaps(tid, a, ekem, esk, ess)@#j 
-     & not (Ex #r. RevEKemSk(tid, a, ekem, esk)@#r & #r < #j)"
+     & not (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 !>)
 
 define(<!lemma_ekem_sk_can_be_revealed!>,<!
 lemma ekem_sk_can_be_revealed:
   exists-trace
-  "Ex tid a ekem esk #i #j.
-    EKem(tid, a, ekem, esk)@#i & RevEKemSk(tid, a, ekem, esk)@#j & #i < #j"
+  "Ex tid a esk #i #j.
+    EKem(tid, a, esk)@#i & RevEKemSk(tid, a, esk)@#j & #i < #j"
 !>)

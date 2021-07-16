@@ -23,9 +23,9 @@ uniq(C1_retry)
 uniq(S1)
 uniq(C1)
 
+lemma_ekem_sk_invariant
 lemma_one_ekem_per_x
 lemma_ekem_sk_secret_ordering
-lemma_ekem_sk_invariant
 lemma_ekem_pk_can_be_decapsed
 lemma_ekem_sk_can_be_revealed
 lemma_rev_ekem_ordering

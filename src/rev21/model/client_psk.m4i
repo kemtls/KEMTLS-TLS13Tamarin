@@ -88,7 +88,7 @@ in
       Start(tid, C, 'client'),
       running_client(PSK, S, prev_res_psk, prev_auth_status),
       Neq(prev_res_psk, '0'),
-      EKem(tid, C, ekem, esk)
+      EKem(tid, C, esk)
     ]->
     [
       State(C1, tid, C, S, ClientState),
@@ -153,8 +153,8 @@ in
       Neq(k1, k2),
       Instance(tid, C, 'client'),
       running_client(PSK, S, prev_res_psk, prev_auth_status),
-      DelEKemSk(tid, C, prev_ekem, prev_esk),
-      EKem(tid, C, ekem, esk)
+      DelEKemSk(tid, C, prev_esk),
+      EKem(tid, C, esk)
     ]->
     [ Out(ClientHello),
       EKemSk(esk, tid, C),

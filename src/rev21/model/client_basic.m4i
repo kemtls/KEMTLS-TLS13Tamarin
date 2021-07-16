@@ -63,7 +63,7 @@ in
       Start(tid, C, 'client'),
       running_client(Identity, C),
       Neq(k1, k2),
-      EKem(tid, C, ekem, esk),
+      EKem(tid, C, esk),
       HonestUse(~esk),
       HonestUse(epk)
     ]->
@@ -112,8 +112,8 @@ in
   --[ C1_retry(tid),
       Neq(k1, k2),
       Instance(tid, C, 'client'),
-      DelEKemSk(tid, C, prev_ekem, prev_esk),
-      EKem(tid, C, ekem, esk)
+      DelEKemSk(tid, C, prev_esk),
+      EKem(tid, C, esk)
     ]->
     [ Out(ClientHello),
       EKemSk(esk, tid, C),
@@ -182,7 +182,7 @@ in
       Instance(tid, C, 'client'),
       running_client(MS, ms),
       running_client(HS, hs),
-      DelEKemSk(tid, C, ekem, esk)  dnl models that the ephemeral key is thrown away here.
+      DelEKemSk(tid, C, esk)  dnl models that the ephemeral key is thrown away here.
     ]->
     [
       State(C2b, tid, C, S, ClientState)
