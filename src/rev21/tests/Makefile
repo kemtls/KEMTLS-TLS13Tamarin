@@ -1,5 +1,6 @@
 DEPS= $(wildcard *.m4i)
 M4= $(patsubst %.m4,%.spthy,$(wildcard *.m4))
+FLAGS =  -DPSK=1
 
 # MAKE_RULES=C1 S0a S1 S1a S1b S1c  C2 C2a C2b C2c C2d S2 Send Recv S_NST C_NST C1_PSK S0a_PSK S1_PSK S1_PSK_DHE C2_PSK C2_PSK_DHE S1c_PSK C2c_PSK\
  C_ZeroRTT_Auth S_RecvZeroRTTAuth C_EndZeroRTT C_SendZeroRTT S_RecvZeroRTT S_RecvEndZeroRTT
@@ -44,12 +45,12 @@ TEST_RULES=C0 \
 	S4_update_req \
 	S4_update_recv \
 	S4_update_fin \
+	C_EndZeroRTT \
+	S_RecvEndZeroRTT \
+	C_SendZeroRTT \
+	S_RecvZeroRTT \
 	# C_ZeroRTT_Auth \
-	# S_RecvZeroRTTAuth \
-	# C_EndZeroRTT \
-	# S_RecvEndZeroRTT \
-	# C_SendZeroRTT \
-	# S_RecvZeroRTT
+	# S_RecvZeroRTTAuth
 MAKE_RULES=$(TEST_RULES)
 
 RULE_FILES= $(foreach rule,$(TEST_RULES),$(rule).spthy)

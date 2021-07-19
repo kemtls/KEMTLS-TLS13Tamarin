@@ -2,6 +2,7 @@ DEPS= $(wildcard *.m4i) $(wildcard ../model/*.m4i)
 M4= $(patsubst %.m4,%.spthy,$(wildcard *.m4))
 PIPE=--quit-on-warning 2>error.log 1>>success.log
 TAM=tamarin-prover +RTS -N40 -H75G -M150G -RTS
+FLAGS= -DPSK=1
 
 all: $(M4)
 

@@ -29,6 +29,6 @@ lemma_ekem_sk_secret_ordering
 lemma_ekem_pk_can_be_decapsed
 lemma_ekem_sk_can_be_revealed
 lemma_rev_ekem_ordering
-dnl lemma_ekem_chal_dual
+lemma_ekem_chal_dual
 
 end
