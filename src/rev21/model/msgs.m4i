@@ -116,8 +116,10 @@ define(<!alert!>, <!<$@, '21'>!>)
 
 ifdef(<!SIMPLE_MODEL!>,
 <!
-define(<!ClientHello!>, <!<nc, epk, ekem>!>)
-define(<!ServerHello!>, <!<ns, ect>!>)
+define(<!SupportedVersions!>, <!'0x0304'!>)
+define(<!SignatureSchemeList!>, <!'0'!>)
+define(<!ClientHello!>, <!<nc, ClientHelloExtensions>!>)
+define(<!ServerHello!>, <!<ns, ServerHelloExtensions>!>)
 define(<!CertificateRequest!>, <!<certificate_request_context>!>)
-define(<!NewSessionTicket!>, <!<ticket, TicketExtensions>!>)
+define(<!NewSessionTicket!>, <!<ticket, ticket_age_add, TicketExtensions>!>)
 !>)
