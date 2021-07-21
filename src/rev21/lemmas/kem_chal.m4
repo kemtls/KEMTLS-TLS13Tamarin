@@ -1,7 +1,9 @@
 changequote(<!,!>)
 changecom(<!/*!>,<!*/!>)
 define(<!EKem!>,<!F_EKem($@)!>)
-define(<!State!>,<!L_State_$1(shift($@))!>)
+pushdef(<!F_State_C4!>, <!L_State_S4($@)!>)dnl
+pushdef(<!F_State_C4!>, <!L_State_C4($@)!>)dnl~
+define(<!State!>,<!F_State_$1(shift($@))!>)
 define(<!ClientCertReq!>,<!L_ClientCertReq($@)!>)
 define(<!ServerCertReq!>,<!L_ServerCertReq($@)!>)
 define(<!CachePSK!>, <!F_CachePSK($@)!>)
@@ -33,7 +35,12 @@ lemma_ekem_sk_secret_ordering
 lemma_ekem_pk_can_be_decapsed
 lemma_ekem_sk_can_be_revealed
 lemma_rev_ekem_ordering
+lemma_rev_ekem_before_hs
 lemma_ekem_esk_can_only_be_revealed
+
 lemma_ekem_chal_dual
 
 end
+
+popdef(<!F_State_C4!>)
+popdef(<!F_State_S4!>)

@@ -231,7 +231,6 @@ lemma matching_rms_actors [reuse]:
      actor = actor2 & tid = tid2"
 !>)
 
-<!/*
 define(<!lemma_matching_sessions!>, <!
 lemma matching_sessions [reuse, use_induction, hide_lemma=posths_rms]:
   "All tid tid2 actor actor2 role role2 peer peer2 rms messages #i #j #k.
@@ -239,24 +238,10 @@ lemma matching_sessions [reuse, use_induction, hide_lemma=posths_rms]:
     running2(RMS, peer, role2, actor2, rms, messages)@j &
     not (role = role2) &
     KU(rms)@k ==>
-      (Ex tid3 x #r. RevDHExp(tid3, actor, x)@r & #r < #i) |
-      (Ex tid4 y #r. RevDHExp(tid4, peer, y)@r & #r < #j) |
+      (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i) |
+      (Ex tid4 esk #r. RevEKemSk(tid4, peer, esk)@r & #r < #j) |
       (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
       (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
-!>)
-*/!>
-
-define(<!lemma_matching_sessions!>, <!
-lemma matching_sessinos [reuse, use_induction, hide_lemma=posths_rms]:
-  "All tid tid2 actor actor2 role role2 peer peer2 rms messages #i #j #k.
-    running(RMS, actor, role, peer2, rms, messsages)@#i &
-    runnin2(RMS, peer, role2, actor2, rms, messages)@#j &
-    not (role = role2) &
-    KU(rms)@#k
-    ==>
-    (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i) |
-    (Ex rms2 #r. RevealPSK(actor, rms2)@#r & #r < #k) |
-    (Ex rms2 #r. RevealPSK(peer, rms2)@#r  & #r < #k)"
 !>)
 
 define(<!lemma_sig_origin!>, <!
@@ -308,8 +293,8 @@ lemma post_master_secret [reuse, hide_lemma=posths_rms]:
     commit(IdentityPost, actor, role, peer, <aas, 'auth'>)@i &
     KU(rms)@k ==>
       (Ex #r. RevLtk(peer)@r & #r < #i) |
-      (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
-      (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
+      (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) |
+      (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) |
       (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
       (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
 !>)
@@ -372,8 +357,8 @@ lemma secret_session_keys_pfs [hide_lemma=sig_origin,hide_lemma=posths_rms]:
       SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i & 
       running(Mode, actor, role, psk_ke_mode)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 esk #r. RevDHExp(tid3, peer, esk)@r & #r < #i) &
-      not (Ex tid4 esk #r. RevDHExp(tid4, actor, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
+      not (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i) &
       not (psk_ke_mode = psk_ke)
@@ -427,7 +412,7 @@ lemma transcript_agreement [reuse]:
   "All tid actor peer transcript cas #i.
       commit(Transcript, actor, 'client', transcript)@i & commit(Identity, actor, 'client', peer, <cas, 'auth'>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, x)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
           ==> (Ex tid2 #j. running2(Transcript, peer, 'server', transcript)@j & #j < #i)"
@@ -506,7 +491,7 @@ lemma rev_ekem_ordering  [reuse, use_induction, heuristic=C]:
 
 define(<!lemma_rev_ekem_before_hs!>, <!
 lemma rev_ekem_before_hs  [reuse, heuristic=I]:
-  "All tid actor role hs x #i #j.
+  "All tid actor role hs esk #i #j.
     running(HS, actor, role, hs)@j &
     RevEKemSk(tid, actor, esk)@i ==>
     #i < #j"
@@ -542,4 +527,11 @@ lemma ekem_esk_can_only_be_revealed [reuse]:
   "All tid a esk #i #j.
     (EKem(tid, a, esk)@#i & KU(esk)@#j) 
     ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
+!>)
+
+define(<!lemma_ekem_seed_needs_rev_esk!>, <!
+lemma ekem_seed_needs_rev_esk [reuse]:
+    "All a tid ekem esk eseed #a #i #j.
+    (EKem(tid, a, esk)@#a & EKemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j) 
+      ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 !>)

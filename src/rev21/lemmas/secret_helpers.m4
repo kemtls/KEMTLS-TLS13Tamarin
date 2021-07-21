@@ -63,16 +63,7 @@ lemma_ku_expand/* [reuse, use_induction]:
     (Ex actor #l. RevealPSK(actor, Expand(secret, label, len))@l & #l < #i))"
 */
 
-lemma_dh_chal_dual/* [reuse]:
-  "All tid tid2 actor actor2 g x y gx gy gxy #i #j #r.
-      DHChal(g, x, y, gx, gy, gxy)@i & Instance(tid, actor, 'client')@i &
-      DHChal(g, x, y, gx, gy, gxy)@j & Instance(tid2, actor2, 'server')@j &
-      KU(gxy)@r 
-      ==> 
-      (Ex #p. (RevDHExp(tid, actor,  x)@p & #p < #r)) | 
-      (Ex #q. (RevDHExp(tid2, actor2, y)@q & #q < #r))"
-// "All g x y gx gy gxy #i #r. DHChal(g, x, y, gx, gy, gxy)@i & KU(gxy)@r ==> (Ex #j. KU(x)@j & #j < #r) | (Ex #j. KU(y)@j & #j < #r)"
-*/
+lemma_ekem_chal_dual
 
 lemma_ku_hs/* [reuse]:
   "All tid actor role es hs res_psk gxy #i #j.
@@ -83,10 +74,7 @@ lemma_ku_hs/* [reuse]:
       Ex #k #l. KU(gxy)@k & KU(res_psk)@l & #k < #j & #l < #j"
 */
 
-lemma_dh_exp_invariant/*  [use_induction, reuse]:
-  "All tid actor x #i. RevDHExp(tid, actor, x)@i ==>
-    Ex #j. DH(tid, actor, x)@j & #j < i"
-*/
+lemma_ekem_sk_invariant
 
 lemma_ku_ltk/* [reuse]:
   "All actor ltkA #i #j.
@@ -160,7 +148,8 @@ lemma_matching_rms_actors/* [reuse]:
      actor = actor2 & tid = tid2"
 */
 
-lemma_rev_dh_before_hs/*  [reuse]:
+lemma_rev_ekem_before_hs
+/*lemma_rev_dh_before_hs  [reuse]:
   "All tid actor role hs x #i #j.
     running(HS, actor, role, hs)@j &
     RevDHExp(tid, actor, x)@i ==>
@@ -234,12 +223,7 @@ lemma_auth_psk/* [reuse, use_induction, hide_lemma=posths_rms_weak]:
       Ex #r. RevLtk(peer2)@r & #r < #k"
 */
 
-lemma_rev_dh_ordering/*  [reuse, use_induction]:
-  "All tid actor x #j.
-    DeleteDH(tid, actor, x)@j==>
-      ((Ex #i. DH(tid, actor, x) @ i & i < j) &
-       (All #r. RevDHExp(tid, actor, x) @ r  ==>  r < j))"
-*/
+lemma_rev_ekem_ordering
 
 lemma_matching_hsms/* [reuse]:
   "All tid actor role hs hs2 ms #i #j.
