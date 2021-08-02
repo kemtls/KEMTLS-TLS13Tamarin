@@ -1,7 +1,7 @@
 DEPS= $(wildcard *.m4i) $(wildcard ../model/*.m4i)
 M4= $(patsubst %.m4,%.spthy,$(wildcard *.m4))
 PIPE=--quit-on-warning 2>error.log 1>>success.log
-TAM=tamarin-prover +RTS -N40 -H75G -M150G -RTS
+TAM=tamarin-prover
 FLAGS= -DPSK=1
 
 all: $(M4)
@@ -24,12 +24,15 @@ proofs:
 	bash -c "$(TAM) invariants.spthy --prove=one_start* --output=../proofs/invariants.2.spthy $(PIPE)"
 	bash -c "$(TAM) uniqueness.spthy --prove --output=../proofs/uniqueness.spthy $(PIPE)"
 	bash -c "$(TAM) auth_helpers.spthy --prove=matching* --prove=consistent* --prove=invariant* --output=../proofs/auth_helpers.spthy $(PIPE)"
-	bash -c "$(TAM) kem_chal.spthy --prove=one_* --prove=ekem_sk* --prove=ekem_esk* --prove=ekem_pk_* --output=../proofs/kem_chal.spthy $(PIPE)"
+	bash -c "$(TAM) kem_chal.spthy --prove=one_ekem* --prove=ekem_sk* --prove=ekem_pk_* --output=../proofs/kem_chal.1.spthy $(PIPE)"
+	# To prove manually:
+	#   - ekem_esk_can_only_be_revealed
+	#   - ekem_seed_needs_rev_esk
+	#   - kem_chal: ekem_chal_dual (somewhat mostly pressing 1)
 	bash -c "$(TAM) secret_helpers.spthy --prove=tid* --prove=ku* --prove=hsms* --prove=sig_origin* --prove=posths_rms* --heuristic=S --output=../proofs/secret_helpers.1.spthy $(PIPE)"
 	bash -c "$(TAM) secret_helpers.spthy --prove=matching_rms_posths* --prove=matching_transcripts_posths* --prove=matching_rms_actors* --bound=8 --heuristic=CCCiiiiiiii --output=../proofs/secret_helpers.2.spthy $(PIPE)"
 	bash -c "$(TAM) secret_helpers.spthy --prove=matching_sessions* --heuristic=CCCCCissssssssssssssssssssssss --output=../proofs/secret_helpers.3.spthy $(PIPE)"
 	# To prove manually:
-	#   - ekem_chal_dual (somewhat mostly pressing 1)
 	#   - auth_psk (75% auto: autoprove for recv_server_auth{_cert} and  recv_client_auth_cert. The rest is manual by using CommitID -> $S.1 = $S.
 	#   - hsms_hs_thingy
 	#   - post_master_secret (quick)
