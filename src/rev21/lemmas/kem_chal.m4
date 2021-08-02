@@ -1,9 +1,9 @@
 changequote(<!,!>)
 changecom(<!/*!>,<!*/!>)
 define(<!EKem!>,<!F_EKem($@)!>)
-pushdef(<!F_State_C4!>, <!L_State_S4($@)!>)dnl
-pushdef(<!F_State_C4!>, <!L_State_C4($@)!>)dnl~
-define(<!State!>,<!F_State_$1(shift($@))!>)
+pushdef(<!State_C4!>, <!L_State_S4($@)!>)dnl
+pushdef(<!State_C4!>, <!L_State_C4($@)!>)dnl~
+define(<!State!>,<!State_$1(shift($@))!>)
 define(<!ClientCertReq!>,<!L_ClientCertReq($@)!>)
 define(<!ServerCertReq!>,<!L_ServerCertReq($@)!>)
 define(<!CachePSK!>, <!F_CachePSK($@)!>)
@@ -17,9 +17,6 @@ begin
 include(header.m4i)
 include(model.m4i)
 include(all_lemmas.m4i)
-include(../at_most_of.m4i)
-
-at_most_of(4, RPostHS, 4)
 
 lemma_cert_req_origin
 lemma_nst_source
@@ -37,6 +34,7 @@ lemma_ekem_sk_can_be_revealed
 lemma_rev_ekem_ordering
 lemma_rev_ekem_before_hs
 lemma_ekem_esk_can_only_be_revealed
+lemma_ekem_seed_needs_rev_esk
 
 lemma_ekem_chal_dual
 
