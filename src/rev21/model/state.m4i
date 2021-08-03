@@ -37,11 +37,14 @@ psk_id, dnl psk identity/ticket
 edi, dnl early data indication
 es, dnl early secret
 hs, dnl handshake secret
+ahs, dnl auth handshake secret
 ms, dnl master secret
 cats, dnl client application traffic secret
 sats, dnl server application traffic secret
 hs_keyc, dnl client handshake key
 hs_keys, dnl server handshake key
+ahs_keyc, dnl client authenticated handshake key
+ahs_keys, dnl server authenticated handshake key
 auth_status, dnl peer's authentication status
 ems, dnl exporter master secret
 rms, dnl resumption master secret
@@ -67,11 +70,14 @@ psk_id = '0'
 edi = '0'
 es = '0'
 hs = '0'
+ahs = '0'
 ms = '0'
 cats = '0'
 sats = '0'
 hs_keyc = '0'
 hs_keys = '0'
+ahs_keyc = '0'
+ahs_keys = '0'
 auth_status = <'0', '0'>
 ems = '0'
 rms = '0'
@@ -96,9 +102,12 @@ prev_psk_id, dnl
 prev_edi, dnl
 prev_es, dnl
 prev_hs, dnl
+prev_ahs, dnl
 prev_ms, dnl
 prev_cats, dnl
 prev_sats, dnl
+prev_hs_keyc, dnl
+prev_hs_keys, dnl
 prev_hs_keyc, dnl
 prev_hs_keys, dnl
 prev_auth_status, dnl
@@ -125,11 +134,14 @@ psk_id = prev_psk_id
 edi = prev_edi
 es = prev_es
 hs = prev_hs
+ahs = prev_ahs
 ms = prev_ms
 cats = prev_cats
 sats = prev_sats
 hs_keyc = prev_hs_keyc
 hs_keys = prev_hs_keys
+ahs_keyc = prev_ahs_keyc
+hs_keys = prev_ahs_keys
 auth_status = prev_auth_status
 messages = prev_messages
 ems = prev_ems

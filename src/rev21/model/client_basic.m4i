@@ -15,11 +15,14 @@ dnl(
                                                {EncryptedExtensions}  ^  Server
                                                {CertificateRequest*}  v  Params
                                                       {Certificate*}  ^
-                                                {CertificateVerify*}  | Auth
-                                                          {Finished}  v
+                                                                      | Auth
+         {KemEncapsulation}        -------->                          |
+       ^ <Certificate*>                                               |
+         <Finished>                -------->                          |
+         [Application Data*]       -------->                          |
+                                                 <KemEncapsulation*>  |
+                                                          [Finished]  v
                                    <--------     [Application Data*]
-       ^ {Certificate*}
-  Auth | {CertificateVerify*}
        v {Finished}                -------->
 */)
 
@@ -169,7 +172,6 @@ let
     S = $S
 
     hs = HandshakeSecret
-    ms = MasterSecret
 
     hs_keyc = keygen(handshake_traffic_secret(client), hs_key_label())
     hs_keys = keygen(handshake_traffic_secret(server), hs_key_label())
@@ -245,6 +247,47 @@ in
     [ State(C2d, tid, C, S, ClientState)
     ]
 
+rule recv_server_cert_emit_kex:
+let
+  prev_psk_ke_mode = 'na'
+  set_state()
+
+  S = $S
+  C = $C
+
+  certificate_request_context = '0'
+  certificate = kempk($k, ~ltkS)
+  
+  messages = <messages, Certificate>
+  
+  ss = <$k, ~seed>
+  ciphertext = kemencaps($k, ss, certificate)
+
+  ahs = AuthHandshakeSecret
+
+  ahs_keyc = keygen(authenticated_handshake_traffic_secret(client), ahs_key_label())
+  ahs_keys = keygen(authenticated_handshake_traffic_secret(server), ahs_key_label())
+
+in
+  [
+    State(C2d, tid, C, S, PrevClientState)[no_precomp],
+    !Pk(S, pk(~ltkS)),
+    Fr(~seed),
+    In(senc{Certificate}hs_keys)
+  ]
+  --[
+    C2d(tid),
+    Instance(tid, C, 'client'),
+    Eq(psk_ke_mode, 'na'),
+    running_client(Mode, psk_ke_mode)
+  ]->
+  [
+    State(C3, tid, C, S, ClientState),
+    Out(senc{KemEncapsulation}hs_keyc)
+  ]
+
+
+<!/*
 rule recv_server_auth:
 let
     prev_psk_ke_mode = 'na'
@@ -290,6 +333,7 @@ in
     [ State(C3, tid, C, S, ClientState),
       RecvStream(tid, C, S, auth_status, app_keys)
     ]
+*/!>
 
 rule client_auth:
 let
@@ -303,15 +347,16 @@ let
     verify_data = compute_finished(client)
 
     messages = <messages, Finished>
+    ms = MasterSecret('0')
 
     rms = resumption_master_secret()
     app_keyc = keygen(cats, app_key_label())
-    app_keys = keygen(sats, app_key_label())
+    //app_keys = keygen(sats, app_key_label())
 in
 
     [ State(C3, tid, C, S, PrevClientState)[no_precomp]
     ]
-  --[ C3(tid),
+  --[ C3b(tid),
       Instance(tid, C, 'client'),
       running_client(Transcript, messages),
       running_client(HSMS, hs, ms),
@@ -319,11 +364,76 @@ in
       running_client(Mode, psk_ke_mode),
       SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
     ]->
-    [ State(C4, tid, C, S, ClientState),
-      Out(senc{Finished}hs_keyc),
+    [ State(C3b, tid, C, S, ClientState),
+      Out(senc{Finished}ahs_keyc),
       SendStream(tid, C, S, auth_status, app_keyc)
     ]
 
+rule client_auth_cert:
+let
+    prev_cert_req = '1'
+    prev_psk_ke_mode = 'na'
+    set_state()
+
+    S = $S
+    C = $C
+
+    certificate_request_context = '0'
+    certificate = kempk($k, ~ltkC)
+    messages = <prev_messages, Certificate>
+in
+  [
+    State(C3, tid, C, S, PrevClientState)[no_precomp],
+    !Ltk(C, ~ltkC)
+  ]
+  --[
+    C3a(tid),
+    Instance(tid, C, 'client')
+  ]->
+  [
+    State(C3a, tid, C, S, ClientState),
+    Out(senc{Certificate}ahs_keyc),
+  ]
+
+rule client_recv_encaps:
+let
+    <cas, sas> = prev_auth_status
+    set_state()
+
+    S = $S
+    C = $C
+
+    ciphertext = kemencaps($k, <$k, ~eseed>, kempk(~ltkC))
+    ss = kemdecaps($k, ciphertext, ~ltkC)
+
+    verify_data = compute_finished(client)
+
+    messages = <messages, Finished>
+    ms = MasterSecret(ss)
+    
+    rms = resumption_master_secret()
+    app_keyc = keygen(cats, app_key_label())
+    // we compute this in KEMTLS when SFIN is received
+    //app_keys = keygen(sats, app_key_label())
+
+    // auth_status = <cas, sas>
+    auth_status = <cas, 'auth'>
+in
+    [ State(C3a, tid, C, S, PrevClientState)[no_precomp]
+    ]
+  --[ C3b(tid),
+      Instance(tid, C, 'client'),
+      running_client(Transcript, messages),
+      running_client(HSMS, hs, ms),
+      running_client(RMS, S, rms, messages),
+      running_client(Mode, psk_ke_mode),
+    ]->
+    [ State(C3b, tid, C, S, ClientState),
+      Out(senc{Finished}ahs_keyc),
+      SendStream(tid, C, S, auth_status, app_keyc)
+    ]
+
+<!/*
 rule client_auth_cert:
 let
     prev_cert_req = '1'
@@ -370,5 +480,38 @@ in
     [ State(C4, tid, C, S, ClientState),
       Out(senc{Certificate, CertificateVerify, Finished}hs_keyc),
       SendStream(tid, C, S, auth_status, app_keyc),
+      RecvStream(tid, C, S, auth_status, app_keys)
+    ]
+*/!>
+
+
+rule recv_server_auth:
+let
+    <cauth, sauth> = prev_auth_status
+    set_state()
+
+    S = $S
+    C = $C
+
+    exp_verify_data = compute_finished(server)
+
+    messages = <messages, Finished>
+
+    sats = application_traffic_secret_0(server)
+    app_keys = keygen(sats, app_key_label())
+
+    // auth_status = <cas, sas>
+    auth_status = <cauth, 'auth'>
+in
+    [ State(C3b, tid, C, S, PrevClientState)[no_precomp],
+      In(senc{Finished}ahs_keys)
+    ]
+  --[ C4(tid),
+      Instance(tid, C, 'client'),
+      Eq(verify_data, exp_verify_data),
+      commit_client(Identity, <S, auth_status>),
+      SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
+    ]->
+    [ State(C4, tid, C, S, ClientState),
       RecvStream(tid, C, S, auth_status, app_keys)
     ]

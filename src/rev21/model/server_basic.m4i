@@ -165,7 +165,7 @@ let
     C = $C
 
     hs = HandshakeSecret
-    ms = MasterSecret
+    ms = MasterSecret('0')
 
     hs_keys = keygen(handshake_traffic_secret(server), hs_key_label())
     hs_keyc = keygen(handshake_traffic_secret(client), hs_key_label())
@@ -173,7 +173,7 @@ in
     [ State(S2a, tid, S, C, PrevServerState)[no_precomp]
     ]
   --[ S2a(tid),
-      MasterSecret(tid, ms),
+      MasterSecretState(tid, ms),
       Instance(tid, S, 'server'),
       running_server(HS, hs),
       running_server(MS, ms)

@@ -64,6 +64,7 @@ define(<!CertificateVerify!>, <!handshake_record('15', dnl
 dnl  $sig_alg, Removing 
   signature dnl
 )!>)
+define(<!KemEncapsulation!>, <!handshake_record('16', ciphertext)!>)
 define(<!Finished!>, <!handshake_record('20', verify_data)!>)
 
 
