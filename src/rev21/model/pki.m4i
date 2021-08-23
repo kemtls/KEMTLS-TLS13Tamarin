@@ -21,7 +21,7 @@
 rule Register_pk:
   [ Fr(~ltkA) ]--[ GenLtk($A, ~ltkA), HonestUse(~ltkA)
   ]->
-  [ !Ltk($A, ~ltkA), !Pk($A, pk(~ltkA)), Out(pk(~ltkA)) ]
+  [ !Ltk($A, ~ltkA), !Pk($A, kempk($k, ~ltkA)), Out(kempk($A, ~ltkA)) ]
 
 /*
   Reveal Ltk

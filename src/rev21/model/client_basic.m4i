@@ -271,7 +271,7 @@ let
 in
   [
     State(C2d, tid, C, S, PrevClientState)[no_precomp],
-    !Pk(S, pk(~ltkS)),
+    !Pk(S, kempk(S, ~ltkS)),
     Fr(~seed),
     In(senc{Certificate}hs_keys)
   ]
@@ -347,7 +347,7 @@ let
     verify_data = compute_finished(client)
 
     messages = <messages, Finished>
-    ms = MasterSecret('0')
+    ms = MasterSecret
 
     rms = resumption_master_secret()
     app_keyc = keygen(cats, app_key_label())
@@ -356,13 +356,12 @@ in
 
     [ State(C3, tid, C, S, PrevClientState)[no_precomp]
     ]
-  --[ C3b(tid),
+  --[ C3_skip_cert(tid),
       Instance(tid, C, 'client'),
       running_client(Transcript, messages),
       running_client(HSMS, hs, ms),
       running_client(RMS, S, rms, messages),
-      running_client(Mode, psk_ke_mode),
-      SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
+      running_client(Mode, psk_ke_mode)
     ]->
     [ State(C3b, tid, C, S, ClientState),
       Out(senc{Finished}ahs_keyc),
@@ -387,29 +386,29 @@ in
     !Ltk(C, ~ltkC)
   ]
   --[
-    C3a(tid),
+    C3(tid),
     Instance(tid, C, 'client')
   ]->
   [
     State(C3a, tid, C, S, ClientState),
-    Out(senc{Certificate}ahs_keyc),
+    Out(senc{Certificate}ahs_keyc)
   ]
 
 rule client_recv_encaps:
 let
-    <cas, sas> = prev_auth_status
+    prev_auth_status = <cas, sas>
     set_state()
 
     S = $S
     C = $C
 
-    ciphertext = kemencaps($k, <$k, ~eseed>, kempk(~ltkC))
-    ss = kemdecaps($k, ciphertext, ~ltkC)
+    ciphertext = kemencaps($k, <$k, ~eseed>, kempk($k, ~ltkC))
+    clauth_ss = kemdecaps($k, ciphertext, ~ltkC)
 
     verify_data = compute_finished(client)
 
     messages = <messages, Finished>
-    ms = MasterSecret(ss)
+    ms = MasterSecret
     
     rms = resumption_master_secret()
     app_keyc = keygen(cats, app_key_label())
@@ -419,14 +418,15 @@ let
     // auth_status = <cas, sas>
     auth_status = <cas, 'auth'>
 in
-    [ State(C3a, tid, C, S, PrevClientState)[no_precomp]
+    [ State(C3a, tid, C, S, PrevClientState)[no_precomp],
+      In(senc{KemEncapsulation}ahs_keys)
     ]
-  --[ C3b(tid),
+  --[ C3a(tid),
       Instance(tid, C, 'client'),
       running_client(Transcript, messages),
       running_client(HSMS, hs, ms),
       running_client(RMS, S, rms, messages),
-      running_client(Mode, psk_ke_mode),
+      running_client(Mode, psk_ke_mode)
     ]->
     [ State(C3b, tid, C, S, ClientState),
       Out(senc{Finished}ahs_keyc),
@@ -487,7 +487,7 @@ in
 
 rule recv_server_auth:
 let
-    <cauth, sauth> = prev_auth_status
+    prev_auth_status = <cauth, sauth>
     set_state()
 
     S = $S
@@ -504,9 +504,10 @@ let
     auth_status = <cauth, 'auth'>
 in
     [ State(C3b, tid, C, S, PrevClientState)[no_precomp],
-      In(senc{Finished}ahs_keys)
+      In(senc{Finished}ahs_keys),
+      RecvStream(tid, C, S, prev_auth_status, app_keyc)
     ]
-  --[ C4(tid),
+  --[ C3b(tid),
       Instance(tid, C, 'client'),
       Eq(verify_data, exp_verify_data),
       commit_client(Identity, <S, auth_status>),

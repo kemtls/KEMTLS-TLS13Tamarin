@@ -111,8 +111,8 @@ prev_cats, dnl
 prev_sats, dnl
 prev_hs_keyc, dnl
 prev_hs_keys, dnl
-prev_hs_keyc, dnl
-prev_hs_keys, dnl
+prev_ahs_keyc, dnl
+prev_ahs_keys, dnl
 prev_auth_status, dnl
 prev_ems, dnl
 prev_rms, dnl
@@ -145,7 +145,7 @@ sats = prev_sats
 hs_keyc = prev_hs_keyc
 hs_keys = prev_hs_keys
 ahs_keyc = prev_ahs_keyc
-hs_keys = prev_ahs_keys
+ahs_keys = prev_ahs_keys
 auth_status = prev_auth_status
 messages = prev_messages
 ems = prev_ems

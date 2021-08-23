@@ -22,6 +22,8 @@ TEST_RULES=C0 \
 	C3_cert \
 	S3 \
 	S3_cert \
+	S3a \
+	S3fin \
 	Send \
 	Recv \
 	S4_NST \
@@ -65,7 +67,7 @@ test: $(PROOF_FILES)
 	@perl -0777pi -e 's/\n{3,}/\n\n/g' $@
 
 %.proof: %.spthy
-	tamarin-prover --heuristic=S --prove=exists_* $< --output=$@.wip +RTS -N$(nproc) -H40G -M50G -RTS 2> $*-output.log | tee $*-stdout.log
+	tamarin-prover --heuristic=S --prove=exists_* $< --output=$@.wip 2> $*-output.log | tee $*-stdout.log
 	@grep -q verified $*-stdout.log
 	rm $*-stdout.log
 	mv $@.wip $@

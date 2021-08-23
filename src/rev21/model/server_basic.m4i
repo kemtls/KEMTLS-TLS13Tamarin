@@ -165,7 +165,6 @@ let
     C = $C
 
     hs = HandshakeSecret
-    ms = MasterSecret('0')
 
     hs_keys = keygen(handshake_traffic_secret(server), hs_key_label())
     hs_keyc = keygen(handshake_traffic_secret(client), hs_key_label())
@@ -173,7 +172,6 @@ in
     [ State(S2a, tid, S, C, PrevServerState)[no_precomp]
     ]
   --[ S2a(tid),
-      MasterSecretState(tid, ms),
       Instance(tid, S, 'server'),
       running_server(HS, hs),
       running_server(MS, ms)
@@ -240,7 +238,7 @@ in
 
 rule server_emit_cert:
 let
-    let_state()
+    set_state()
     C = $C
     S = $S
 
@@ -250,7 +248,7 @@ let
     messages = <messages, Certificate>
 in
     [ State(S2d, tid, S, C, PrevServerState)[no_precomp],
-      !Ltk(~ltkS)
+      !Ltk(S, ~ltkS)
     ]--[
       S2d(tid),
       Instance(tid, S, 'server'),
@@ -263,7 +261,7 @@ in
 
 rule server_receive_kemencaps:
 let
-    <sas, cas> = prev_auth_status
+    prev_auth_status = <sas, cas>
     set_state()
 
     ss = <$k, ~seed>
@@ -285,49 +283,51 @@ in
     ] --[
       S2e(tid),
       Instance(tid, S, 'server'),
-      Eq(psk_ke_mode, 'na'),
+      Eq(psk_ke_mode, 'na')
     ]-> [
-      State(S3, tid, S, C, ServerState),
+      State(S3, tid, S, C, ServerState)
     ]
 
-//rule server_auth:
-//let
-//    set_state()
-//
-//    C = $C
-//    S = $S
-//
-//    certificate_request_context = '0'
-//    certificate = pk(~ltkS)
-//    messages = <messages, Certificate>
-//    signature = compute_signature(~ltkS, server)
-//
-//    messages = <messages, CertificateVerify>
-//
-//    verify_data = compute_finished(server)
-//
-//    messages = <messages, Finished>
-//    ems = exporter_master_secret()
-//    cats = application_traffic_secret_0(client)
-//    sats = application_traffic_secret_0(server)
-//    app_keys = keygen(sats, app_key_label())
-//
-//    // auth_status = <sas, cas>
-//    auth_status = <'auth', '0'>
-//in
-//    [ State(S2d, tid, S, C, PrevServerState)[no_precomp],
-//      !Ltk(S, ~ltkS)
-//    ]
-//  --[ S2d(tid),
-//      Instance(tid, S, 'server'),
-//      Eq(psk_ke_mode, 'na'),
-//      UseLtk(~ltkS, signature),
-//      running_server(Transcript, messages)
-//    ]->
-//    [ State(S3, tid, S, C, ServerState),
-//      SendStream(tid, S, C, auth_status, app_keys),
-//      Out(senc{Certificate, CertificateVerify, Finished}hs_keys)
-//    ]
+<!/*
+rule server_auth:
+let
+    set_state()
+
+    C = $C
+    S = $S
+
+    certificate_request_context = '0'
+    certificate = pk(~ltkS)
+    messages = <messages, Certificate>
+    signature = compute_signature(~ltkS, server)
+
+    messages = <messages, CertificateVerify>
+
+    verify_data = compute_finished(server)
+
+    messages = <messages, Finished>
+    ems = exporter_master_secret()
+    cats = application_traffic_secret_0(client)
+    sats = application_traffic_secret_0(server)
+    app_keys = keygen(sats, app_key_label())
+
+    // auth_status = <sas, cas>
+    auth_status = <'auth', '0'>
+in
+    [ State(S2d, tid, S, C, PrevServerState)[no_precomp],
+      !Ltk(S, ~ltkS)
+    ]
+  --[ S2d(tid),
+      Instance(tid, S, 'server'),
+      Eq(psk_ke_mode, 'na'),
+      UseLtk(~ltkS, signature),
+      running_server(Transcript, messages)
+    ]->
+    [ State(S3, tid, S, C, ServerState),
+      SendStream(tid, S, C, auth_status, app_keys),
+      Out(senc{Certificate, CertificateVerify, Finished}hs_keys)
+    ]
+*/!>
 
 rule recv_client_cert:
 let
@@ -337,14 +337,12 @@ let
     C = $C
     S = $S
 
-    certificate = pk(~ltkC)
+    certificate = kempk($k, ~ltkC)
     certificate_request_context = '0' 
     messages = <messages, Certificate>
 
     clauth_ss = <$k, ~seed>
-    ciphertext = kemencaps($k, ss, certificate)
-
-    ms = MasterSecret
+    ciphertext = kemencaps($k, clauth_ss, certificate)
 
     cert_req = '0'
     auth_status = <'auth', 'auth'>  // XXX check how we model auth_status
@@ -352,14 +350,27 @@ let
 in
     [ State(S3, tid, S, C, PrevServerState)[no_precomp],
       !Pk(C, pk(~ltkC)),
+      Fr(~seed),
       In(senc{Certificate}ahs_keyc)
     ]
   --[ S3_cert(tid),
-      Instance(tid, S, 'server'),
+      Instance(tid, S, 'server')
     ]->
     [ State(S3a, tid, S, C, ServerState),
-      Out(senc{KemEncapsulation}ahs_keys),
+      Out(senc{KemEncapsulation}ahs_keys)
     ]
+
+rule skip_client_cert:
+let
+    prev_cert_req = '0'
+    set_state()
+in
+    [ State(S3, tid, S, C, PrevServerState)[no_precomp] ]
+    --[
+      S3(tid),
+      Instance(tid, S, 'server')
+    ]->
+    [ State(S3a, tid, S, C, ServerState) ]
 
 rule recv_client_auth:
 let
@@ -379,11 +390,12 @@ let
     app_keyc = keygen(cats, app_key_label())
 in
     [ State(S3a, tid, S, C, PrevServerState)[no_precomp],
-      In(senc{Finished}hs_keyc)
+      In(senc{Finished}ahs_keyc)
     ]
   --[ S3a(tid),
       Instance(tid, S, 'server'),
-      Eq(verify_data, exp_verify_data),
+      MasterSecretState(tid, ms),
+      Eq(verify_data, exp_verify_data)
     ]->
     [ 
       State(S3fin, tid, S, C, ServerState)
@@ -402,7 +414,8 @@ let
 
 in
     [
-      State(S3fin, tid, S, C, PrevServerState)[no_precomp]
+      State(S3fin, tid, S, C, PrevServerState)[no_precomp],
+      RecvStream(tid, S, C, prev_auth_status, prev_app_keyc)
     ]
     --[
       S3fin(tid),
