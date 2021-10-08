@@ -264,10 +264,10 @@ let
     prev_auth_status = <sas, cas>
     set_state()
 
-    ss = <$k, ~seed>
-    ciphertext = kemencaps($k, ss, kempk($k, ~ltkS))
+    shared_secret = <$k, ~seed>
+    ciphertext = kemencaps($k, shared_secret, kempk($k, ~ltkS))
 
-    shared_secret = kemdecaps($k, ciphertext, ~ltkS)
+    ss = kemdecaps($k, ciphertext, ~ltkS)
 
     ahs = AuthHandshakeSecret
 
@@ -349,7 +349,7 @@ let
 
 in
     [ State(S3, tid, S, C, PrevServerState)[no_precomp],
-      !Pk(C, pk(~ltkC)),
+      !Pk(C, kempk(C, ~ltkC)),
       Fr(~seed),
       In(senc{Certificate}ahs_keyc)
     ]
@@ -426,12 +426,12 @@ in
       running_server(HSMS, hs, ms),
       running_server(RMS, C, rms, messages),
       commit_server(Transcript, messages),
-      SessionKey(tid, S, C, auth_status, <app_keys, app_keyc>),
+      SessionKey(tid, S, C, auth_status, <app_keys, prev_app_keyc>),
       commit_server(Nonces, nc, ns)
     ]->
     [ State(S4, tid, S, C, ServerState),
       SendStream(tid, S, C, auth_status, app_keys),
-      RecvStream(tid, S, C, auth_status, app_keyc)
+      RecvStream(tid, S, C, auth_status, prev_app_keyc)
     ]
 
 <!/*
