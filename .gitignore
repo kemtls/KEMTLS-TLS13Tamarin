@@ -1,2 +1,6 @@
 *.aes
 *.log
+*.synctex.*
+*.fls
+*.aux
+*.fdb_latexmk

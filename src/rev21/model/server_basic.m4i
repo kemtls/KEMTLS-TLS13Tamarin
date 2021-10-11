@@ -388,6 +388,7 @@ let
     rms = resumption_master_secret()
 
     app_keyc = keygen(cats, app_key_label())
+    // auth status?
 in
     [ State(S3a, tid, S, C, PrevServerState)[no_precomp],
       In(senc{Finished}ahs_keyc)

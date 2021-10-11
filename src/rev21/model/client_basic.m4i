@@ -368,7 +368,7 @@ in
       SendStream(tid, C, S, auth_status, app_keyc)
     ]
 
-rule client_auth_cert:
+rule client_send_cert:
 let
     prev_cert_req = '1'
     prev_psk_ke_mode = 'na'

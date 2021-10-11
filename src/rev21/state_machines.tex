@@ -7,19 +7,22 @@
 
 % Show PSK rules
 \newif\ifpsk
-\psktrue
+\pskfalse
 
 % Show session resumption
 \newif\ifdrawres
 % \drawrestrue
+\drawresfalse
 
 % Show post-handshake rules
 \newif\ifposths
-\posthstrue
+%\posthstrue
+\posthsfalse
 
 % Show 0-RTT rules
 \newif\ifzerortt
 % \zerortttrue
+\zerorttfalse
 
 % Show application data
 \newif\ifrecord
@@ -44,7 +47,9 @@
   \node[state] (C2c) [right of=C2b] {C2c};
   \node[state] (C2d) [right of=C2c] {C2d};
   \node[state] (C3) [right of=C2d] {C3};
-  \node[state] (C4) [right of=C3] {C4};
+  \node[state] (C3a) [right of=C3, node distance=170] {C3a};
+  \node[state] (C3b) [right of=C3a, node distance=170] {C3b};
+  \node[state] (C4) [right of=C3b] {C4};
 
   % Server states
   \node[initial,state] (S0) [below of=C0, node distance=180, xshift=20] {S0};
@@ -53,8 +58,11 @@
   \node[state] (S2b) [right of=S2a] {S2b};
   \node[state] (S2c) [right of=S2b] {S2c};
   \node[state] (S2d) [right of=S2c] {S2d};
-  \node[state] (S3) [right of=S2d, xshift=10] {S3};
-  \node[state] (S4) [right of=S3, xshift=30] {S4};
+  \node[state] (S2e) [right of=S2d] {S2e};
+  \node[state] (S3) [right of=S2e, xshift=10] {S3};
+  \node[state] (S3a) [right of=S3] {S3a};
+  \node[state] (S3fin) [right of=S3a, xshift=-10] {S3fin};
+  \node[state] (S4) [right of=S3fin, xshift=10] {S4};
 
   \ifpsk
     % Initial PSK states
@@ -84,11 +92,11 @@
       \ifpsk
         (C0) edge [bend right] node [below, rule] (ch) {client\_hello} (C1)
         (C1) edge [bend right] node [below, rule] (rsh) {recv\_server\_hello} (C2a)
-        (C2d) edge [bend right] node [below, rule] (rsa) {recv\_server\_auth} (C3)
+        (C2d) edge [bend right] node [below, rule] (rsa) {recv\_server\_cert} (C3)
       \else
         (C0) edge [] node [above, rule] (ch) {client\_hello} (C1)
         (C1) edge [] node [above, rule] (rsh) {recv\_server\_hello} (C2a)
-        (C2d) edge [] node [above, rule] (rsa) {recv\_server\_auth} (C3)
+        (C2d) edge [] node [above, rule] (rsc) {recv\_server\_cert} (C3)
       \fi
       \ifzerortt
         (C1) edge [loop below] node [below, rule] (zra) {zero\_rtt\_auth} (C1)
@@ -99,8 +107,10 @@
         (C2b) edge [] node [above, rule] (ree) {recv\_encrypted\_extensions} (C2c)
         (C2c) edge [bend right] node [below, rule] (rcr) {recv\_certificate\_request} (C2d)
         (C2c) edge [bend left] node [above, rule] {skip\_recv\_certificate\_request} (C2d)
-        (C3) edge [bend left] node [above, rule] (cac) {client\_auth\_cert} node [below, precon] {cert\_req\_ctxt $\neq$ `0'} (C4)
-        (C3) edge [bend right] node [below, rule] (ca) {client\_auth} node [above, precon] {cert\_req\_ctxt $=$ `0'} (C4)
+        (C3) edge [bend left] node [above, rule] (ca1) {client\_auth} node [below, precon] {cert\_req\_ctxt $\neq$ `0'} (C3b)
+        (C3) edge [bend right] node [below, rule] (cacrt) {send\_cert} node [above, precon] {cert\_req\_ctx $=$ `0'} (C3a)
+        (C3a) edge [bend right] node [below, rule] (cact) {recv\_encaps} (C3b)
+        (C3b) edge [] node [above, rule] (rsa) {recv\_serv\_auth} (C4)
         ;
 
     % Server basic rules
@@ -112,7 +122,7 @@
       \else
         (S0) edge [] node [above, rule] (rch) {recv\_client\_hello} (S1)
         (S1) edge [] node [above, rule] (sh) {server\_hello} (S2a)
-        (S2d) edge [] node [above, rule] (sa) {server\_auth} (S3)
+        (S3fin) edge [] node [above, rule] (sa) {server\_auth} (S4)
       \fi
       \ifzerortt
         (S1) edge [loop above] node [above, rule] (rzra) {recv\_zero\_rtt\_auth} (S1)
@@ -123,8 +133,11 @@
         (S2b) edge [] node [above, rule] (ee) {encrypted\_extensions} (S2c)
         (S2c) edge [bend left] node [above, rule] (cr) {certificate\_request} (S2d)
         (S2c) edge [bend right] node [below, rule] {skip\_certificate\_request} (S2d)
-        (S3) edge [bend left] node [above, rule] (rcac) {recv\_client\_auth\_cert} node [below, precon] {cert\_req\_ctxt $\neq$ `0'} (S4)
-        (S3) edge [bend right] node [below, rule] (rca) {recv\_client\_auth} node [above, precon] {cert\_req\_ctxt $=$ `0'} (S4)
+        (S2d) edge [] node [above, rule] (scrt) {send\_cert} (S2e)
+        (S2e) edge [] node [above, rule] (rct) {recv\_encaps} (S3)
+        (S3) edge [bend right] node [below, rule] {skip\_client\_cert} node [above, precon] {prev\_cert\_req $=$ `0'} (S3a)
+        (S3) edge [bend left] node [above, rule] (rccrt) {recv\_client\_cert} node [below, precon] {prev\_cert\_req $\neq$ `0'} (S3a)
+        (S3a) edge [] node [above, rule] (rca) {recv\_client\_auth} (S3fin)
         ;
 
     % Messages sent
@@ -149,12 +162,15 @@
         % CertificateRequest
         ([yshift=5]cr.north) edge [msg edge] node [sloped, above, msg] {CertificateRequest} (rcr.south)
         % ServerAuth
-        ([yshift=5]sa.north) edge [msg edge] node [sloped, above, msg] {Certificate \mbox{CertificateVerify} Finished} ([yshift=-5]rsa.south)
+        ([yshift=5]scrt.north) edge [msg edge] node [sloped, above, msg] {Certificate} ([yshift=-5]rsc.south)
+        ([yshift=-5,xshift=5]rsc.south) edge [msg edge] node [sloped, below, msg] {KemEncapsulation} ([yshift=5]rct.north)
+        ([yshift=5]sa.north) edge [msg edge] node [sloped, above, msg] {Finished} ([yshift=-5]rsa.south)
         % ClientAuth
-        ([yshift=-5]ca.south) edge [msg edge] node [sloped, above, msg] {Certificate \mbox{CertificateVerify} Finished} 
-                                              node [sloped, below, msg] {Finished} ([yshift=5]rcac.north)
-        ([yshift=-10]cac.250) edge [-, msg edge] ([yshift=10]ca.95)
-        ([yshift=-10]rcac.300) edge [->, msg edge] ([yshift=10]rca.45)
+        ([yshift=-5]cacrt.south) edge [msg edge] node [sloped, below, msg] {Certificate} ([yshift=5]rccrt.north)
+        ([yshift=5,xshift=5]rccrt.north) edge [msg edge] node [sloped, above, msg] {KemEncapsulation} ([yshift=-5]cact.south)
+        ([yshift=-5,xshift=5]cact.south) edge [msg edge] node [sloped, above, msg] {Finished} ([yshift=5]rca.north)
+        ([yshift=-10]ca1.250) edge [-, msg edge] node [sloped, above, msg] {Finished} ([yshift=10]cact.95)
+        %([yshift=-10]rca.300) edge [->, msg edge] ([yshift=10]rca.45)
         ;
 
     \ifpsk
@@ -271,11 +287,12 @@
         \node (SSendTLS) [below of=sa, xshift=20, node distance=50] {SendStream};
         \node (CRecvTLS) [above of=rsa, xshift=20, node distance=50] {RecvStream};
         \node (SRecvTLS) [below of=rca, xshift=20, node distance=50] {RecvStream};
-        \node (CSendTLS) [above of=cac, xshift=20, node distance=50] {SendStream};
+        \node (CSendTLS) [above of=ca1, xshift=20, node distance=50] {SendStream};
         \path 
           (rsa) edge [bend left] (CRecvTLS)
           (sa) edge [bend right] (SSendTLS)
-          (cac) edge [bend left] (CSendTLS)
+          (ca1) edge [bend left] (CSendTLS)
+          (cact.750) edge [bend right] (CSendTLS)
           (rca) edge [bend right] (SRecvTLS);
       \fi
 
