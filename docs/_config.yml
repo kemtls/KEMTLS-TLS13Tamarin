@@ -15,3 +15,4 @@ kramdown:
 
 exclude:
   [paper, src, tls13-spec]
+theme: jekyll-theme-hacker
