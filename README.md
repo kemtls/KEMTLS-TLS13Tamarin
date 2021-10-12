@@ -2,6 +2,8 @@
 
 We've been adapting the Tamarin model for TLS 1.3 to analyse KEMTLS.
 
+We're making notes / updating the documentation in the `docs/` subfolder and it lives at https://thomwiggers.github.io/TLS13Tamarin/.
+
 # Original README below:
 # TLS13Tamarin
 This is a Tamarin model of TLS 1.3

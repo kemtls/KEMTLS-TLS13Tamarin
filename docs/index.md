@@ -1,20 +1,27 @@
 ---
-title: TLS 1.3 in Tamarin
+title: KEMTLS in Tamarin
 layout: base
 ---
 
-# TLS 1.3 modelled in Tamarin
+# KEMTLS modelled in Tamarin
 
 This page is a work-in-progress and designed to be viewed on a screen resolution of
 at least 1600px. Unforunately, if you have less than that then be prepared to scroll.
 
+See the parent repo https://github.com/thomwiggers/TLS13Tamarin/.
+
+**We're making changes according to the specification of KEMTLS which is (partially)
+specified in draft-tls-celi-wiggers-authkem-00**. This is a work-in-progress!
+
 This is used to document the code, and provide a side-by-side comparison of the
 specification and the model.
 
+<!--
 In order to ensure the quoted specification is up to date, this can be used in a
 side-by-side diff: `cat _includes/* | diff -y - tls13-spec/draft-ietf-tls-tls13.md | less`
 (a helper script has also been written: `./compare.sh`)
 since the specification text should all be in order.
+-->
 
 Note that there are a number of "snipped" sections. These are bits which we
 have not modelled at all. With two notable exceptions, these are also sections
