@@ -1,10 +1,15 @@
 DEPS= $(wildcard *.m4i)
 M4= $(patsubst %.m4,%.spthy,$(wildcard *.m4))
-FLAGS =  -DPSK=1
+ifdef PSK
+	FLAGS := ${FLAGS} -DPSK
+endif
+ifdef POST_HS
+	FLAGS := ${FLAGS} -DPOST_HS
+endif
 
 # MAKE_RULES=C1 S0a S1 S1a S1b S1c  C2 C2a C2b C2c C2d S2 Send Recv S_NST C_NST C1_PSK S0a_PSK S1_PSK S1_PSK_DHE C2_PSK C2_PSK_DHE S1c_PSK C2c_PSK\
  C_ZeroRTT_Auth S_RecvZeroRTTAuth C_EndZeroRTT C_SendZeroRTT S_RecvZeroRTT S_RecvEndZeroRTT
-TEST_RULES=C0 \
+TEST_RULES := C0 \
 	C1_retry \
 	S1 \
 	C1 \
@@ -18,25 +23,19 @@ TEST_RULES=C0 \
 	C2c \
 	C2c_req \
 	C2d \
-	C3 \
+	S2e \
+	C3_skip_cert \
 	C3_cert \
+	C3a \
+	C3b \
 	S3 \
 	S3_cert \
 	S3a \
 	S3fin \
 	Send \
-	Recv \
-	S4_NST \
-	C4_NST \
-	C0_PSK \
-	S0_PSK \
-	S1_PSK \
-	S1_PSK_DHE \
-	C1_PSK \
-	C1_retry_PSK \
-	C1_PSK_DHE \
-	S2d_PSK \
-	C2d_PSK \
+	Recv
+ifdef POST_HS
+TEST_RULES := $(TEST_RULES) \
 	S4_req \
 	C4_req \
 	S4_cert \
@@ -47,12 +46,28 @@ TEST_RULES=C0 \
 	S4_update_req \
 	S4_update_recv \
 	S4_update_fin \
+	S4_NST \
+	C4_NST
+endif
+ifdef PSK
+TEST_RULES := $(TEST_RULES) \
+	C0_PSK \
+	S0_PSK \
+	S1_PSK \
+	S1_PSK_DHE \
+	C1_PSK \
+	C1_retry_PSK \
+	C1_PSK_DHE \
+	S2d_PSK \
+	C2d_PSK \
 	C_EndZeroRTT \
 	S_RecvEndZeroRTT \
 	C_SendZeroRTT \
 	S_RecvZeroRTT \
 	# C_ZeroRTT_Auth \
 	# S_RecvZeroRTTAuth
+endif
+
 MAKE_RULES=$(TEST_RULES)
 
 RULE_FILES= $(foreach rule,$(TEST_RULES),$(rule).spthy)

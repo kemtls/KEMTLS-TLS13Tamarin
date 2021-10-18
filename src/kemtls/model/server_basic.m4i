@@ -399,11 +399,13 @@ in
       Eq(verify_data, exp_verify_data)
     ]->
     [ 
-      State(S3fin, tid, S, C, ServerState)
+      State(S3fin, tid, S, C, ServerState),
+      RecvStream(tid, S, C, auth_status, app_keyc)
     ]
 
 rule emit_server_auth:
 let
+    //prev_auth_status = <sas, cas>
     set_state()
     S = $S
     C = $C
@@ -412,7 +414,7 @@ let
     messages = <messages, Finished>
 
     app_keys = keygen(sats, app_key_label())
-
+    //auth_status = <'auth', cas>
 in
     [
       State(S3fin, tid, S, C, PrevServerState)[no_precomp],
@@ -427,12 +429,13 @@ in
       running_server(HSMS, hs, ms),
       running_server(RMS, C, rms, messages),
       commit_server(Transcript, messages),
-      SessionKey(tid, S, C, auth_status, <app_keys, prev_app_keyc>),
+      SessionKey(tid, S, C, auth_status, <app_keys, app_keyc>),
       commit_server(Nonces, nc, ns)
     ]->
     [ State(S4, tid, S, C, ServerState),
+      Out(senc{Finished}ahs_keys),
       SendStream(tid, S, C, auth_status, app_keys),
-      RecvStream(tid, S, C, auth_status, prev_app_keyc)
+      RecvStream(tid, S, C, auth_status, app_keyc)
     ]
 
 <!/*

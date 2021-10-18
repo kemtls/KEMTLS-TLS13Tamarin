@@ -12,6 +12,8 @@ include(server_psk.m4i)
 include(zero_rtt.m4i)
 !>)
 include(record.m4i)
+ifdef(<!POST_HS!>, <!
 include(post_hs.m4i)
+!>)
 include(adversary.m4i)
 

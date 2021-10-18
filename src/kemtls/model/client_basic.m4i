@@ -386,7 +386,7 @@ in
     !Ltk(C, ~ltkC)
   ]
   --[
-    C3(tid),
+    C3_cert(tid),
     Instance(tid, C, 'client')
   ]->
   [
@@ -505,7 +505,7 @@ let
 in
     [ State(C3b, tid, C, S, PrevClientState)[no_precomp],
       In(senc{Finished}ahs_keys),
-      RecvStream(tid, C, S, prev_auth_status, app_keyc)
+      SendStream(tid, C, S, prev_auth_status, prev_app_keys)
     ]
   --[ C3b(tid),
       Instance(tid, C, 'client'),
@@ -514,5 +514,6 @@ in
       SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
     ]->
     [ State(C4, tid, C, S, ClientState),
-      RecvStream(tid, C, S, auth_status, app_keys)
+      RecvStream(tid, C, S, auth_status, app_keys),
+      SendStream(tid, C, S, auth_status, app_keyc)
     ]
