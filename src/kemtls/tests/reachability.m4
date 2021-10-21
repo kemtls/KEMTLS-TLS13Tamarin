@@ -41,7 +41,6 @@ lemma exists_$1:
 
 dnl at_most_of(1, S1_retry, 1)
 dnl at_most_of(1, C1_retry, 1)
-at_most_of(4, RPostHS, 4)
 
 create_lemma(C0, 1)
 create_lemma(C1_retry, 1)
@@ -67,9 +66,9 @@ create_lemma(S3a, 1)
 create_lemma(S3fin, 1)
 create_lemma(Send, 1)
 create_lemma(Recv, 1)
+ifdef(<!PSK!>,<!
 create_lemma(S4_NST, 1)
 create_lemma(C4_NST, 1)
-ifdef(<!PSK!>,<!
 create_lemma(C0_PSK, 1)
 create_lemma(S0_PSK, 2)
 create_lemma(S1_PSK, 1)
@@ -86,6 +85,9 @@ create_lemma(S_RecvEndZeroRTT, 1)
 create_lemma(C_SendZeroRTT, 1)
 create_lemma(S_RecvZeroRTT, 1)
 !>)
+ifdef(<!POST_HS!>, <!
+at_most_of(4, RPostHS, 4)
+
 create_lemma(S4_req, 1)
 create_lemma(C4_req, 1)
 create_lemma(S4_cert, 1)
@@ -96,6 +98,7 @@ create_lemma(C4_update_fin, 1)
 create_lemma(S4_update_req, 1)
 create_lemma(S4_update_recv, 1)
 create_lemma(S4_update_fin, 1)
+!>)
 
 AXIOMS
 

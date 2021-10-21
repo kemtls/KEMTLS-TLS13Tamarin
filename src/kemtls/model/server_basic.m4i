@@ -418,7 +418,7 @@ let
 in
     [
       State(S3fin, tid, S, C, PrevServerState)[no_precomp],
-      RecvStream(tid, S, C, prev_auth_status, prev_app_keyc)
+      RecvStream(tid, S, C, prev_auth_status, app_keyc)
     ]
     --[
       S3fin(tid),

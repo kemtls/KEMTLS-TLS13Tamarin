@@ -505,7 +505,7 @@ let
 in
     [ State(C3b, tid, C, S, PrevClientState)[no_precomp],
       In(senc{Finished}ahs_keys),
-      SendStream(tid, C, S, prev_auth_status, prev_app_keys)
+      SendStream(tid, C, S, prev_auth_status, app_keyc)
     ]
   --[ C3b(tid),
       Instance(tid, C, 'client'),
