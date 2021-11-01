@@ -2,6 +2,7 @@
 
 name: Do reachability tests
 on:
+  workflow_dispatch:
   push:
     paths:
       - "src/kemtls/model/**"
