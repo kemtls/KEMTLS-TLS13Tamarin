@@ -21,7 +21,7 @@ jobs:
       - name: Cache homebrew stuffs
         uses: actions/cache@v2
         with:
-          path: ${{ steps.cache_path.CACHE_DIR }}
+          path: ${{ steps.cache_path.outputs.CACHE_DIR }}
           key: ${{ runner.os }}-homebrew
       - name: Install tamarin
         run: |
