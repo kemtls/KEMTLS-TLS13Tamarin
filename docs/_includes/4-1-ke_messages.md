@@ -15,15 +15,15 @@ the handshake and data.
 <div class="col1">
 ## Cryptographic Negotiation
 
-TLS cryptographic negotiation proceeds by the client offering the
+KEMTLS cryptographic negotiation proceeds by the client offering the
 following four sets of options in its ClientHello:
 
 - A list of cipher suites which indicates the AEAD algorithm/HKDF hash
   pairs which the client supports.
-- A "supported_groups" ({{negotiated-groups}}) extension which indicates the (EC)DHE groups
+- A "supported_groups" ({{negotiated-groups}}) extension which indicates the KEM groups
   which the client supports and a "key_share" ({{key-share}}) extension which contains
-  (EC)DHE shares for some or all of these groups.
-- A "signature_algorithms" ({{signature-algorithms}}) extension which indicates the signature
+  public keys for some or all of these groups (KEMs).
+- A "signature_algorithms" ({{signature-algorithms}}) extension which indicates the authentication
   algorithms which the client can accept.
 - A "pre_shared_key" ({{pre-shared-key-extension}}) extension which
   contains a list of symmetric key identities known to the client and a
@@ -32,8 +32,8 @@ following four sets of options in its ClientHello:
   with PSKs.
 If the server does not select a PSK, then the first three of these
 options are entirely orthogonal: the server independently selects a
-cipher suite, an (EC)DHE group and key share for key establishment,
-and a signature algorithm/certificate pair to authenticate itself to
+cipher suite, a KEM group and encapsulate a ciphertext for key establishment,
+and a authentication algorithm/certificate pair to authenticate itself to
 the client. If there is overlap in the "supported_groups" extension
 but the client did not offer a compatible "key_share" extension,
 then the server will respond with a HelloRetryRequest ({{hello-retry-request}}) message.
@@ -42,8 +42,8 @@ abort the handshake.
 
 If the server selects a PSK, then it MUST also select a key
 establishment mode from the set indicated by client's
-"psk_key_exchange_modes" extension (PSK alone or with (EC)DHE). Note
-that if the PSK can be used without (EC)DHE then non-overlap in the
+"psk_key_exchange_modes" extension (PSK alone or with KEM). Note
+that if the PSK can be used without KEM then non-overlap in the
 "supported_groups" parameters need not be fatal, as it is in the
 non-PSK case discussed in the previous paragraph.
 
@@ -52,13 +52,14 @@ follows:
 
 - If PSK is being used then the server will send a
 "pre_shared_key" extension indicating the selected key.
-- If PSK is not being used, then (EC)DHE and certificate-based
-authentication are always used.
-- When (EC)DHE is in use, the server will also provide a
-"key_share" extension.
+- If PSK is not being used, then ephemeral key exchange and 
+certificate-based authentication are always used.
+- When ephemeral key exchange is in use, the server will also provide a
+"key_share" extension, which will contain the ciphertext encapsulated 
+to the client's public key transmitted in its "key_share" extension
 - When authenticating via a certificate (i.e., when a PSK is not
-in use), the server will send the Certificate ({{certificate}}) and
-CertificateVerify ({{certificate-verify}}) messages.
+in use), the server will send the Certificate ({{certificate}}) 
+message.
 
 If the server is unable to negotiate a supported set of parameters
 (i.e., there is no overlap between the client and server parameters),
@@ -72,9 +73,10 @@ We currently support a very limited amount of negotiation. However, this is quit
 a large improvement over previous symbolic models.
 
 We support negotiation of handshake modes in the following way:
-The client in their initial message can include support for both PSK modes.
+<del>The client in their initial message can include support for both PSK modes.
 The server can optionally choose either of these, or even fall back to a vanilla
 handshake.
+</del>
 
 Furthermore, we do include some support for group negotiation, which is detailed
 later.
@@ -338,13 +340,13 @@ define(<!ClientHelloExtensions!>, <!<
 <div class="row">
 <div class="col1">
 After sending the ClientHello message, the client waits for a ServerHello
-or HelloRetryRequest message. If early data
+or HelloRetryRequest message. <del>If early data
 is in use, the client may transmit early application data
-{{zero-rtt-data}} while waiting for the next handshake message.
+{{zero-rtt-data}} while waiting for the next handshake message.</del>
 </div>
 <div class="col2">
 The state `State_C1` is consumed by `recv_hello_retry_request`, `recv_client_hello`, 
-`recv_client_hello_psk` and `recv_client_hello_psk_dhe` representing this.
+<del>`recv_client_hello_psk` and `recv_client_hello_psk_dhe`</del> representing this.
 </div>
 </div>
 
@@ -561,37 +563,37 @@ HelloRetryRequest and otherwise abort the handshake with an
 Capturing this process is one of the trickier aspects of the model. Currently, 
 it does not seem feasible to have a selection process wherein the server takes
 two lists and outputs a selected group, or reject. Instead we model the following
-limited version of group negotiation:
+limited version of KEM negotiation:
 
 ```
-   Client                        Server
-supports g1, g2               supports g
+   Client                                 Server
+supports k1, k2                        supports k
 
-<g1, g2>, <g1, g1^x> ---->  if g != g1
+<k1, k2>, <k1, kempk(k1, ~esk)>   ----->  if k != k1
 
-                    <----- HRR <g>
+                                  <-----  HRR <g>
 
-checks g2 == g 
-<g1, g2>, <g2, g2^x2> ---->  checks g == g2
+checks k2 == k 
+<k1, k2>, <k2, kempk(k2, ~esk2)>  ----->  checks k == k2
 
 ```
 
-That is, the client *always* sends two groups as supported, and the server checks
-whether the provided key share `g1^x` is in the supported group `g`.
+That is, the client *always* sends two KEMs as supported, and the server checks
+whether the provided key share `kempk(k1, ~esk)` is in the supported group `g`.
 
-If not, the server responds with `g` in  a hello retry request. The client makes
-sure this is equal to the other group, `g2`, and sends a new client hello.
+If not, the server responds with `k` in  a hello retry request. The client makes
+sure this is equal to the other group, `k2`, and sends a new client hello.
 
-At the start of the model, `g1, g2`, and `g` are not restricted (they are modelled
-as public variables `$g1`). And the server does not necessarily know that the client
+At the start of the model, `k1, k2`, and `k` are not restricted (they are modelled
+as public variables `$k1`). And the server does not necessarily know that the client
 sends the same groups in both handshakes. This is an overapproximation which guarantees the 
 following:
  - If the server reaches `server_hello` then the server has negotiated a
-   supported group (so `$g` is either `$g1` or `$g2`)
- - The server only does HRR if `$g != $g1'
+   supported group (so `$k` is either `$k1` or `$k2`)
+ - The server only does HRR if `$k != $k1`
  - The server only does HRR once.
 
-The above three guarantee that the client must have offered `$g` as a supported
+The above three guarantee that the client must have offered `$k` as a supported
 group with a key share entry either in the first flight, or the retry.
 
 The message is defined as:

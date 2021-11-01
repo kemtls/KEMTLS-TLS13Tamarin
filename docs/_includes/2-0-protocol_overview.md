@@ -153,16 +153,22 @@ a distinct rule, to help separate concerns.
 </div>
 <div class="row">
 <div class="col1">
-<strong>FIXME</strong>
-<del>pon receiving the server's messages, the client responds with its Authentication
-messages, namely Certificate and CertificateVerify (if requested), and Finished.
+Upon receiving the server's Certificate message, the client responds with its Authentication
+messages, namely KemEncapsulation, and its Certificate if requested.
 
-At this point, the handshake is complete, and the client and server may exchange
-application-layer data. Application data MUST NOT be sent prior to sending the
-Finished message. Note that while the server may send application data
-prior to receiving the client's Authentication messages, any data sent at
-that point is, of course, being sent to an unauthenticated peer.
-</del>
+If the client certificate was sent, the client waits to receive a KemEncapsulation message from the server.
+Then/otherwise it transmits Finished.
+
+At this point, the client's handshake is complete, and the **client** may transmit application-layer data. 
+
+The server then replies with Finished 
+
+Application data MUST NOT be sent prior to sending the
+Finished message. Note that while the client may send application data
+prior to receiving the server's Authentication messages, any data sent at
+that point is being sent is encrypted using keys and settings that are only
+implicitly authenticated.
+
 </div>
 <div class="col2">
 In Tamarin, we model the application data using the `SendStream` and `RecvStream`

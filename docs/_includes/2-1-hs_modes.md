@@ -1,13 +1,13 @@
 
 <div class="row">
-## Incorrect DHE Share
+## Incorrect KEM Share
 </div>
 
 <div class="row">
 <div class="col1">
 
 If the client has not provided a sufficient "key_share" extension (e.g., it
-includes only DHE or ECDHE groups unacceptable to or unsupported by the
+includes only KEM groups unacceptable to or unsupported by the
 server), the server corrects the mismatch with a HelloRetryRequest and
 the client needs to restart the handshake with an appropriate
 "key_share" extension, as shown in Figure 2.
@@ -23,19 +23,9 @@ the server MUST abort the handshake with an appropriate alert.
                                                          + key_share
 
          ClientHello
-         + key_share             -------->
-                                                         ServerHello
-                                                         + key_share
-                                               {EncryptedExtensions}
-                                               {CertificateRequest*}
-                                                      {Certificate*}
-                                                {CertificateVerify*}
-                                                          {Finished}
-                                 <--------       [Application Data*]
-         {Certificate*}
-         {CertificateVerify*}
-         {Finished}              -------->
-         [Application Data]      <------->        [Application Data]
+         + key_share            
+         
+         ... normal handshake
 ~~~
 
 Note: The handshake transcript includes the initial
@@ -49,7 +39,7 @@ described in the following sections.
 <div class="col2">
 In Tamarin, we handle this with the `hello_retry_request` rule on
 the server side, and the `recv_hello_retry_request` rule for the client.
-we also have `*_psk` rules when a retry happens within a PSK handshake.
+<del>We also have `*_psk` rules when a retry happens within a PSK handshake.</del>
 
 `hello_retry_request{_psk}` will return the server to state `S0`, ready to
 recieve another client hello message. Note that if the server request a retry
@@ -61,11 +51,10 @@ the incoming retry request, and immediately returns a new client hello message.
 </div>
 
 <div class="row">
-## Resumption and Pre-Shared Key (PSK)
+## <del>Resumption and Pre-Shared Key (PSK)</del>
 </div>
 <div class="row">
-<div class="col1">
-<del>
+<div class="col1" style="text-decoration: line-through">
 Although TLS PSKs can be established out of band,
 PSKs can also be established in a previous connection and
 then reused ("session resumption"). Once a handshake has completed, the server can
@@ -112,9 +101,6 @@ Subsequent Handshake:
        [Application Data]        <------->      [Application Data]
 ~~~
 {: #tls-resumption-psk title="Message flow for resumption and PSK"}
-
-</del>
-
 </div>
 <div class="col2">
 <strong>We do not model PSK</strong>
@@ -131,7 +117,7 @@ PSK authentication.
 </div>
 
 <div class="row">
-<div class="col1">
+<div class="col1" style="text-decoration: line-through">
 
 As the server is authenticating via a PSK, it does not send a
 Certificate or a CertificateVerify message. When a client offers resumption
@@ -155,6 +141,7 @@ authenticated key exchange even when used with Diffie-Hellman key
 establishment.
 </div>
 <div class="col2">
+We do not model PSK.
 
 We have the `server_auth` rule checking that `Eq(ke_mode, '0')`, which means we
 are not in a PSK-based handshake, and therefore does not send certificates
@@ -172,7 +159,7 @@ and the server can choose between `server_hello_psk` and `server_hello_psk_dhe`.
 </div>
 
 <div class="row">
-<div class="col1">
+<div class="col1" style="text-decoration: line-through">
 <del>
 When clients and servers share a PSK (either obtained externally or
 via a previous handshake), TLS 1.3 allows clients to send data on the
