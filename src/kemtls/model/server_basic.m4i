@@ -261,7 +261,6 @@ in
 
 rule server_receive_kemencaps:
 let
-    prev_auth_status = <sas, cas>
     set_state()
 
     shared_secret = <$k, ~seed>
@@ -274,7 +273,8 @@ let
     ahs_keyc = keygen(authenticated_handshake_traffic_secret(client), ahs_key_label())
     ahs_keys = keygen(authenticated_handshake_traffic_secret(server), ahs_key_label())
 
-    auth_status = <'auth', cas>
+    // we've now got the keys that convince the client of our auth status
+    auth_status = <'auth', '0'>
 in
     [ 
       State(S2e, tid, S, C, PrevServerState),
@@ -341,12 +341,13 @@ let
     certificate_request_context = '0' 
     messages = <messages, Certificate>
 
-    clauth_ss = <$k, ~seed>
+    dnl clauth_ss is part of the state and passed through to ms later
+    clauth_ss = <$k, ~seed>   
     ciphertext = kemencaps($k, clauth_ss, certificate)
 
     cert_req = '0'
-    auth_status = <'auth', 'auth'>  // XXX check how we model auth_status
-
+    // we updated the auth status to mutual auth
+    auth_status = <'auth', 'auth'>
 in
     [ State(S3, tid, S, C, PrevServerState)[no_precomp],
       !Pk(C, kempk(C, ~ltkC)),
