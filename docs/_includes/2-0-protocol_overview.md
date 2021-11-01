@@ -4,16 +4,12 @@
 <div class="col1">
 
 
-TLS supports three basic key exchange modes:
+The KEMTLS handshake consists of the following components:
 
-- (EC)DHE (Diffie-Hellman both the finite field and elliptic curve
-  varieties),
+- Ephemeral KEM key exchange
+- Authentication via key exchange with long-term keys
 
-- PSK-only, and
-
-- PSK with (EC)DHE
-
-{{tls-full}} below shows the basic full TLS handshake:
+The figure below shows the basic full TLS handshake:
 
 ~~~
        Client                                               Server
@@ -28,13 +24,13 @@ Exch | + key_share*
                                                  + pre_shared_key*  v
                                              {EncryptedExtensions}  ^  Server
                                              {CertificateRequest*}  v  Params
-                                                    {Certificate*}  ^
-                                              {CertificateVerify*}  | Auth
-                                                        {Finished}  v
-                                 <--------     [Application Data*]
-     ^ {Certificate*}
-Auth | {CertificateVerify*}
-     v {Finished}                -------->
+                                 <--------          {Certificate*}  ^ 
+     ^ {KemEncapsulation}                                           v Auth
+Auth | <Certificate*>            
+     v                           <--------     <KemEncapsulation*>
+       <Finished>                
+       [Application Data*        -------->                      
+                                                        <Finished>  
        [Application Data]        <------->      [Application Data]
 
               +  Indicates noteworthy extensions sent in the
@@ -45,11 +41,14 @@ Auth | {CertificateVerify*}
 
               {} Indicates messages protected using keys
                  derived from a [sender]_handshake_traffic_secret.
+                
+              <> Indicates messages protected using keys from
+                 a [sender]_authenticated_handshake_traffic_secret
 
               [] Indicates messages protected using keys
                  derived from [sender]_application_traffic_secret_N
 ~~~
-{: #tls-full title="Message flow for full TLS Handshake"}
+{: #tls-full title="Message flow for full KEMTLS Handshake"}
 
 `---snip---`
 
@@ -154,7 +153,8 @@ a distinct rule, to help separate concerns.
 </div>
 <div class="row">
 <div class="col1">
-Upon receiving the server's messages, the client responds with its Authentication
+<strong>FIXME</strong>
+<del>pon receiving the server's messages, the client responds with its Authentication
 messages, namely Certificate and CertificateVerify (if requested), and Finished.
 
 At this point, the handshake is complete, and the client and server may exchange
@@ -162,6 +162,7 @@ application-layer data. Application data MUST NOT be sent prior to sending the
 Finished message. Note that while the server may send application data
 prior to receiving the client's Authentication messages, any data sent at
 that point is, of course, being sent to an unauthenticated peer.
+</del>
 </div>
 <div class="col2">
 In Tamarin, we model the application data using the `SendStream` and `RecvStream`

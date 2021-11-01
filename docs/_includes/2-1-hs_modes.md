@@ -65,7 +65,7 @@ the incoming retry request, and immediately returns a new client hello message.
 </div>
 <div class="row">
 <div class="col1">
-
+<del>
 Although TLS PSKs can be established out of band,
 PSKs can also be established in a previous connection and
 then reused ("session resumption"). Once a handshake has completed, the server can
@@ -113,8 +113,12 @@ Subsequent Handshake:
 ~~~
 {: #tls-resumption-psk title="Message flow for resumption and PSK"}
 
+</del>
+
 </div>
 <div class="col2">
+<strong>We do not model PSK</strong>
+<del>
 The main rules to handle PSK/resumption are covered above. In addition, out-of-band
 PSKs are supported using the `out_of_band_psk` rule, which generates a 
 symmetric secret to be used by two unauthenticated peers.
@@ -122,7 +126,7 @@ symmetric secret to be used by two unauthenticated peers.
 In future work, it would be interesting to write precise authentication
 properties to understand the nature of implicit authentication for out-of-band
 PSK authentication.
-
+</del>
 </div>
 </div>
 
@@ -154,21 +158,22 @@ establishment.
 
 We have the `server_auth` rule checking that `Eq(ke_mode, '0')`, which means we
 are not in a PSK-based handshake, and therefore does not send certificates
-(instead the `server_auth_psk` rule is used which just sends the `Finished`
-message).
+<del>(instead the `server_auth_psk` rule is used which just sends the `Finished`
+message).</del>
 
-The client by default always sends a key share in the `client_hello_psk` rule, 
-and the server can choose between `server_hello_psk` and `server_hello_psk_dhe`.
+<del>The client by default always sends a key share in the `client_hello_psk` rule, 
+and the server can choose between `server_hello_psk` and `server_hello_psk_dhe`.</del>
 
 </div>
 </div>
 
 <div class="row">
-## Zero-RTT Data
+## <del>Zero-RTT Data</del>
 </div>
 
 <div class="row">
 <div class="col1">
+<del>
 When clients and servers share a PSK (either obtained externally or
 via a previous handshake), TLS 1.3 allows clients to send data on the
 first flight ("early data"). The client uses the PSK to authenticate
@@ -243,11 +248,16 @@ The same warnings apply to any use of the early exporter secret.
 
 The remainder of this document provides a detailed description of TLS.
  -->
+</del>
 </div>
 <div class="col2">
+We do not model 0-RTT<br/>
+
+<del>
 We model the early data/0-RTT functionality through the `EarlySendStream`
 and `EarlyRecvStream` facts. These are created by default for all PSK handshakes
 (except those which were retries). The client/server may both optionally not use
 these streams to send/recv data, so this is an over-approximation.
+</del>
 </div>
 </div>
