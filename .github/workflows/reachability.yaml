@@ -1,0 +1,23 @@
+---
+
+name: Do reachability tests
+on:
+  push:
+    paths:
+      - "src/kemtls/model/**"
+      - "src/kemtls/test/**"
+    branches:
+      - kem-auth
+
+jobs:
+  reachability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install tamarin
+        run: |
+          brew install tamarin-prover/tap/tamarin-prover
+      - uses: actions/checkout@v2
+      - name: Run reachability tests
+        run: |
+          cd src/kemtls/tests
+          make test
