@@ -104,7 +104,7 @@ Subsequent Handshake:
 </div>
 <div class="col2">
 <strong>We do not model PSK</strong>
-<del>
+<div style="text-decoration: line-through">
 The main rules to handle PSK/resumption are covered above. In addition, out-of-band
 PSKs are supported using the `out_of_band_psk` rule, which generates a 
 symmetric secret to be used by two unauthenticated peers.
@@ -112,7 +112,7 @@ symmetric secret to be used by two unauthenticated peers.
 In future work, it would be interesting to write precise authentication
 properties to understand the nature of implicit authentication for out-of-band
 PSK authentication.
-</del>
+</div>
 </div>
 </div>
 
