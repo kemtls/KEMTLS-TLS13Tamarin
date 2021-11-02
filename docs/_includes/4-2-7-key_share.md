@@ -89,9 +89,9 @@ client MUST replace the original "key_share" extension with one
 containing only a new KeyShareEntry for the group indicated in the
 selected_group field of the triggering HelloRetryRequest.
 
-If using (EC)DHE key establishment, servers offer exactly one
-KeyShareEntry in the ServerHello. This value MUST be in the same group
-as the KeyShareEntry value offered
+If using ephemeral KEM key establishment, servers offer exactly one
+KeyShareEntry in the ServerHello. This value MUST be the ciphertext encapsulated
+to the KeyShareEntry value offered
 by the client that the server has selected for the negotiated key exchange.
 Servers MUST NOT send a KeyShareEntry for any group not
 indicated in the "supported_groups" extension and
@@ -167,49 +167,45 @@ discuss the functionality of KeyShare:
 
 ```
        Client                        Server
-    supports g1, g2               supports g
+    supports k1, k2               supports k
 
-    <g1, g2>, <g1, g1^x> ---->  if g != g1
+    <k1, k2>, <k1, kempk(k2) > ---->  if k != k1
 
-                        <----- HRR <g>
+                        <----- HRR <k>
 
-    checks g2 == g 
-    <g1, g2>, <g2, g2^x2> ---->  checks g == g2
+    checks k2 == k 
+    <k1, k2>, <k2, kempk(k2)> ---->  checks k == k2
 
-                        <------ <g, g^y>
-
-
-                    Both parties compute
-                          g^xy
+                                  <------ <k, encaps(kempk(k1))>
 
 ```
 
-We model DHE as taking place over some abstract group `$g`. The client initally
-supports a pair of groups `<$g1, $g2>`, and the server supports some group `$g`
-not necessarily equal to `$g1` or `$g2`. 
+We model ephemeral KEM key exchange with abstract KEM `$g`. The client initially
+supports a pair of KEMs `<$k1, $k2>`, and the server supports some group `$k`
+not necessarily equal to `$k1` or `$k2`. 
 
 On the first flight, the client sends both supported groups, and the `KeyShare`
 extension:
 ```
-define(<!KeyShareCH!>, <!Extension('40', g, gx)!>)
+define(<!KeyShareCH!>, <!Extension('40', k, epk)!>)
 ```
-(locally we have `g = $g1`, `$gx = $g1^~x`).
+(locally we have `ekem = $k1`, `$epk = kempk(ekem, ~esk)`).
 
 If the server rejects this group and requests a retry, the client will simply
-set `g = $g2` and generate a new value of `~x`.
+set `ekem = $k2` and generate a new value of `~sk`.
 
 If the server requests a HRR, this contains the extension:
 ```
-define(<!KeyShareHRR!>, <!Extension('40', new_g)!>)
+define(<!KeyShareHRR!>, <!Extension('40', new_ekem)!>)
 ```
-where `new_g` is set locally to the server's group `$g` which is checked to be
-`$g = $g2`.
+where `new_ekem` is set locally to the server's group `$k` which is checked to be
+`$k = $k2`.
 
 Finally, the server hello message contains the server's key share:
 ```
-define(<!KeyShareSH!>, <!Extension('40', g, gy)!>)
+define(<!KeyShareSH!>, <!Extension('40', k, ect)!>)
 ```
-where, again, `g` is set locally to `$g` and `gy = $g^~y`. If the server is sending
+where, again, `k` is set locally to `$k` and `ect = kemencaps(k, ~eseed, epk)`. If the server is sending
 a server hello message, we know the group must have been successfully negotiated with
 the client.
 </div>

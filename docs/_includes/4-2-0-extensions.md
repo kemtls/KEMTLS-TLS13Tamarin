@@ -52,7 +52,7 @@ The list of extension types is maintained by IANA as described in
 </div>
 <div class="col2">
 Similarly, we define extensions using the macro `Extension` which simply
-expands to a list, `Extension('10', client_sg) = <'10', client_sg>` for the
+expands to a list, `Extension('10', client_skem) = <'10', client_skem>` for the
 support groups for example.
 </div>
 </div>
@@ -216,6 +216,8 @@ define(<!SupportedVersions!>, <!Extension('43', '0x0304')!>)
 
 We do not attempt to model the interaction between different specifications, nor
 downgrade protection.
+
+KEMTLS is modeled as it would be version TLS 1.3 here.
 </div>
 </div>
 
@@ -265,8 +267,11 @@ offloading state through the cookie is safe.
 <div class="row">
 <div class="col1">
 The client uses the "signature_algorithms" extension to indicate to the server
-which signature algorithms may be used in digital signatures. Clients which
+which authentication algorithms may be used in digital signatures. Clients which
 desire the server to authenticate itself via a certificate MUST send this extension.
+
+Even though the extension is named signature algorithms, we advertise authentication algorithms
+such as KEMTLS through this extension.
 
 `---snip---`
 
@@ -425,10 +430,10 @@ We do not model the certificate authorities extension.
 </div>
 </div>
 
-<div class="row">
+<div class="row" style="text-decoration: line-through">
 ### Post-Handshake Client Authentication {#post_handshake_auth}
 </div>
-<div class="row">
+<div class="row" style="text-decoration: line-through">
 <div class="col1">
 The "post_handshake_auth" extension is used to indicate that a client is willing
 to perform post-handshake authentication {{post-handshake-authentication}}. Servers
@@ -500,15 +505,16 @@ preferences (most preferred choice first).
 
 </div>
 <div class="col2">
-We covered the logic behind the group selection in the [HelloRetryRequest](#hello-retry-request)
-section. We define the extension as the list:
+We covered the logic behind the ephemeral key exchange KEM selection 
+in the [HelloRetryRequest](#hello-retry-request) section. We define 
+the extension as the list:
 ```
-define(<!NamedGroupList!>, <!Extension('10', client_sg)!>)
+define(<!NamedGroupList!>, <!Extension('10', client_skem)!>)
 ```
-where `client_sg` is defined locally by the client as `client_sg = <$g1, $g2>`.
+where `client_skem` is defined locally by the client as `client_skem = <$k1, $k2>`.
 
-That is, we only support the client sending two (distinct) groups. However, 
-`$g1` and `$g2` are free to be any value, so any two client hello messages may
+That is, we only support the client sending two (distinct) KEMs. However, 
+`$k1` and `$k2` are free to be any value, so any two client hello messages may
 have no overlapping groups.
 </div>
 </div>
