@@ -60,6 +60,10 @@ lemma nst_source [sources]:
 
 !>)
 
+ifdef(<!PSK!>, <!!>, <!
+define(<!lemma_nst_source!>,<!!>)
+!>)
+
 /*
   LEMMAS USED IN AUTH_HELPERS
   
