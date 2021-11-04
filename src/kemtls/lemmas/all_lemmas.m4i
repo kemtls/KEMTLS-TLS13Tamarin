@@ -374,7 +374,7 @@ lemma session_key_agreement [hide_lemma=sig_origin]:
      running2(Nonces, peer, 'server', nonces)@l &
       // not (Ex #r. RevLtk(actor)@r & #r < #i) &
       not (Ex #r. RevLtk(peer)@r & #r < #i & #r < #k) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i & #r < #k) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i & #r < #k) &
       not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i & #r < #k) &
       not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i & #r < #k)
       ==>
@@ -398,7 +398,7 @@ lemma entity_authentication [reuse, use_induction]:
   "All tid actor peer nonces cas #i. 
       commit(Nonces, actor, 'client', nonces)@i & commit(Identity, actor, 'client', peer, <cas, 'auth'>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
           ==> (Ex tid2 #j. running2(Nonces, peer, 'server', nonces)@j & #j < #i)"
@@ -534,4 +534,16 @@ lemma ekem_seed_needs_rev_esk [reuse]:
     "All a tid ekem esk eseed #a #i #j.
     (EKem(tid, a, esk)@#a & EKemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j) 
       ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
+!>)
+
+define(<!lemma_ekem_only_revsk_in_client!>, <!
+lemma ekem_only_revsk_in_client [reuse]:
+    "
+    All tid a esk #i #j.
+    EKem(tid, a, esk)@#i & RevEKemSk(tid, a, esk)@#j
+    ==> (
+      (Ex #r. Start(tid, a, 'client')@#r & #r < #j) & 
+      not (Ex #r. Start(tid, a, 'server')@#r)
+    )
+    "
 !>)

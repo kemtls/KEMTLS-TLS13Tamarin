@@ -32,6 +32,7 @@ lemma_ekem_sk_secret_ordering
 lemma_ekem_pk_can_be_decapsed
 lemma_ekem_sk_can_be_revealed
 lemma_rev_ekem_ordering
+lemma_ekem_only_revsk_in_client
 lemma_rev_ekem_before_hs
 lemma_ekem_esk_can_only_be_revealed
 lemma_ekem_seed_needs_rev_esk
