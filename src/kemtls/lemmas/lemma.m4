@@ -67,6 +67,11 @@ lemma_nst_source/* [typing]:
       (Ex tid S #j. running_server(NST, ticket, ticket_age_add)@j & #j < #i)"
 */
 
+lemma_ekem_source/* [sources]:
+  "All tid actor ekem #j.
+    RevEKemSk(tid, actor, ekem)@j ==> Ex #i. EKem(tid, actor, ekem)@i & #i < #j"
+*/
+
 lemma_ku_extract/* [reuse, use_induction]:
   "All a b #i. KU(Extract(a, b))@i ==> Ex #j #k. KU(a)@j & KU(b)@k & #j < #i & #k < #i"
 */
