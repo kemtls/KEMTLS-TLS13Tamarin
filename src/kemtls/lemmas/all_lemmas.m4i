@@ -40,6 +40,12 @@ lemma nst_source [sources]:
       (Ex tid S #j. running_server(NST, ticket, ticket_age_add)@j & #j < #i)"
 !>)
 
+define(<!lemma_ekem_source!>, <!
+lemma ekem_source [sources]:
+  "All tid actor ekem #j.
+    RevEKemSk(tid, actor, ekem)@j ==> Ex #i. EKem(tid, actor, ekem)@i & #i < #j"
+!>)
+
 ifdef(<!SIMPLE_MODEL!>, <!
 
 define(<!lemma_cert_req_origin!>, <!
