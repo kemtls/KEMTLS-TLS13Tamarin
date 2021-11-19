@@ -50,9 +50,3 @@ lemma skem_getting_seed_requires_reveal [reuse]:
   (GenLtk(a, ltk)@#a & KemEncap(kem, kempk(kem, ltk), eseed)@#i & KU(eseed)@#j)
   ==>
   (Ex #r. RevLtk(a)@#r & #r < #j)"
-
-lemma skem_decaps_getting_ss_requires_reveal [reuse]:
-  "All a kem ltk ss #a #i #j.
-  GenLtk(a, ltk)@#a & KemDecaps(kem, ltk, ss)@#i & KU(ss)@#j
-  ==>
-  (Ex #r. RevLtk(a)@#r & #r < #j)"

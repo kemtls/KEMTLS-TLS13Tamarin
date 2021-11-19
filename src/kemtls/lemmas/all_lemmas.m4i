@@ -570,13 +570,6 @@ lemma ekem_seed_needs_rev_esk [reuse]:
       ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 !>)
 
-define(<!lemma_ekem_seed_needs_rev_esk!>, <!
-lemma ekem_seed_needs_rev_esk [reuse]:
-    "All a tid ekem esk eseed #a #i #j.
-    (EKem(tid, a, esk)@#a & KemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j)
-      ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
-!>)
-
 define(<!lemma_ekem_getting_seed_requires_esk!>, <!
 lemma ekem_getting_seed_requires_esk [reuse]:
   "All ekem esk eseed #i #j.
