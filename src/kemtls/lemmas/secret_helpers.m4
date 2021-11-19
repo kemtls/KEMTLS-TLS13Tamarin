@@ -52,6 +52,8 @@ lemma_nst_source/* [typing]:
       (Ex tid S #j. running_server(NST, ticket, ticket_age_add)@j & #j < #i)"
 */
 
+lemma_ekem_source
+
 lemma_ku_extract/* [reuse, use_induction]:
   "All a b #i. KU(Extract(a, b))@i ==> Ex #j #k. KU(a)@j & KU(b)@k & #j < #i & #k < #i"
 */
@@ -74,13 +76,22 @@ lemma_ku_hs/* [reuse]:
       Ex #k #l. KU(gxy)@k & KU(res_psk)@l & #k < #j & #l < #j"
 */
 
+
 lemma_ekem_sk_invariant
+
+lemma_ekem_esk_can_only_be_revealed
+
+lemma_ekem_seed_needs_rev_esk
 
 lemma_ku_ltk/* [reuse]:
   "All actor ltkA #i #j.
     GenLtk(actor, ltkA)@i & KU(ltkA)@j ==>
       Ex #k. RevLtk(actor)@k & #k < #j"
 */
+
+lemma_ku_ahs
+
+lemma_ku_ms
 
 lemma_ku_fresh_psk/* [reuse]:
   "All ticket res_psk #i #k.
@@ -89,9 +100,11 @@ lemma_ku_fresh_psk/* [reuse]:
           RevealPSK(actor, res_psk)@j & #j < #k"
 */
 
-lemma_hsms_derive/* [reuse]:
-  "All tid actor role hs ms #i. 
-    running(HSMS, actor, role, hs, ms)@i ==>
+lemma_hsahs_derive
+
+lemma_ahsms_derive/* [reuse]:
+  "All tid actor role ahs clauth_ms ms #i. 
+    running(AHSMS, actor, role, ahs, clauth_ss, ms)@i ==>
       ms = MasterSecret"
 */
 

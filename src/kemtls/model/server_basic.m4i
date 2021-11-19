@@ -173,8 +173,7 @@ in
     ]
   --[ S2a(tid),
       Instance(tid, S, 'server'),
-      running_server(HS, hs),
-      running_server(MS, ms)
+      running_server(HS, hs)
    ]->
     [ State(S2b, tid, S, C, ServerState)
     ]
@@ -283,6 +282,8 @@ in
     ] --[
       S2e(tid),
       Instance(tid, S, 'server'),
+      running_server(AHS, ahs),
+      running_server(HSAHS, hs, ahs, ss),
       Eq(psk_ke_mode, 'na')
     ]-> [
       State(S3, tid, S, C, ServerState)
@@ -397,6 +398,10 @@ in
   --[ S3a(tid),
       Instance(tid, S, 'server'),
       MasterSecretState(tid, ms),
+      running_server(AHSMS, ahs, ms),
+      running_server(HSAHSMS, ahs, ms),
+      running_server(MS, clauth_ss, ms),
+      running_server(RMS, C, rms, messages),
       Eq(verify_data, exp_verify_data)
     ]->
     [ 
@@ -427,8 +432,6 @@ in
       running_server(Mode, psk_ke_mode),
       commit_server(Identity, C, auth_status),
       commit_server(HS, hs),
-      running_server(HSMS, hs, ms),
-      running_server(RMS, C, rms, messages),
       commit_server(Transcript, messages),
       SessionKey(tid, S, C, auth_status, <app_keys, app_keyc>),
       commit_server(Nonces, nc, ns)

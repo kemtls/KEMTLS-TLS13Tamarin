@@ -89,11 +89,10 @@ lemma_ku_ltk/* [reuse]:
       Ex #k. RevLtk(actor)@k & #k < #j"
 */
 
-lemma_hsms_derive/* [reuse]:
-  "All tid actor role hs ms #i. 
-    running(HSMS, actor, role, hs, ms)@i ==>
+lemma_ahsms_derive/* [reuse]:
+  "All tid actor role ahs clauth_ms ms #i. 
+    running(AHSMS, actor, role, ahs, clauth_ss, ms)@i ==>
       ms = MasterSecret"
-
 
 // For any running(PostHS...) either the auth_status was set in the main HS and
 // unchanged (along with the RMS), or there was post-hs auth, which means the

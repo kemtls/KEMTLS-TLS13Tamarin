@@ -42,9 +42,12 @@ lemma nst_source [sources]:
 
 define(<!lemma_ekem_source!>, <!
 lemma ekem_source [sources]:
-  "All tid actor ekem #j.
-    RevEKemSk(tid, actor, ekem)@j ==> Ex #i. EKem(tid, actor, ekem)@i & #i < #j"
+  "All tid esk actor #j.
+    RevEKemSk(tid, actor, esk)@j 
+    ==> 
+      (Ex #i. EKem(tid, actor, esk)@i & #i < #j)"
 !>)
+
 
 ifdef(<!SIMPLE_MODEL!>, <!
 
@@ -162,6 +165,24 @@ lemma ku_hs [reuse]:
       Ex #k #l. KU(ess)@k & KU(res_psk)@l & #k < #j & #l < #j"
 !>)
 
+define(<!lemma_ku_ahs!>, <!
+lemma ku_ahs [reuse]:
+  "All tid actor role ss hs ahs #i #j.
+    running(AHS, actor, role, ahs)@i &
+    ahs = AuthHandshakeSecret &
+    KU(ahs)@j  ==>
+      Ex #k #l. KU(hs)@k & KU(ss)@l & #k < #j & #l < #j" 
+!>)
+
+define(<!lemma_ku_ms!>, <!
+lemma ku_ms [reuse]:
+  "All tid actor role ms ahs clauth_ss #i #j.
+    running(MS, actor, role, ms)@i &
+    ms = MasterSecret &
+    KU(ms)@j ==>
+      Ex #k #l. KU(ahs)@k & KU(clauth_ss)@l & #k < #j & #l < #j" 
+!>)
+
 define(<!lemma_ku_ltk!>, <!
 lemma ku_ltk [reuse]:
   "All actor ltkA #i #j.
@@ -177,10 +198,18 @@ lemma ku_fresh_psk [reuse]:
           RevealPSK(actor, res_psk)@j & #j < #k"
 !>)
 
-define(<!lemma_hsms_derive!>, <!
-lemma hsms_derive [reuse]:
-  "All tid actor role hs ms #i. 
-    running(HSMS, actor, role, hs, ms)@i ==>
+define(<!lemma_hsahs_derive!>, <!
+lemma hsahs_derive [reuse]:
+  "All tid actor role hs ahs ss #i.
+    running(HSAHS, actor, role, hs, ahs, ss)@#i ==>
+      ahs = AuthHandshakeSecret
+  "
+!>)
+
+define(<!lemma_ahsms_derive!>, <!
+lemma ahsms_derive [reuse]:
+  "All tid actor role ahs ms clauth_ss #i. 
+    running(AHSMS, actor, role, ahs, clauth_ss, ms)@i ==>
       ms = MasterSecret"
 !>)
 

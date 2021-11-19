@@ -281,6 +281,7 @@ in
     C2d(tid),
     Instance(tid, C, 'client'),
     Eq(psk_ke_mode, 'na'),
+    running_client(HSAHS, hs, ahs, ss),
     running_client(AHS, ahs),
     running_client(Mode, psk_ke_mode)
   ]->
@@ -362,8 +363,9 @@ in
   --[ C3_skip_cert(tid),
       Instance(tid, C, 'client'),
       running_client(Transcript, messages),
-      running_client(MS, ms),
-      running_client(HSMS, hs, ms),
+      running_client(MS, clauth_ss, ms),
+      running_client(AHSMS, ahs, ms),
+      running_client(HSAHSMS, hs, ahs, ms),
       running_client(RMS, S, rms, messages),
       running_client(Mode, psk_ke_mode)
     ]->
