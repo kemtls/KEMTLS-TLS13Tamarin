@@ -157,7 +157,7 @@ in
   --[ C1(tid),
       Instance(tid, C, 'client'),
       KemChal(ekem, esk, epk, ect, ess),
-      KemDecaps(tid, C, ekem, esk, ess),
+      KemDecaps(ekem, esk, ess),
       running_client(Nonces, nc, ns)
     ]->
     [

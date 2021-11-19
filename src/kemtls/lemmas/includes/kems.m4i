@@ -27,8 +27,8 @@ lemma ku_encaps [reuse]:
   "
 
 lemma ku_decaps [reuse]:
-  "All tid a kem sk ss seed #i #j.
-    KemDecaps(tid, a, kem, sk, ss)@#i &
+  "All kem sk ss seed #i #j.
+    KemDecaps(kem, sk, ss)@#i &
     ss = <kem, seed> &
     KU(ss)@#j
     ==>
@@ -52,7 +52,7 @@ lemma skem_getting_seed_requires_reveal [reuse]:
   (Ex #r. RevLtk(a)@#r & #r < #j)"
 
 lemma skem_decaps_getting_ss_requires_reveal [reuse]:
-  "All tid a kem ltk ss #a #i #j.
-  GenLtk(a, ltk)@#a & KemDecaps(tid, a, kem, ltk, ss)@#i & KU(ss)@#j
+  "All a kem ltk ss #a #i #j.
+  GenLtk(a, ltk)@#a & KemDecaps(kem, ltk, ss)@#i & KU(ss)@#j
   ==>
   (Ex #r. RevLtk(a)@#r & #r < #j)"

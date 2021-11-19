@@ -285,7 +285,7 @@ in
       running_server(AHS, ahs),
       running_server(HSAHS, hs, ahs, ss),
       Eq(psk_ke_mode, 'na'),
-      KemDecaps(tid, S, $k, ~ltkS, ss)
+      KemDecaps($k, ~ltkS, ss)
     ]-> [
       State(S3, tid, S, C, ServerState)
     ]

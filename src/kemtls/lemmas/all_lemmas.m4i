@@ -545,7 +545,7 @@ lemma ekem_pk_can_be_decapsed:
   exists-trace
   "Ex tid a esk ekem ess #i #j.
      EKem(tid, a, esk)@#i
-     & KemDecaps(tid, a, ekem, esk, ess)@#j 
+     & KemDecaps(ekem, esk, ess)@#j 
      & not (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 !>)
 
