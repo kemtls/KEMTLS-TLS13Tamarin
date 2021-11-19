@@ -213,6 +213,15 @@ lemma ahsms_derive [reuse]:
       ms = MasterSecret"
 !>)
 
+define(<!lemma_ku_rms!>, <!
+lemma ku_rms [reuse]:
+  "All tid actor role peer rms messages ms #i #j.
+    running(RMS, actor, role, peer, rms, messages)@i &
+    rms = resumption_master_secret() &
+    KU(rms)@j ==>
+      Ex #k #l. KU(ms)@k & KU(messages)@l & #k < #j & #l < #j"
+!>)
+
 define(<!lemma_posths_rms_weak!>, <!
 // For any running(PostHS...) either the auth_status was set in the main HS and
 // unchanged (along with the RMS), or there was post-hs auth, which means the
@@ -300,20 +309,6 @@ lemma auth_psk [reuse, use_induction, hide_lemma=posths_rms_weak]:
      ==>
       peer2 = peer |
       Ex #r. RevLtk(peer2)@r & #r < #k"
-!>)
-
-define(<!lemma_rms_derives_hs!>, <!
-lemma rms_derives_hs[reuse,hide_lemma=sig_origin]:
-  "All tid actor role peer hs rms messages #i #j #k.
-     running(RMS, actor, role, peer, rms, messages)@j &
-     commit(HS, actor, role, hs)@i &
-     KU(rms)@k ==> 
-         (Ex ms #l. 
-             ms = MasterSecret &
-             KU(hs)@l & #l < #k) |
-         (Ex #l. RevealPSK(actor, rms)@l & #l < #k) |
-         (Ex #l. RevealPSK(peer, rms)@l & #l < #k)"
-
 !>)
 
 define(<!lemma_matching_hsms!>, <!
@@ -571,8 +566,23 @@ lemma ekem_esk_can_only_be_revealed [reuse]:
 define(<!lemma_ekem_seed_needs_rev_esk!>, <!
 lemma ekem_seed_needs_rev_esk [reuse]:
     "All a tid ekem esk eseed #a #i #j.
-    (EKem(tid, a, esk)@#a & EKemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j) 
+    (EKem(tid, a, esk)@#a & KemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j)
       ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
+!>)
+
+define(<!lemma_ekem_seed_needs_rev_esk!>, <!
+lemma ekem_seed_needs_rev_esk [reuse]:
+    "All a tid ekem esk eseed #a #i #j.
+    (EKem(tid, a, esk)@#a & KemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j)
+      ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
+!>)
+
+define(<!lemma_ekem_getting_seed_requires_esk!>, <!
+lemma ekem_getting_seed_requires_esk [reuse]:
+  "All ekem esk eseed #i #j.
+    (KemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j)
+    ==> 
+    Ex #r. KU(esk)@#r & #r < #j"
 !>)
 
 define(<!lemma_ekem_only_revsk_in_client!>, <!

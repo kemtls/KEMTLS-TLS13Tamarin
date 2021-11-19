@@ -12,7 +12,7 @@ include(header.m4i)
 include(model.m4i)
 include(all_lemmas.m4i)
 
-include(restrictions.m4i)
+include(includes/uniqueness.m4i)
 
 end
 

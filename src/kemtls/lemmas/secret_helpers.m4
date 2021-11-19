@@ -15,248 +15,148 @@ include(header.m4i)
 include(model.m4i)
 include(all_lemmas.m4i)
 
-include(restrictions.m4i)
+/* precursors */
 
-lemma_tid_invariant/* [use_induction, reuse]:
-  "All tid actor role #i. Instance(tid, actor, role)@i==>
-      (Ex #j. Start(tid, actor, role)@j & (#j < #i))"
-*/
+include(includes/sources.m4i)
 
-lemma_one_start_per_tid/* [reuse]:
-  "All tid actor actor2 role role2 #i #j. Start(tid, actor, role)@i & Start(tid, actor2, role2)@j ==>#i=#j"
-*/
+include(includes/uniqueness.m4i)
 
-lemma_cert_req_origin/* [typing]:
-  "All certificate_request_context certificate_extensions keys #i.
-    KU(senc{handshake_record('13', certificate_request_context, certificate_extensions)}keys)@i ==> 
-      (Ex #j. KU(certificate_request_context)@j & #j < #i) |
-      (Ex #j tid actor role. running(CertReqCtxt, actor, role, certificate_request_context)@j & #j < #i)"
-*/
+include(includes/invariants.m4i)
 
-lemma_nst_source/* [typing]:
-  "All ticket ticket_age_add tkt_lt tkt_exts app_key #i.
-    KU(senc{handshake_record('4', tkt_lt, ticket_age_add, ticket, tkt_exts)}app_key)@i ==>
-      (Ex #j #k. KU(ticket)@j & KU(ticket_age_add)@k & #j < #i & #k < #i) |
-      (Ex tid S #j. running_server(NST, ticket, ticket_age_add)@j & #j < #i)"
-*/
+include(includes/kems.m4i)
 
-lemma_ekem_source
+include(includes/nonces.m4i)
 
-lemma_ku_extract/* [reuse, use_induction]:
-  "All a b #i. KU(Extract(a, b))@i ==> Ex #j #k. KU(a)@j & KU(b)@k & #j < #i & #k < #i"
-*/
+// secret_helper lemmas
 
-lemma_ku_expand/* [reuse, use_induction]:
-  "All secret label len #i. KU(Expand(secret, label, len))@i ==>
-    (Ex #j. KU(secret)@j & #j < #i) |
-    (not (Ex #k. KU(secret)@k & #k < #i) &
-    (Ex actor #l. RevealPSK(actor, Expand(secret, label, len))@l & #l < #i))"
-*/
+include(includes/ku.m4i)
 
-lemma_ekem_chal_dual
+include(includes/derive.m4i)
 
-lemma_ku_hs/* [reuse]:
-  "All tid actor role es hs res_psk gxy #i #j.
-    running(HS, actor, role, hs)@i &
-    hs = HandshakeSecret &
-    es = EarlySecret &
-    KU(hs)@j ==>
-      Ex #k #l. KU(gxy)@k & KU(res_psk)@l & #k < #j & #l < #j"
-*/
+lemma_ku_rms
 
-
-lemma_ekem_sk_invariant
-
-lemma_ekem_esk_can_only_be_revealed
-
-lemma_ekem_seed_needs_rev_esk
-
-lemma_ku_ltk/* [reuse]:
-  "All actor ltkA #i #j.
-    GenLtk(actor, ltkA)@i & KU(ltkA)@j ==>
-      Ex #k. RevLtk(actor)@k & #k < #j"
-*/
-
-lemma_ku_ahs
-
-lemma_ku_ms
-
-lemma_ku_fresh_psk/* [reuse]:
-  "All ticket res_psk #i #k.
-      FreshPSK(ticket,res_psk)@i & KU(res_psk)@k ==> 
-        Ex actor #j. 
-          RevealPSK(actor, res_psk)@j & #j < #k"
-*/
-
-lemma_hsahs_derive
-
-lemma_ahsms_derive/* [reuse]:
-  "All tid actor role ahs clauth_ms ms #i. 
-    running(AHSMS, actor, role, ahs, clauth_ss, ms)@i ==>
-      ms = MasterSecret"
-*/
-
-// For any running(PostHS...) either the auth_status was set in the main HS and
-// unchanged (along with the RMS), or there was post-hs auth, which means the
-// peer's auth_status is 'auth', the actor is a server*/
-lemma_posths_rms/* [reuse, use_induction]:
-  "All tid actor role hs rms peer auth_status messages #i. 
-    running(PostHS, actor, role, hs, rms, peer, auth_status, messages)@i ==>
-      Ex aas pas ms #j. 
-                running(RMS, actor, role, peer, rms, messages)@j &
-                ms = MasterSecret & rms = resumption_master_secret() & #j < #i &
-                auth_status = <aas, pas> &
-      (
-        (Ex aas2 #k. commit(Identity, actor, role, peer, <aas2, pas>)@k & #k < #i) |
-        (Ex aas2 #k. commit(IdentityPost, actor, role, peer, <aas2, pas>)@k &
-                role = 'server' & pas = 'auth' & (#k < #i | #k = #i)
-        )
-      )"
-*/
-
-// A weakened version of the above lemma when needing to avoid the looping
-// issue of the commit(IdentityPost, ...) bit.
-// Can use [hide_lemma=posths_rms] to only use this version.
-lemma_posths_rms_weak/* [reuse, use_induction]:
-  "All tid actor role hs rms peer auth_status messages #i. 
-    running(PostHS, actor, role, hs, rms, peer, auth_status, messages)@i ==>
-      Ex aas pas ms #j. 
-                running(RMS, actor, role, peer, rms, messages)@j &
-                ms = MasterSecret & rms = resumption_master_secret() & #j < #i &
-                auth_status = <aas, pas>"
-*/
+include(includes/posths.m4i)
 
 
 
-lemma_matching_transcripts_posths/* [reuse]:
-  "All tid tid2 actor peer actor2 peer2 role role2 rms rms2 messages #i #j.
-    running(RMS, actor, role, peer2, rms, messages)@i &
-    running2(RMS, peer, role2, actor2, rms2, messages)@j & not (role = role2) ==>
-     rms = rms2"
-*/
+dnl 
+dnl lemma_matching_rms_actors/* [reuse]:
+dnl   "All tid tid2 actor peer actor2 peer2 role rms messages messages2 #i #j.
+dnl     running(RMS, actor, role, peer, rms, messages)@i &
+dnl     running2(RMS, actor2, role, peer2, rms, messages2)@j ==>
+dnl      actor = actor2 & tid = tid2"
+dnl */
+dnl 
+dnl lemma_rev_ekem_before_hs
+dnl /*lemma_rev_dh_before_hs  [reuse]:
+dnl   "All tid actor role hs x #i #j.
+dnl     running(HS, actor, role, hs)@j &
+dnl     RevDHExp(tid, actor, x)@i ==>
+dnl     #i < #j"
+dnl */
+dnl 
+dnl lemma_matching_sessions/* [reuse, use_induction, hide_lemma=posths_rms]:
+dnl   "All tid tid2 actor actor2 role role2 peer peer2 rms messages #i #j #k.
+dnl     running(RMS, actor, role, peer2, rms, messages)@i & 
+dnl     running2(RMS, peer, role2, actor2, rms, messages)@j &
+dnl     not (role = role2) &
+dnl     KU(rms)@k ==>
+dnl       (Ex tid3 x #r. RevDHExp(tid3, actor, x)@r & #r < #i) |
+dnl       (Ex tid4 y #r. RevDHExp(tid4, peer, y)@r & #r < #j) |
+dnl       (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
+dnl       (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
+dnl */
+dnl 
+dnl lemma_sig_origin/* [reuse]:
+dnl   "All certificate certificate_request_context signature verify_data hs_key sig_messages ltkA  #i.
+dnl         KU(senc{Certificate, CertificateVerify, Finished}hs_key)@i & (signature = sign{sig_messages}ltkA) ==>
+dnl       (Ex #j. KU(ltkA)@j & #j < i) | (Ex #k. UseLtk(ltkA, signature)@k & #k < #i)"
+dnl */
+dnl 
+dnl lemma_post_master_secret/* [reuse, hide_lemma=posths_rms]:
+dnl   "All tid actor peer role hs rms aas messages #i #k.
+dnl     running(PostHS, actor, role, hs, rms, peer, <aas, 'auth'>, messages)@i & 
+dnl     commit(HS, actor, role, hs)@i & 
+dnl     commit(IdentityPost, actor, role, peer, <aas, 'auth'>)@i &
+dnl     KU(rms)@k ==>
+dnl       (Ex #r. RevLtk(peer)@r & #r < #i) |
+dnl       (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
+dnl       (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
+dnl       (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
+dnl       (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
+dnl */
+dnl 
+dnl lemma_invariant_post_hs/* [reuse, use_induction, hide_lemma=posths_rms]:
+dnl   "All tid actor peer peer2 role hs hs2 rms rms2 as as2 msgs msgs2 #i #j.
+dnl     running(PostHS, actor, role, hs, rms, peer, as, msgs)@i & 
+dnl     running(PostHS, actor, role, hs2, rms2, peer2, as2, msgs2)@j ==>
+dnl       peer = peer2 & rms = rms2 & msgs = msgs2 & hs = hs2"
+dnl */
+dnl 
+dnl 
+dnl /*
+dnl   Strategy:
+dnl   Intutition is that if two matching RMS then at some point a cert was hashed
+dnl   into the handshake.
+dnl 
+dnl   To prove this, if RRMS and CommitIdentity(,... 'auth')
+dnl   and RRMS2 is matching,
+dnl   then there either there exists UseLtk and UsePk for the same person,
+dnl   or RevLtk of peer.
+dnl 
+dnl   This will have to prove inductively over both RRMS (similar to matching sessions)
+dnl   in fact, can probably roll it in to matching_sessions?
+dnl   
+dnl 
+dnl */
+dnl 
+dnl 
+dnl lemma_auth_psk/* [reuse, use_induction, hide_lemma=posths_rms_weak]:
+dnl   "All tid tid2 actor actor2 role role2 peer peer2 rms messages aas #i #j #k.
+dnl     running(RMS, actor, role, peer2, rms, messages)@i & 
+dnl     running2(RMS, peer, role2, actor2, rms, messages)@j &
+dnl     commit(Identity, actor, role, <peer, <aas, 'auth'>>)@k &
+dnl     not (role = role2)
+dnl      ==>
+dnl       peer2 = peer |
+dnl       Ex #r. RevLtk(peer2)@r & #r < #k"
+dnl */
+dnl 
+dnl lemma_rev_ekem_ordering
+dnl 
+dnl lemma_matching_hsms/* [reuse]:
+dnl   "All tid actor role hs hs2 ms #i #j.
+dnl     commit(HS, actor, role, hs2)@i &
+dnl     running(HSMS, actor, role, hs, ms)@j ==>
+dnl       hs = hs2"
+dnl */
+dnl 
+dnl lemma_handshake_secret/* [reuse, use_induction, hide_lemma=posths_rms_weak]:
+dnl   "All tid actor peer role hs aas #i #k.
+dnl     commit(HS, actor, role, hs)@i &
+dnl     commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
+dnl     KU(hs)@k ==>
+dnl         (Ex #r. RevLtk(peer)@r & #r < #i) |
+dnl         (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
+dnl         (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
+dnl         (Ex rms #r. RevealPSK(actor, rms)@r & #r < #k) |
+dnl         (Ex rms #r. RevealPSK(peer, rms)@r & #r < #k)"
+dnl */
+dnl 
+dnl lemma_pfs_handshake_secret/* [reuse, hide_lemma=posths_rms_weak]:
+dnl   "All tid actor peer role hs aas psk_ke_mode #i #k.
+dnl     commit(HS, actor, role, hs)@i &
+dnl     running(Mode, actor, role, psk_ke_mode)@i &
+dnl     commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
+dnl     KU(hs)@k &
+dnl     (not psk_ke_mode = psk_ke) ==>
+dnl         (Ex #r. RevLtk(peer)@r & #r < #i) |
+dnl         (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
+dnl         (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
+dnl         (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) |
+dnl         (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i)"
+dnl */
+dnl 
 
-lemma_matching_rms_posths/* [reuse]:
-  "All tid tid2 actor peer actor2 peer2 role role2 rms messages messages2 #i #j.
-    running(RMS, actor, role, peer2, rms, messages)@i &
-    running2(RMS, peer, role2, actor2, rms, messages2)@j & not (role = role2) ==>
-     messages = messages2"
-*/
-
-lemma_matching_rms_actors/* [reuse]:
-  "All tid tid2 actor peer actor2 peer2 role rms messages messages2 #i #j.
-    running(RMS, actor, role, peer, rms, messages)@i &
-    running2(RMS, actor2, role, peer2, rms, messages2)@j ==>
-     actor = actor2 & tid = tid2"
-*/
-
-lemma_rev_ekem_before_hs
-/*lemma_rev_dh_before_hs  [reuse]:
-  "All tid actor role hs x #i #j.
-    running(HS, actor, role, hs)@j &
-    RevDHExp(tid, actor, x)@i ==>
-    #i < #j"
-*/
-
-lemma_matching_sessions/* [reuse, use_induction, hide_lemma=posths_rms]:
-  "All tid tid2 actor actor2 role role2 peer peer2 rms messages #i #j #k.
-    running(RMS, actor, role, peer2, rms, messages)@i & 
-    running2(RMS, peer, role2, actor2, rms, messages)@j &
-    not (role = role2) &
-    KU(rms)@k ==>
-      (Ex tid3 x #r. RevDHExp(tid3, actor, x)@r & #r < #i) |
-      (Ex tid4 y #r. RevDHExp(tid4, peer, y)@r & #r < #j) |
-      (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
-      (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
-*/
-
-lemma_sig_origin/* [reuse]:
-  "All certificate certificate_request_context signature verify_data hs_key sig_messages ltkA  #i.
-        KU(senc{Certificate, CertificateVerify, Finished}hs_key)@i & (signature = sign{sig_messages}ltkA) ==>
-      (Ex #j. KU(ltkA)@j & #j < i) | (Ex #k. UseLtk(ltkA, signature)@k & #k < #i)"
-*/
-
-lemma_post_master_secret/* [reuse, hide_lemma=posths_rms]:
-  "All tid actor peer role hs rms aas messages #i #k.
-    running(PostHS, actor, role, hs, rms, peer, <aas, 'auth'>, messages)@i & 
-    commit(HS, actor, role, hs)@i & 
-    commit(IdentityPost, actor, role, peer, <aas, 'auth'>)@i &
-    KU(rms)@k ==>
-      (Ex #r. RevLtk(peer)@r & #r < #i) |
-      (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
-      (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
-      (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
-      (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
-*/
-
-lemma_invariant_post_hs/* [reuse, use_induction, hide_lemma=posths_rms]:
-  "All tid actor peer peer2 role hs hs2 rms rms2 as as2 msgs msgs2 #i #j.
-    running(PostHS, actor, role, hs, rms, peer, as, msgs)@i & 
-    running(PostHS, actor, role, hs2, rms2, peer2, as2, msgs2)@j ==>
-      peer = peer2 & rms = rms2 & msgs = msgs2 & hs = hs2"
-*/
-
-
-/*
-  Strategy:
-  Intutition is that if two matching RMS then at some point a cert was hashed
-  into the handshake.
-
-  To prove this, if RRMS and CommitIdentity(,... 'auth')
-  and RRMS2 is matching,
-  then there either there exists UseLtk and UsePk for the same person,
-  or RevLtk of peer.
-
-  This will have to prove inductively over both RRMS (similar to matching sessions)
-  in fact, can probably roll it in to matching_sessions?
-  
-
-*/
-
-
-lemma_auth_psk/* [reuse, use_induction, hide_lemma=posths_rms_weak]:
-  "All tid tid2 actor actor2 role role2 peer peer2 rms messages aas #i #j #k.
-    running(RMS, actor, role, peer2, rms, messages)@i & 
-    running2(RMS, peer, role2, actor2, rms, messages)@j &
-    commit(Identity, actor, role, <peer, <aas, 'auth'>>)@k &
-    not (role = role2)
-     ==>
-      peer2 = peer |
-      Ex #r. RevLtk(peer2)@r & #r < #k"
-*/
-
-lemma_rev_ekem_ordering
-
-lemma_matching_hsms/* [reuse]:
-  "All tid actor role hs hs2 ms #i #j.
-    commit(HS, actor, role, hs2)@i &
-    running(HSMS, actor, role, hs, ms)@j ==>
-      hs = hs2"
-*/
-
-lemma_handshake_secret/* [reuse, use_induction, hide_lemma=posths_rms_weak]:
-  "All tid actor peer role hs aas #i #k.
-    commit(HS, actor, role, hs)@i &
-    commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
-    KU(hs)@k ==>
-        (Ex #r. RevLtk(peer)@r & #r < #i) |
-        (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
-        (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
-        (Ex rms #r. RevealPSK(actor, rms)@r & #r < #k) |
-        (Ex rms #r. RevealPSK(peer, rms)@r & #r < #k)"
-*/
-
-lemma_pfs_handshake_secret/* [reuse, hide_lemma=posths_rms_weak]:
-  "All tid actor peer role hs aas psk_ke_mode #i #k.
-    commit(HS, actor, role, hs)@i &
-    running(Mode, actor, role, psk_ke_mode)@i &
-    commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
-    KU(hs)@k &
-    (not psk_ke_mode = psk_ke) ==>
-        (Ex #r. RevLtk(peer)@r & #r < #i) |
-        (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
-        (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
-        (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) |
-        (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i)"
-*/
 
 end

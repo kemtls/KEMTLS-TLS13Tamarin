@@ -273,7 +273,7 @@ let
 in
   [
     State(C2d, tid, C, S, PrevClientState)[no_precomp],
-    !Pk(S, kempk(S, ~ltkS)),
+    !Pk(S, kempk($k, ~ltkS)),
     Fr(~seed),
     In(senc{Certificate}hs_keys)
   ]
@@ -283,61 +283,13 @@ in
     Eq(psk_ke_mode, 'na'),
     running_client(HSAHS, hs, ahs, ss),
     running_client(AHS, ahs),
-    running_client(Mode, psk_ke_mode)
+    running_client(Mode, psk_ke_mode),
+    KemEncap($k, certificate, ss)
   ]->
   [
     State(C3, tid, C, S, ClientState),
     Out(senc{KemEncapsulation}hs_keyc)
   ]
-
-
-<!/*
-rule recv_server_auth:
-let
-    prev_psk_ke_mode = 'na'
-    set_state()
-
-    S = $S
-    C = $C
-
-    certificate_request_context = '0'
-    certificate = pk(~ltkS)
-    messages = <messages, Certificate>
-    sig_messages = signature_input(server)
-
-    messages = <messages, CertificateVerify>
-
-    exp_verify_data = compute_finished(server)
-
-    messages = <messages, Finished>
-
-    cats = application_traffic_secret_0(client)
-    sats = application_traffic_secret_0(server)
-    app_keys = keygen(sats, app_key_label())
-    ems = exporter_master_secret()
-
-    // auth_status = <cas, sas>
-    auth_status = <'0', 'auth'>
-in
-    [ State(C2d, tid, C, S, PrevClientState)[no_precomp],
-      !Pk(S, pk(~ltkS)),
-      In(senc{Certificate, CertificateVerify, Finished}hs_keys)
-    ]
-  --[ C2d(tid),
-      Instance(tid, C, 'client'),
-      Eq(psk_ke_mode, 'na'),
-      Eq(verify(signature, sig_messages, pk(~ltkS)), true),
-      Eq(verify_data, exp_verify_data),
-      running_client(Mode, psk_ke_mode),
-      commit_client(Identity, <S, auth_status>),
-      commit_client(HS, hs),
-      commit_client(Transcript, messages),
-      commit_client(Nonces, nc, ns)
-    ]->
-    [ State(C3, tid, C, S, ClientState),
-      RecvStream(tid, C, S, auth_status, app_keys)
-    ]
-*/!>
 
 rule client_auth:
 let
@@ -351,9 +303,10 @@ let
     verify_data = compute_finished(client)
 
     messages = <messages, Finished>
-    ms = MasterSecret
 
+    ms = MasterSecret
     rms = resumption_master_secret()
+
     app_keyc = keygen(cats, app_key_label())
     //app_keys = keygen(sats, app_key_label())
 in
@@ -413,9 +366,10 @@ let
     verify_data = compute_finished(client)
 
     messages = <messages, Finished>
+
     ms = MasterSecret
-    
     rms = resumption_master_secret()
+    
     app_keyc = keygen(cats, app_key_label())
     // we compute this in KEMTLS when SFIN is received
     //app_keys = keygen(sats, app_key_label())
@@ -429,7 +383,9 @@ in
   --[ C3a(tid),
       Instance(tid, C, 'client'),
       running_client(Transcript, messages),
-      running_client(HSMS, hs, ms),
+      running_client(MS, clauth_ss, ms),
+      running_client(AHSMS, ahs, ms),
+      running_client(HSAHSMS, hs, ahs, ms),
       running_client(RMS, S, rms, messages),
       running_client(Mode, psk_ke_mode)
     ]->
@@ -437,58 +393,6 @@ in
       Out(senc{Finished}ahs_keyc),
       SendStream(tid, C, S, auth_status, app_keyc)
     ]
-
-<!/*
-rule client_auth_cert:
-let
-    prev_cert_req = '1'
-    prev_psk_ke_mode = 'na'
-    set_state()
-
-    S = $S
-    C = $C
-
-    certificate_request_context = '0' 
-    certificate = pk(~ltkC)
-    messages = <prev_messages, Certificate>
-
-    signature = compute_signature(~ltkC, client)
-    messages = <messages, CertificateVerify>
-
-    verify_data = compute_finished(client)
-    messages = <messages, Finished>
-
-    rms = resumption_master_secret()
-
-    // zeroes cert_req after it has been used
-    cert_req = '0'
-
-    app_keyc = keygen(cats, app_key_label())
-    app_keys = keygen(sats, app_key_label())
-
-    auth_status = <'auth', 'auth'>
-in
-
-    [ State(C3, tid, C, S, PrevClientState)[no_precomp],
-      RecvStream(tid, C, S, prev_auth_status, app_keys),
-      !Ltk(C, ~ltkC)
-    ]
-  --[ C3_cert(tid),
-      Instance(tid, C, 'client'),
-      UseLtk(~ltkC, signature),
-      running_client(HSMS, hs, ms),
-      running_client(Transcript, messages),
-      running_client(RMS, S, rms, messages),
-      running_client(Mode, psk_ke_mode),
-      SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
-    ]->
-    [ State(C4, tid, C, S, ClientState),
-      Out(senc{Certificate, CertificateVerify, Finished}hs_keyc),
-      SendStream(tid, C, S, auth_status, app_keyc),
-      RecvStream(tid, C, S, auth_status, app_keys)
-    ]
-*/!>
-
 
 rule recv_server_auth:
 let

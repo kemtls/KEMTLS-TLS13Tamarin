@@ -1,0 +1,20 @@
+lemma_cert_req_origin/* [typing]:
+  "All certificate_request_context certificate_extensions keys #i.
+    KU(senc{handshake_record('13', certificate_request_context, certificate_extensions)}keys)@i ==> 
+      (Ex #j. KU(certificate_request_context)@j & #j < #i) |
+      (Ex #j tid actor role. running(CertReqCtxt, actor, role, certificate_request_context)@j & #j < #i)"
+*/
+
+lemma_nst_source/* [typing]:
+  "All ticket ticket_age_add tkt_lt tkt_exts app_key #i.
+    KU(senc{handshake_record('4', tkt_lt, ticket_age_add, ticket, tkt_exts)}app_key)@i ==>
+      (Ex #j #k. KU(ticket)@j & KU(ticket_age_add)@k & #j < #i & #k < #i) |
+      (Ex tid S #j. running_server(NST, ticket, ticket_age_add)@j & #j < #i)"
+*/
+
+lemma_ekem_source/* [sources]:
+  "All tid esk actor #j.
+    RevEKemSk(tid, actor, esk)@j 
+    ==> 
+      (Ex #i. EKem(tid, actor, esk)@i & #i < #j)"
+*/

@@ -1,0 +1,17 @@
+// Each Instance is preceded by a Start
+lemma_tid_invariant/* [use_induction, reuse]:
+  "All tid actor role #i. Instance(tid, actor, role)@i==>
+      (Ex #j. Start(tid, actor, role)@j & (#j < #i))"
+*/
+
+// Starts are unique per tid
+lemma_one_start_per_tid/* [reuse]:
+  "All tid actor actor2 role role2 #i #j. Start(tid, actor, role)@i & Start(tid, actor2, role2)@j ==>#i=#j"
+*/
+
+ifdef(<!PSK!>, <!
+// PSK enabled 
+!>, <!
+lemma psk_cant_be_revealed_if_no_psk_model [reuse]:
+    "not (Ex a res_psk #j. RevealPSK(a, res_psk)@#j)"
+!>)

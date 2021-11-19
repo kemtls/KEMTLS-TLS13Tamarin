@@ -1,0 +1,58 @@
+/*******
+  KEM LEMMAS
+*/
+// sanity check
+lemma_ekem_pk_can_be_decapsed
+lemma_ekem_sk_can_be_revealed
+
+// unique 
+lemma_one_ekem_per_x
+
+// ordering
+lemma_ekem_sk_invariant
+lemma_ekem_sk_secret_ordering
+lemma_ekem_only_revsk_in_client
+lemma_rev_ekem_ordering
+lemma_rev_ekem_before_hs
+
+lemma ku_encaps [reuse]:
+  "All kem pk ss sk seed #i #j.
+    KemEncap(kem, pk, ss)@#i &
+    ss = <kem, seed> &
+    pk = kempk(kem, sk) &
+    KU(ss)@#j
+    ==>
+    (Ex #r. KU(seed)@r & #r < #j) |
+    (Ex #r. KU(sk)@r & #r < #j)
+  "
+
+lemma ku_decaps [reuse]:
+  "All tid a kem sk ss seed #i #j.
+    KemDecaps(tid, a, kem, sk, ss)@#i &
+    ss = <kem, seed> &
+    KU(ss)@#j
+    ==>
+    (Ex #r. KU(seed)@#r & #r < #j) |
+    (Ex #r. KU(sk)@#r & #r < #j)
+  "
+
+// requirements
+lemma_ekem_esk_can_only_be_revealed
+lemma_ekem_seed_needs_rev_esk
+lemma_ekem_getting_seed_requires_esk
+
+// chal_dual
+lemma_ekem_chal_dual
+
+// static KEM
+lemma skem_getting_seed_requires_reveal [reuse]:
+  "All a kem ltk eseed #a #i #j.
+  (GenLtk(a, ltk)@#a & KemEncap(kem, kempk(kem, ltk), eseed)@#i & KU(eseed)@#j)
+  ==>
+  (Ex #r. RevLtk(a)@#r & #r < #j)"
+
+lemma skem_decaps_getting_ss_requires_reveal [reuse]:
+  "All tid a kem ltk ss #a #i #j.
+  GenLtk(a, ltk)@#a & KemDecaps(tid, a, kem, ltk, ss)@#i & KU(ss)@#j
+  ==>
+  (Ex #r. RevLtk(a)@#r & #r < #j)"

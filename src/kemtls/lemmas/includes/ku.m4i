@@ -1,0 +1,38 @@
+lemma_ku_extract/* [reuse, use_induction]:
+  "All a b #i. KU(Extract(a, b))@i ==> Ex #j #k. KU(a)@j & KU(b)@k & #j < #i & #k < #i"
+*/
+
+lemma_ku_expand/* [reuse, use_induction]:
+  "All secret label len #i. KU(Expand(secret, label, len))@i ==>
+    (Ex #j. KU(secret)@j & #j < #i) |
+    (not (Ex #k. KU(secret)@k & #k < #i) &
+    (Ex actor #l. RevealPSK(actor, Expand(secret, label, len))@l & #l < #i))"
+*/
+
+lemma_ku_hs/* [reuse]:
+  "All tid actor role es hs res_psk gxy #i #j.
+    running(HS, actor, role, hs)@i &
+    hs = HandshakeSecret &
+    es = EarlySecret &
+    KU(hs)@j ==>
+      Ex #k #l. KU(gxy)@k & KU(res_psk)@l & #k < #j & #l < #j"
+*/
+
+lemma_ku_ltk/* [reuse]:
+  "All actor ltkA #i #j.
+    GenLtk(actor, ltkA)@i & KU(ltkA)@j ==>
+      Ex #k. RevLtk(actor)@k & #k < #j"
+*/
+
+lemma_ku_ahs
+
+lemma_ku_ms
+
+ifdef(<!PSK!>, <!
+lemma_ku_fresh_psk/* [reuse]:
+  "All ticket res_psk #i #k.
+      FreshPSK(ticket,res_psk)@i & KU(res_psk)@k ==> 
+        Ex actor #j. 
+          RevealPSK(actor, res_psk)@j & #j < #k"
+*/
+!>)

@@ -1,0 +1,7 @@
+lemma_hsahs_derive
+
+lemma_ahsms_derive/* [reuse]:
+  "All tid actor role ahs clauth_ms ms #i. 
+    running(AHSMS, actor, role, ahs, clauth_ss, ms)@i ==>
+      ms = MasterSecret"
+*/

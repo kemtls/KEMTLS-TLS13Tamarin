@@ -15,43 +15,11 @@ include(header.m4i)
 include(model.m4i)
 include(all_lemmas.m4i)
 
-include(restrictions.m4i)
+include(includes/uniqueness.m4i)
 
-lemma_cert_req_origin/* [typing]:
-  "All certificate_request_context certificate_extensions keys #i.
-    KU(senc{handshake_record('13', certificate_request_context, certificate_extensions)}keys)@i ==> 
-      (Ex #j. KU(certificate_request_context)@j & #j < #i) |
-      (Ex #j tid actor role. running(CertReqCtxt, actor, role, certificate_request_context)@j & #j < #i)"
-*/
+include(includes/sources.m4i)
 
-lemma_nst_source/* [typing]:
-  "All ticket ticket_age_add tkt_lt tkt_exts app_key #i.
-    KU(senc{handshake_record('4', tkt_lt, ticket_age_add, ticket, tkt_exts)}app_key)@i ==>
-      (Ex #j #k. KU(ticket)@j & KU(ticket_age_add)@k & #j < #i & #k < #i) |
-      (Ex tid S #j. running_server(NST, ticket, ticket_age_add)@j & #j < #i)"
-*/
-
-lemma_ekem_source/* [sources]:
-  "All tid actor ekem #j.
-    RevEKemSk(tid, actor, ekem)@j ==> Ex #i. EKem(tid, actor, ekem)@i & #i < #j"
-*/
-
-lemma_ku_extract/* [reuse, use_induction]:
-  "All a b #i. KU(Extract(a, b))@i ==> Ex #j #k. KU(a)@j & KU(b)@k & #j < #i & #k < #i"
-*/
-
-lemma_ku_expand/* [reuse, use_induction]:
-  "All secret label len #i. KU(Expand(secret, label, len))@i ==>
-    (Ex #j. KU(secret)@j & #j < #i) |
-    (not (Ex #k. KU(secret)@k & #k < #i) &
-    (Ex actor #l. RevealPSK(actor, Expand(secret, label, len))@l & #l < #i))"
-*/
-
-lemma_ku_ltk/* [reuse]:
-  "All actor ltkA #i #j.
-    GenLtk(actor, ltkA)@i & KU(ltkA)@j ==>
-      Ex #k. RevLtk(actor)@k & #k < #j"
-*/
+<!/*
 
 lemma_ahsms_derive/* [reuse]:
   "All tid actor role ahs clauth_ms ms #i. 
@@ -87,18 +55,6 @@ lemma_matching_rms_posths/* [reuse]:
     running(RMS, actor, role, peer2, rms, messages)@i &
     running2(RMS, peer, role2, actor2, rms, messages2)@j & not (role = role2) ==>
      messages = messages2"
-*/
-
-lemma_rms_derives_hs/*[reuse]:
-  "All tid actor role peer hs rms messages #i #j #k.
-     running(RMS, actor, role, peer, rms, messages)@j &
-     commit(HS, actor, role, hs)@i &
-     KU(rms)@k ==> 
-         (Ex ms #l. 
-             ms = MasterSecret &
-             KU(hs)@l & #l < #k) |
-         (Ex #l. RevealPSK(actor, rms)@l & #l < #k) |
-         (Ex #l. RevealPSK(peer, rms)@l & #l < #k)"
 */
 
 lemma_sig_origin/* [reuse]:
@@ -300,6 +256,8 @@ lemma_session_key_agreement/*:
       ==>
         kr = kr2 & kw = kw2"
 */
+
+*/!>
 
 end
 

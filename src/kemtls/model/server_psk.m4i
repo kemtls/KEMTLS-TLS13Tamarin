@@ -110,7 +110,7 @@ in
   --[ S1_PSK_DHE(tid),
       Instance(tid, S, 'server'),
       KemChal(ekem, some_esk, epk, ect, ess),
-      EKemEncap(ekem, epk, eseed),
+      KemEncap(ekem, epk, ess),
       running_server(Nonces, nc, ns)
     ]->
     [
