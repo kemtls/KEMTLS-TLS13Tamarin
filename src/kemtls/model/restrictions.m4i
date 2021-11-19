@@ -1,0 +1,65 @@
+// All the model restriction lemmas
+
+// client
+uniq(C0)
+
+uniq(C1_retry)
+uniq(C1)
+
+uniq(C2a)
+uniq(C2b)
+uniq(C2c_req)
+uniq(C2c)
+uniq(C2d)
+
+uniq(C3_skip_cert)
+uniq(C3_cert)
+uniq(C3a)
+uniq(C3b)
+
+// server
+uniq(S1)
+
+uniq(S2a)
+uniq(S2b)
+uniq(S2c_req)
+uniq(S2c)
+uniq(S2d)
+uniq(S2e)
+
+uniq(S3_cert)
+uniq(S3)
+uniq(S3a)
+uniq(S3fin)
+
+// these are mutually exclusive
+
+// either certificate request is sent, or ignored
+one_of(C2c_req, C2c)
+
+// either a certificate is received, or it is ignored
+one_of(S3, S3_cert)
+
+// either we handle a client certificate request, or it is ignored
+one_of(C3_cert, C3_skip_cert)
+
+
+ifdef(<!PSK!>, <!
+// PSK-related restrictions
+uniq(C1_PSK_DHE)
+uniq(C1_PSK)
+uniq(C2d_PSK)
+
+uniq(S1_PSK_DHE)
+uniq(S1_PSK)
+uniq(S2d_PSK)
+
+one_of(S1, S1_PSK_DHE)
+one_of(S1_PSK, S1_PSK_DHE)
+one_of(S1_PSK, S1)
+one_of(C1, C1_PSK_DHE)
+one_of(C1_PSK, C1_PSK_DHE)
+one_of(C1_PSK, C1)
+one_of(S2d, S2d_PSK)
+one_of(C2d, C2d_PSK)
+!>)

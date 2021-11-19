@@ -15,19 +15,7 @@ include(header.m4i)
 include(model.m4i)
 include(all_lemmas.m4i)
 
-uniq(C2d)
-uniq(C2d_PSK)
-uniq(S2d)
-uniq(S2d_PSK)
-uniq(C3)
-uniq(C3_cert)
-uniq(S3)
-uniq(S3_cert)
-
-one_of(S3, S3_cert)
-one_of(C3, C3_cert)
-one_of(S2d, S2d_PSK)
-one_of(C2d, C2d_PSK)
+include(restrictions.m4i)
 
 lemma_tid_invariant/* [use_induction, reuse]:
   "All tid actor role #i. Instance(tid, actor, role)@i==>

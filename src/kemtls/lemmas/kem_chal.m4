@@ -18,13 +18,10 @@ include(header.m4i)
 include(model.m4i)
 include(all_lemmas.m4i)
 
+include(restrictions.m4i)
+
 lemma_cert_req_origin
 lemma_nst_source
-
-uniq(C0)
-uniq(C1_retry)
-uniq(S1)
-uniq(C1)
 
 lemma_ekem_sk_invariant
 lemma_one_ekem_per_x
