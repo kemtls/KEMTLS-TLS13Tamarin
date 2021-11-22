@@ -152,6 +152,7 @@ lemma kem_ephemeral_decaps_unique [reuse]:
 lemma kem_encaps_ordering [reuse]:
   "All kem pk sk ss #i #j.
     KemEncap(kem, pk, ss)@i &
-    KemDecaps(kem, sk, ss)@j
+    KemDecaps(kem, sk, ss)@j &
+    pk = kempk(kem, sk)
     ==>
     #i < #j"

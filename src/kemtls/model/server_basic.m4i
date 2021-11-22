@@ -358,9 +358,9 @@ in
   --[ S3a(tid),
       Instance(tid, S, 'server'),
       running_server(AHSMS, ahs, ms, clauth_ss),
-      running_server(HSAHSMS, ahs, ms),
+      running_server(HSAHSMS, hs, ahs, ms),
       running_server(MS, clauth_ss, ms),
-      running_server(RMS, S, rms, messages),
+      running_server(RMS, C, rms, messages),
       Eq(verify_data, exp_verify_data)
     ]->
     [ 
@@ -391,6 +391,8 @@ in
       running_server(Mode, psk_ke_mode),
       commit_server(Identity, C, auth_status),
       commit_server(HS, hs),
+      commit_server(AHS, ahs),
+      commit_server(MS, ms),
       commit_server(Transcript, messages),
       SessionKey(tid, S, C, auth_status, <app_keys, app_keyc>),
       commit_server(Nonces, nc, ns)
