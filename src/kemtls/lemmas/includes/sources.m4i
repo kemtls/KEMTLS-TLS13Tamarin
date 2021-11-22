@@ -18,3 +18,24 @@ lemma_ekem_source/* [sources]:
     ==> 
       (Ex #i. EKem(tid, actor, esk)@i & #i < #j)"
 */
+
+lemma revltk_source [sources]:
+  "All a #j.
+    RevLtk(a)@j ==> Ex ltk #i. GenLtk(a, ltk)@i & #i < #j"
+
+lemma kemencap_source [sources]:
+  "All kem pk sk ss #j.
+    pk = kempk(kem, sk) &
+    KemEncap(kem, pk, ss)@j
+    ==>
+      (Ex #i. KU(sk)@i & #i < #j) | 
+      (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) | 
+      (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
+
+lemma kemdecap_source_sk [sources]:
+  "All kem sk seed ss #j.
+    KemDecaps(kem, sk, ss)@j &
+    ss = <kem, seed>
+    ==>
+      (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) |
+      (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
