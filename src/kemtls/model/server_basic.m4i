@@ -357,7 +357,7 @@ in
     ]
   --[ S3a(tid),
       Instance(tid, S, 'server'),
-      running_server(AHSMS, ahs, ms),
+      running_server(AHSMS, ahs, ms, clauth_ss),
       running_server(HSAHSMS, ahs, ms),
       running_server(MS, clauth_ss, ms),
       running_server(RMS, S, rms, messages),

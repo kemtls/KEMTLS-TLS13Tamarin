@@ -209,7 +209,7 @@ lemma hsahs_derive [reuse]:
 define(<!lemma_ahsms_derive!>, <!
 lemma ahsms_derive [reuse]:
   "All tid actor role ahs ms clauth_ss #i. 
-    running(AHSMS, actor, role, ahs, clauth_ss, ms)@i ==>
+    running(AHSMS, actor, role, ahs, ms, clauth_ss)@i ==>
       ms = MasterSecret"
 !>)
 
@@ -292,13 +292,6 @@ lemma matching_sessions [reuse, use_induction, hide_lemma=posths_rms]:
       (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
 !>)
 
-define(<!lemma_sig_origin!>, <!
-lemma sig_origin [reuse]:
-  "All certificate certificate_request_context signature verify_data hs_key sig_messages ltkA  #i.
-        KU(senc{Certificate, CertificateVerify, Finished}hs_key)@i & (signature = sign{sig_messages}ltkA) ==>
-      (Ex #j. KU(ltkA)@j & #j < i) | (Ex #k. UseLtk(ltkA, signature)@k & #k < #i)"
-!>)
-
 define(<!lemma_auth_psk!>, <!
 lemma auth_psk [reuse, use_induction, hide_lemma=posths_rms_weak]:
   "All tid tid2 actor actor2 role role2 peer peer2 rms messages aas #i #j #k.
@@ -311,13 +304,48 @@ lemma auth_psk [reuse, use_induction, hide_lemma=posths_rms_weak]:
       Ex #r. RevLtk(peer2)@r & #r < #k"
 !>)
 
-define(<!lemma_matching_hsms!>, <!
-lemma matching_hsms [reuse]:
-  "All tid actor role hs hs2 ms #i #j.
+define(<!lemma_matching_hsahsms!>, <!
+lemma matching_hsahsms [reuse]:
+  "All tid actor role hs hs2 ahs ms #i #j.
     commit(HS, actor, role, hs2)@i &
-    running(HSMS, actor, role, hs, ms)@j ==>
+    running(HSAHSMS, actor, role, hs, ahs, ms)@j ==>
       hs = hs2"
 !>)
+
+define(<!lemma_matching_hsahs!>, <!
+lemma matching_hsahs [reuse]:
+  "All tid actor role hs hs2 ahs ss #i #j.
+    commit(HS, actor, role, hs2)@i &
+    running(HSAHS, actor, role, hs, ahs, ss)@j ==>
+      hs = hs2"
+!>)
+
+define(<!lemma_matching_ahsms!>, <!
+lemma matching_ahsms [reuse]:
+  "All tid actor role ahs ahs2 ms clauth_ss #i #j.
+    commit(AHS, actor, role, ahs2)@i &
+    running(AHSMS, actor, role, ahs, ms, clauth_ss)@j ==>
+      ahs = ahs2"
+!>)
+
+define(<!lemma_matching_hsahsms_all!>, <!
+lemma matching_hsahsms_all [reuse]:
+  "All tid actor role hs hs2 ahs ahs2 ms ms2 clauth_ss #i #j #k #l.
+    commit(HS, actor, role, hs2)@i &
+    commit(AHS, actor, role, ahs2)@j &
+    commit(MS, actor, role, ms2)@k &
+    running(HSAHSMS, actor, role, hs, ahs, ms, clauth_ss)@l ==>
+      (hs = hs2 & ahs = ahs2 & ms = ms2)"
+!>)
+
+define(<!lemma_matching_ahsms_ms!>, <!
+lemma matching_ahsms_ms [reuse]:
+  "All tid actor role ahs ms ms2 clauth_ss #i #j.
+    commit(MS, actor, role, ms2)@i &
+    running(AHSMS, actor, role, ahs, ms, clauth_ss)@j ==>
+      ms = ms2"
+!>)
+
 
 define(<!lemma_post_master_secret!>, <!
 lemma post_master_secret [reuse, hide_lemma=posths_rms]:

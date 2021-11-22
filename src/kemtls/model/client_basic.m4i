@@ -317,7 +317,7 @@ in
       Instance(tid, C, 'client'),
       running_client(Transcript, messages),
       running_client(MS, clauth_ss, ms),
-      running_client(AHSMS, ahs, ms),
+      running_client(AHSMS, ahs, ms, clauth_ss),
       running_client(HSAHSMS, hs, ahs, ms),
       running_client(RMS, S, rms, messages),
       running_client(Mode, psk_ke_mode)
@@ -384,7 +384,7 @@ in
       Instance(tid, C, 'client'),
       running_client(Transcript, messages),
       running_client(MS, clauth_ss, ms),
-      running_client(AHSMS, ahs, ms),
+      running_client(AHSMS, ahs, ms, clauth_ss),
       running_client(HSAHSMS, hs, ahs, ms),
       running_client(RMS, S, rms, messages),
       running_client(Mode, psk_ke_mode)
@@ -417,6 +417,9 @@ in
     ]
   --[ C3b(tid),
       Instance(tid, C, 'client'),
+      commit_client(HS, hs),
+      commit_client(AHS, ahs),
+      commit_client(MS, ms),
       Eq(verify_data, exp_verify_data),
       commit_client(Identity, <S, auth_status>),
       SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)

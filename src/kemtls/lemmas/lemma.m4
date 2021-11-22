@@ -21,10 +21,7 @@ include(includes/sources.m4i)
 
 <!/*
 
-lemma_ahsms_derive/* [reuse]:
-  "All tid actor role ahs clauth_ms ms #i. 
-    running(AHSMS, actor, role, ahs, clauth_ss, ms)@i ==>
-      ms = MasterSecret"
+lemma_ahsms_derive
 
 // For any running(PostHS...) either the auth_status was set in the main HS and
 // unchanged (along with the RMS), or there was post-hs auth, which means the
