@@ -23,6 +23,14 @@ lemma revltk_source [sources]:
   "All a #j.
     RevLtk(a)@j ==> Ex ltk #i. GenLtk(a, ltk)@i & #i < #j"
 
+lemma kemencapsulation_origin [sources]:
+  "All ciphertext ss pk #i. 
+    KU(senc{KemEncapsulation}keys)@i &
+    ciphertext = kemencaps(kem, ss, pk)
+    ==>
+      (Ex #j. KU(ss)@j & #j < #i) |
+      (Ex #j. KemEncap(kem, pk, ss)@j & #j < #i)"
+
 lemma kemencap_source [sources]:
   "All kem pk sk ss #j.
     pk = kempk(kem, sk) &

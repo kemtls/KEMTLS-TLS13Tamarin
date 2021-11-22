@@ -15,7 +15,7 @@ clean:
 	perl -0777pi -e 's/\n{3,}/\n\n/g' $@
 	# Replace "prev_" with "p_" to save space...
 	perl -0777pi -e 's/prev_/p_/g' $@
-	tamarin-prover --quit-on-warning $@ > /dev/null
+	tamarin-prover +RTS -N4 -RTS --quit-on-warning $@ > /dev/null
 
 
 proofs:

@@ -1,8 +1,8 @@
 changequote(<!,!>)
 changecom(<!/*!>,<!*/!>)
-define(<!EKem!>,<!F_EKem($@)!>)
-pushdef(<!State_C4!>, <!L_State_S4($@)!>)dnl
-pushdef(<!State_C4!>, <!L_State_C4($@)!>)dnl~
+dnl define(<!EKem!>,<!F_EKem($@)!>)
+dnl pushdef(<!State_C4!>, <!F_State_S4($@)!>)dnl
+dnl pushdef(<!State_C4!>, <!F_State_C4($@)!>)dnl
 define(<!State!>,<!State_$1(shift($@))!>)
 define(<!ClientCertReq!>,<!L_ClientCertReq($@)!>)
 define(<!ServerCertReq!>,<!L_ServerCertReq($@)!>)
@@ -26,5 +26,5 @@ include(includes/kems.m4i)
 
 end
 
-popdef(<!F_State_C4!>)
-popdef(<!F_State_S4!>)
+dnl popdef(<!F_State_C4!>)
+dnl popdef(<!F_State_S4!>)
