@@ -33,9 +33,8 @@ lemma kemencap_source [sources]:
       (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
 
 lemma kemdecap_source_sk [sources]:
-  "All kem sk seed ss #j.
-    KemDecaps(kem, sk, ss)@j &
-    ss = <kem, seed>
+  "All kem sk ss #j.
+    KemDecaps(kem, sk, ss)@j
     ==>
       (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) |
       (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
