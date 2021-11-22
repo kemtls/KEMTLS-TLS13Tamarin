@@ -188,14 +188,6 @@ lemma ahsms_derive [reuse]:
       ms = MasterSecret"
 !>)
 
-define(<!lemma_ku_rms!>, <!
-lemma ku_rms [reuse]:
-  "All tid actor role peer rms messages ms #i #j.
-    running(RMS, actor, role, peer, rms, messages)@i &
-    rms = resumption_master_secret() &
-    KU(rms)@j ==>
-      Ex #k #l. KU(ms)@k & KU(messages)@l & #k < #j & #l < #j"
-!>)
 
 define(<!lemma_posths_rms_weak!>, <!
 // For any running(PostHS...) either the auth_status was set in the main HS and

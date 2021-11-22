@@ -149,7 +149,9 @@ lemma kem_ephemeral_decaps_unique [reuse]:
     ==>
     #i = #j"
 
-lemma kem_encaps_ordering [reuse]:
+// manually proves; guide it through as many kemencaps() operations as possible.
+// oracle handles this for us.
+lemma kem_encaps_ordering [reuse, heuristic=o "oracles/kem_encaps_ordering.py"]:
   "All kem pk sk ss #i #j.
     KemEncap(kem, pk, ss)@i &
     KemDecaps(kem, sk, ss)@j &

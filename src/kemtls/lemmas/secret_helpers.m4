@@ -35,8 +35,6 @@ include(includes/derive.m4i)
 
 include(includes/matching.m4i)
 
-lemma_ku_rms
-
 dnl include(includes/posths.m4i)
 
 

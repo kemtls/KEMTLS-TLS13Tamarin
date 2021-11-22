@@ -36,3 +36,10 @@ lemma_ku_fresh_psk/* [reuse]:
           RevealPSK(actor, res_psk)@j & #j < #k"
 */
 !>)
+
+lemma ku_rms [reuse, heuristic=o "oracles/ku_rms.py"]:
+  "All tid actor role peer rms messages ms #i #j.
+    running(RMS, actor, role, peer, rms, messages)@i &
+    rms = resumption_master_secret() &
+    KU(rms)@j ==>
+      Ex #k #l. KU(ms)@k & KU(messages)@l & #k < #j & #l < #j"
