@@ -18,7 +18,7 @@ clean:
 	tamarin-prover +RTS -N4 -RTS --quit-on-warning $@ > /dev/null
 
 
-proofs:
+proofs: $(M4) $(wildcard oracles/*)
 	rm -f error.log
 	rm -rf success.log
 	bash -c "$(TAM) invariants.spthy --prove --output=../proofs/invariants.spthy $(PIPE)"
