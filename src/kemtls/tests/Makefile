@@ -82,7 +82,7 @@ test: $(PROOF_FILES)
 	@perl -0777pi -e 's/\n{3,}/\n\n/g' $@
 
 %.proof: %.spthy
-	tamarin-prover --heuristic=S --prove=exists_* $< --output=$@.wip 2> $*-output.log | tee $*-stdout.log
+	tamarin-prover --quit-on-warning --heuristic=S --prove=exists_* $< --output=$@.wip 2> $*-output.log | tee $*-stdout.log
 	@grep -q verified $*-stdout.log
 	rm $*-stdout.log
 	mv $@.wip $@
