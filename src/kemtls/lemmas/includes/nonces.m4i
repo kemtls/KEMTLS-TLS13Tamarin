@@ -1,11 +1,11 @@
-lemma_matching_nonces/* [reuse]:
+lemma_matching_nonces/* [reuse, heuristic=i]:
   "All tid tid2 actor actor2 role  nonces #i #j. 
     running(Nonces, actor, role, nonces)@i & 
     running2(Nonces, actor2, role, nonces)@j ==>
     tid = tid2 & actor = actor2"
 */
 
-lemma_consistent_nonces/* [reuse]:
+lemma_consistent_nonces/* [reuse, heuristic=s]:
   "All tid actor role nonces #i. 
     commit(Nonces, actor, role, nonces)@i ==>
       Ex #j. running(Nonces, actor, role, nonces)@j"

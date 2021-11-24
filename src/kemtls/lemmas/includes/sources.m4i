@@ -12,18 +12,17 @@ lemma_nst_source/* [typing]:
       (Ex tid S #j. running_server(NST, ticket, ticket_age_add)@j & #j < #i)"
 */
 
-lemma_ekem_source/* [sources]:
+lemma ekem_source [sources, heuristic=s]:
   "All tid esk actor #j.
     RevEKemSk(tid, actor, esk)@j 
     ==> 
       (Ex #i. EKem(tid, actor, esk)@i & #i < #j)"
-*/
 
-lemma revltk_source [sources]:
+lemma revltk_source [sources, heuristic=s]:
   "All a #j.
     RevLtk(a)@j ==> Ex ltk #i. GenLtk(a, ltk)@i & #i < #j"
 
-lemma kemencapsulation_origin [sources]:
+lemma kemencapsulation_origin [sources, heuristic=s]:
   "All kem ciphertext ss pk keys #i. 
     KU(senc{KemEncapsulation}keys)@i &
     ciphertext = kemencaps(kem, ss, pk)
@@ -31,7 +30,7 @@ lemma kemencapsulation_origin [sources]:
       (Ex #j. KU(ss)@j & #j < #i) |
       (Ex #j. KemEncap(kem, pk, ss)@j & #j < #i)"
 
-lemma kemencap_source [sources]:
+lemma kemencap_source [sources, heuristic=c]:
   "All kem pk sk ss #j.
     pk = kempk(kem, sk) &
     KemEncap(kem, pk, ss)@j
@@ -40,7 +39,7 @@ lemma kemencap_source [sources]:
       (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) | 
       (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
 
-lemma kemdecap_source_sk [sources]:
+lemma kemdecap_source_sk [sources, heuristic=c]:
   "All kem sk ss #j.
     KemDecaps(kem, sk, ss)@j
     ==>

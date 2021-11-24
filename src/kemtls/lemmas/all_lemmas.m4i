@@ -1,5 +1,5 @@
 define(<!uniq!>, <!
-lemma one_$1_per_tid [reuse, heuristic=S]:
+lemma one_$1_per_tid [reuse, heuristic=i]:
     "All tid #i #j. $1(tid)@i & $1(tid)@j ==> #i = #j"
 !>)
 
@@ -40,15 +40,6 @@ lemma nst_source [sources]:
       (Ex tid S #j. running_server(NST, ticket, ticket_age_add)@j & #j < #i)"
 !>)
 
-define(<!lemma_ekem_source!>, <!
-lemma ekem_source [sources]:
-  "All tid esk actor #j.
-    RevEKemSk(tid, actor, esk)@j 
-    ==> 
-      (Ex #i. EKem(tid, actor, esk)@i & #i < #j)"
-!>)
-
-
 ifdef(<!SIMPLE_MODEL!>, <!
 
 define(<!lemma_cert_req_origin!>, <!
@@ -79,7 +70,7 @@ define(<!lemma_nst_source!>,<!!>)
 */
 
 define(<!lemma_matching_nonces!>, <!
-lemma matching_nonces [reuse, heuristic=S]:
+lemma matching_nonces [reuse, heuristic=i]:
   "All tid tid2 actor actor2 role  nonces #i #j. 
     running(Nonces, actor, role, nonces)@i & 
     running2(Nonces, actor2, role, nonces)@j ==>
@@ -94,14 +85,14 @@ lemma consistent_nonces [reuse, heuristic=S]:
 !>)
 
 define(<!lemma_invariant_nonces!>, <!
-lemma invariant_nonces [reuse, heuristic=S]:
+lemma invariant_nonces [reuse, heuristic=i]:
   "All tid actor actor2 role role2 nonces nonces2 #i #j.
     running(Nonces, actor, role, nonces)@i & 
     running(Nonces, actor2, role2, nonces2)@j ==> #i = #j"
 !>)
 
 define(<!lemma_matching_rms_nonces!>, <!
-lemma matching_rms_nonces [reuse, heuristic=S]:
+lemma matching_rms_nonces [reuse, heuristic=c]:
   "All nonces tid tid2 actor actor2 peer peer2 rms messages #i #j. 
     running(RMS, actor, 'client', peer, rms, messages)@i &
     running2(RMS, actor2, 'server', peer2, rms, messages)@j &
@@ -118,12 +109,12 @@ lemma matching_rms_nonces [reuse, heuristic=S]:
 */
 
 define(<!lemma_ku_extract!>, <!
-lemma ku_extract [reuse, use_induction]:
+lemma ku_extract [reuse, use_induction, heuristic=c]:
   "All a b #i. KU(Extract(a, b))@i ==> Ex #j #k. KU(a)@j & KU(b)@k & #j < #i & #k < #i"
 !>)
 
 define(<!lemma_ku_expand!>, <!
-lemma ku_expand [reuse, use_induction]:
+lemma ku_expand [reuse, use_induction, heuristic=c]:
 "All secret label len #i. KU(Expand(secret, label, len))@i ==>
   (Ex #j. KU(secret)@j & #j < #i) |
   (not (Ex #k. KU(secret)@k & #k < #i) &
@@ -131,7 +122,7 @@ lemma ku_expand [reuse, use_induction]:
 !>)
 
 define(<!lemma_ku_hs!>, <!
-lemma ku_hs [reuse]:
+lemma ku_hs [reuse, heuristic=s]:
   "All tid actor role es hs res_psk ess #i #j.
     running(HS, actor, role, hs)@i &
     hs = HandshakeSecret &
@@ -141,7 +132,7 @@ lemma ku_hs [reuse]:
 !>)
 
 define(<!lemma_ku_ahs!>, <!
-lemma ku_ahs [reuse]:
+lemma ku_ahs [reuse, heuristic=s]:
   "All tid actor role ss hs ahs #i #j.
     running(AHS, actor, role, ahs)@i &
     ahs = AuthHandshakeSecret &
@@ -150,7 +141,7 @@ lemma ku_ahs [reuse]:
 !>)
 
 define(<!lemma_ku_ms!>, <!
-lemma ku_ms [reuse]:
+lemma ku_ms [reuse, heuristic=s]:
   "All tid actor role ms ahs clauth_ss #i #j.
     running(MS, actor, role, ms)@i &
     ms = MasterSecret &
@@ -159,7 +150,7 @@ lemma ku_ms [reuse]:
 !>)
 
 define(<!lemma_ku_ltk!>, <!
-lemma ku_ltk [reuse]:
+lemma ku_ltk [reuse, heuristic=s]:
   "All actor ltkA #i #j.
     GenLtk(actor, ltkA)@i & KU(ltkA)@j ==>
       Ex #k. RevLtk(actor)@k & #k < #j"
@@ -172,22 +163,6 @@ lemma ku_fresh_psk [reuse]:
         Ex actor #j. 
           RevealPSK(actor, res_psk)@j & #j < #k"
 !>)
-
-define(<!lemma_hsahs_derive!>, <!
-lemma hsahs_derive [reuse]:
-  "All tid actor role hs ahs ss #i.
-    running(HSAHS, actor, role, hs, ahs, ss)@#i ==>
-      ahs = AuthHandshakeSecret
-  "
-!>)
-
-define(<!lemma_ahsms_derive!>, <!
-lemma ahsms_derive [reuse]:
-  "All tid actor role ahs ms clauth_ss #i. 
-    running(AHSMS, actor, role, ahs, ms, clauth_ss)@i ==>
-      ms = MasterSecret"
-!>)
-
 
 define(<!lemma_posths_rms_weak!>, <!
 // For any running(PostHS...) either the auth_status was set in the main HS and
@@ -231,7 +206,7 @@ lemma matching_transcripts_posths [reuse]:
 !>)
 
 define(<!lemma_matching_rms_posths!>, <!
-lemma matching_rms_posths [reuse]:
+lemma matching_rms_posths [reuse, heuristic=c]:
   "All tid tid2 actor peer actor2 peer2 role role2 rms messages messages2 #i #j.
     running(RMS, actor, role, peer2, rms, messages)@i &
     running2(RMS, peer, role2, actor2, rms, messages2)@j & not (role = role2) ==>
@@ -239,7 +214,7 @@ lemma matching_rms_posths [reuse]:
 !>)
 
 define(<!lemma_matching_rms_actors!>, <!
-lemma matching_rms_actors [reuse]:
+lemma matching_rms_actors [reuse, heuristic=i]:
   "All tid tid2 actor peer actor2 peer2 role rms messages messages2 #i #j.
     running(RMS, actor, role, peer, rms, messages)@i &
     running2(RMS, actor2, role, peer2, rms, messages2)@j ==>
@@ -247,7 +222,7 @@ lemma matching_rms_actors [reuse]:
 !>)
 
 define(<!lemma_matching_sessions!>, <!
-lemma matching_sessions [reuse, use_induction, hide_lemma=posths_rms]:
+lemma matching_sessions [reuse, use_induction, heuristic=s, hide_lemma=posths_rms]:
   "All tid tid2 actor actor2 role role2 peer peer2 rms messages #i #j #k.
     running(RMS, actor, role, peer2, rms, messages)@i & 
     running2(RMS, peer, role2, actor2, rms, messages)@j &
@@ -260,7 +235,7 @@ lemma matching_sessions [reuse, use_induction, hide_lemma=posths_rms]:
 !>)
 
 define(<!lemma_auth_psk!>, <!
-lemma auth_psk [reuse, use_induction, hide_lemma=posths_rms_weak]:
+lemma auth_psk [reuse, use_induction, heuristic=c, hide_lemma=posths_rms_weak]:
   "All tid tid2 actor actor2 role role2 peer peer2 rms messages aas #i #j #k.
     running(RMS, actor, role, peer2, rms, messages)@i & 
     running2(RMS, peer, role2, actor2, rms, messages)@j &
@@ -269,48 +244,6 @@ lemma auth_psk [reuse, use_induction, hide_lemma=posths_rms_weak]:
      ==>
       peer2 = peer |
       Ex #r. RevLtk(peer2)@r & #r < #k"
-!>)
-
-define(<!lemma_matching_hsahsms!>, <!
-lemma matching_hsahsms [reuse]:
-  "All tid actor role hs hs2 ahs ms #i #j.
-    commit(HS, actor, role, hs2)@i &
-    running(HSAHSMS, actor, role, hs, ahs, ms)@j ==>
-      hs = hs2"
-!>)
-
-define(<!lemma_matching_hsahs!>, <!
-lemma matching_hsahs [reuse]:
-  "All tid actor role hs hs2 ahs ss #i #j.
-    commit(HS, actor, role, hs2)@i &
-    running(HSAHS, actor, role, hs, ahs, ss)@j ==>
-      hs = hs2"
-!>)
-
-define(<!lemma_matching_ahsms!>, <!
-lemma matching_ahsms [reuse]:
-  "All tid actor role ahs ahs2 ms clauth_ss #i #j.
-    commit(AHS, actor, role, ahs2)@i &
-    running(AHSMS, actor, role, ahs, ms, clauth_ss)@j ==>
-      ahs = ahs2"
-!>)
-
-define(<!lemma_matching_hsahsms_all!>, <!
-lemma matching_hsahsms_all [reuse]:
-  "All tid actor role hs hs2 ahs ahs2 ms ms2 clauth_ss #i #j #k #l.
-    commit(HS, actor, role, hs2)@i &
-    commit(AHS, actor, role, ahs2)@j &
-    commit(MS, actor, role, ms2)@k &
-    running(HSAHSMS, actor, role, hs, ahs, ms, clauth_ss)@l ==>
-      (hs = hs2 & ahs = ahs2 & ms = ms2)"
-!>)
-
-define(<!lemma_matching_ahsms_ms!>, <!
-lemma matching_ahsms_ms [reuse]:
-  "All tid actor role ahs ms ms2 clauth_ss #i #j.
-    commit(MS, actor, role, ms2)@i &
-    running(AHSMS, actor, role, ahs, ms, clauth_ss)@j ==>
-      ms = ms2"
 !>)
 
 

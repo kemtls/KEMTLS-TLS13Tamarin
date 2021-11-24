@@ -1,3 +1,19 @@
+define(<!lemma_hsahs_derive!>, <!
+lemma hsahs_derive [reuse, heuristic=s]:
+  "All tid actor role hs ahs ss #i.
+    running(HSAHS, actor, role, hs, ahs, ss)@#i ==>
+      ahs = AuthHandshakeSecret
+  "
+!>)
+
+define(<!lemma_ahsms_derive!>, <!
+lemma ahsms_derive [reuse, heuristic=s]:
+  "All tid actor role ahs ms clauth_ss #i. 
+    running(AHSMS, actor, role, ahs, ms, clauth_ss)@i ==>
+      ms = MasterSecret"
+!>)
+
+
 lemma_hsahs_derive
 
 lemma_ahsms_derive/* [reuse]:

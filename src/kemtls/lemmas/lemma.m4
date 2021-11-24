@@ -19,7 +19,7 @@ include(includes/uniqueness.m4i)
 
 include(includes/sources.m4i)
 
-<!/*
+ifdef(<!NOPE!>, <!
 
 lemma_ahsms_derive
 
@@ -254,10 +254,9 @@ lemma_session_key_agreement/*:
         kr = kr2 & kw = kw2"
 */
 
-*/!>
 
+!>)
 end
-
 
 popdef(<!F_State_S4!>)
 popdef(<!F_State_C4!>)

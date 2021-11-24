@@ -32,11 +32,9 @@ include(includes/nonces.m4i)
 /* Secret helpers */
 include(includes/ku.m4i)
 
+include(includes/derive.m4i)
+
 include(includes/matching.m4i)
-
-dnl include(includes/posths.m4i)
-
-lemma_transcript_agreement
 
 end
 

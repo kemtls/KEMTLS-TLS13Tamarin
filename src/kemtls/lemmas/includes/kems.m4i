@@ -24,11 +24,11 @@ lemma one_ekem_per_x [reuse, heuristic=C]:
 //NTS: RevDH < RRMS
 //May have to add tid's to RevDH. 
 // ordering
-lemma ekem_rev_secret_ordering [reuse, heuristic=s]:
+lemma ekem_rev_secret_ordering [reuse, heuristic=C]:
   "All esk tid a #i #j.
     RevEKemSk(tid, a, esk)@#i & EKem(tid, a, esk)@#j ==> #j < #i"
 
-lemma ekem_only_revsk_in_client [reuse]:
+lemma ekem_only_revsk_in_client [reuse, heuristic=s]:
     "
     All tid a esk #i #j.
     EKem(tid, a, esk)@#i & RevEKemSk(tid, a, esk)@#j
@@ -73,24 +73,24 @@ lemma ku_decaps [reuse]:
 
 // requirements
 
-lemma ekem_esk_can_only_be_revealed [reuse]:
+lemma ekem_esk_can_only_be_revealed [reuse, heuristic=c]:
   "All tid a esk #i #j.
     (EKem(tid, a, esk)@#i & KU(esk)@#j) 
     ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 
-lemma ekem_seed_needs_rev_esk [reuse]:
+lemma ekem_seed_needs_rev_esk [reuse, heuristic=i]:
     "All a tid ekem esk eseed #a #i #j.
     (EKem(tid, a, esk)@#a & KemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j)
       ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 
-lemma ekem_getting_seed_requires_esk [reuse]:
+lemma ekem_getting_seed_requires_esk [reuse, heuristic=i]:
   "All ekem esk eseed #i #j.
     (KemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j)
     ==> 
     Ex #r. KU(esk)@#r & #r < #j"
 
 // chal_dual
-lemma ekem_chal_dual [reuse]:
+lemma ekem_chal_dual [reuse, heuristic=c]:
   "All tid tid2 actor actor2 ekem esk epk ect ess #i #j #r.
     KemChal(ekem, esk, epk, ect, ess)@#i & Instance(tid, actor, 'client')@#i &
     KemChal(ekem, esk, epk, ect, ess)@#j & Instance(tid2, actor2, 'server')@#j &
@@ -99,31 +99,31 @@ lemma ekem_chal_dual [reuse]:
     (Ex #p. (RevEKemSk(tid, actor, esk)@#p & #p < #r))"
 
 // static KEM
-lemma skem_getting_seed_requires_reveal [reuse]:
+lemma skem_getting_seed_requires_reveal [reuse, heuristic=i]:
   "All a kem ltk ss #a #i #j.
   (GenLtk(a, ltk)@#a & KemEncap(kem, kempk(kem, ltk), ss)@#i & KU(ss)@#j)
   ==>
   (Ex #r. RevLtk(a)@#r & #r < #j)"
 
 // Ordering of the shared secret
-lemma rev_kem_seed_ordering [reuse]:
+lemma rev_kem_seed_ordering [reuse, heuristic=i]:
   "All kem pk ss #i #j. 
     KemEncap(kem, pk, ss)@i & KU(ss)@j ==> #i < #j"
 
-lemma kem_consistency [reuse]:
+lemma kem_consistency [reuse, heuristic=s]:
   "All kem pk ss #i.
     KemEncap(kem, pk, ss)@i
     ==>
       (Ex sk. pk = kempk(kem, sk)) &
       (Ex seed. ss = <kem, seed>)"
 
-lemma kem_consistency_decaps [reuse]:
+lemma kem_consistency_decaps [reuse, heuristic=s]:
   "All kem sk ss #i.
     KemDecaps(kem, sk, ss)@i
     ==>
       (Ex seed. ss = <kem, seed>)"
 
-lemma kem_consistency_chal [reuse]:
+lemma kem_consistency_chal [reuse, heuristic=c]:
   "All kem sk pk ct ss #i.
     KemChal(kem, sk, pk, ct, ss)@#i
     ==>
@@ -131,7 +131,7 @@ lemma kem_consistency_chal [reuse]:
       ct = kemencaps(kem, ss, pk) &
       (Ex seed. ss = <kem, seed>)"
 
-lemma kem_encaps_unique [reuse]:
+lemma kem_encaps_unique [reuse, heuristic=c]:
   "All kem pk ss #i #j.
     KemEncap(kem, pk, ss)@#i &
     KemEncap(kem, pk, ss)@#j
@@ -141,7 +141,7 @@ lemma kem_encaps_unique [reuse]:
 // this doesn't hold for static keys, as it's easy to
 // make the decapsing party decaps the same ct twice by
 // repeating the ciphertext
-lemma kem_ephemeral_decaps_unique [reuse]:
+lemma kem_ephemeral_decaps_unique [reuse, heuristic=s]:
   "All tid a kem sk ss #k #i #j.
     EKem(tid, a, sk)@#k &
     KemDecaps(kem, sk, ss)@#i &
