@@ -269,6 +269,8 @@ let
 
     ahs = AuthHandshakeSecret
 
+    messages = <messages, KemEncapsulation>
+
     ahs_keyc = keygen(authenticated_handshake_traffic_secret(client), ahs_key_label())
     ahs_keys = keygen(authenticated_handshake_traffic_secret(server), ahs_key_label())
 
@@ -305,6 +307,7 @@ let
     dnl clauth_ss is part of the state and passed through to ms later
     clauth_ss = <$k, ~seed>   
     ciphertext = kemencaps($k, clauth_ss, certificate)
+    messages = <messages, KemEncapsulation>
 
     cert_req = '0'
     // we updated the auth status to mutual auth

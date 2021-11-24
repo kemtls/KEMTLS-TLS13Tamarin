@@ -262,6 +262,8 @@ let
   ss = <$k, ~seed>
   ciphertext = kemencaps($k, ss, certificate)
 
+  messages = <messages, KemEncapsulation>
+
   ahs = AuthHandshakeSecret
 
   ahs_keyc = keygen(authenticated_handshake_traffic_secret(client), ahs_key_label())
@@ -338,7 +340,7 @@ let
 
     certificate_request_context = '0'
     certificate = kempk($k, ~ltkC)
-    messages = <prev_messages, Certificate>
+    messages = <messages, Certificate>
 in
   [
     State(C3, tid, C, S, PrevClientState)[no_precomp],
@@ -360,8 +362,10 @@ let
     S = $S
     C = $C
 
+
     ciphertext = kemencaps($k, <$k, ~eseed>, kempk($k, ~ltkC))
     clauth_ss = kemdecaps($k, ciphertext, ~ltkC)
+    messages = <messages, KemEncapsulation>
 
     verify_data = compute_finished(client)
 
