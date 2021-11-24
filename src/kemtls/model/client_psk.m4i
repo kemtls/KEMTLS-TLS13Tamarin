@@ -263,7 +263,7 @@ in
       Instance(tid, C, 'client'),
       Eq(verify_data, exp_verify_data),
       running_client(Mode, psk_ke_mode),
-      commit_client(Identity, <S, auth_status>),
+      commit_client(Identity, S, auth_status),
       commit_client(HS, hs),
       commit_client(Nonces, nc, ns),
       commit_client(Transcript, messages)

@@ -203,7 +203,7 @@ in
       Neq(certificate_request_context, '0'),
       Eq(verify(signature, sig_messages, pk(~ltkC)), true),
       Eq(verify_data, exp_verify_data),
-      commit_server(IdentityPost, <C, auth_status>),
+      commit_server(IdentityPost, C, auth_status),
       commit_server(TranscriptPost, messages, certificate_request_context),
       commit_server(HS, hs),
       running_server(PostHS, hs, rms, C, auth_status, messages)

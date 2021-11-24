@@ -421,7 +421,8 @@ in
       commit_client(AHS, ahs),
       commit_client(MS, ms),
       Eq(verify_data, exp_verify_data),
-      commit_client(Identity, <S, auth_status>),
+      commit_client(Transcript, messages),
+      commit_client(Identity, S, auth_status),
       SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
     ]->
     [ State(C4, tid, C, S, ClientState),

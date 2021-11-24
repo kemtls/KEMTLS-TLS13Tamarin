@@ -149,7 +149,7 @@ lemma_auth_psk/* [reuse, use_induction, hide_lemma=posths_rms_weak]:
   "All tid tid2 actor actor2 role role2 peer peer2 rms messages aas #i #j #k.
     running(RMS, actor, role, peer2, rms, messages)@i & 
     running2(RMS, peer, role2, actor2, rms, messages)@j &
-    commit(Identity, actor, role, <peer, <aas, 'auth'>>)@k &
+    commit(Identity, actor, role, peer, <aas, 'auth'>)@k &
     not (role = role2)
      ==>
       peer2 = peer |
