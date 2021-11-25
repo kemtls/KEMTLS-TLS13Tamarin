@@ -36,6 +36,8 @@ include(includes/derive.m4i)
 
 include(includes/matching.m4i)
 
+include(includes/secrets.m4i)
+
 end
 
 

@@ -364,7 +364,13 @@ in
       running_server(HSAHSMS, hs, ahs, ms),
       running_server(MS, clauth_ss, ms),
       running_server(RMS, C, rms, messages),
-      Eq(verify_data, exp_verify_data)
+      Eq(verify_data, exp_verify_data),
+      commit_server(HS, hs),
+      commit_server(AHS, ahs),
+      commit_server(MS, ms),
+      commit_server(Identity, C, auth_status),
+      commit_server(Transcript, messages),
+      commit_server(Nonces, nc, ns)
     ]->
     [ 
       State(S3fin, tid, S, C, ServerState),
@@ -392,13 +398,7 @@ in
       S3fin(tid),
       Instance(tid, S, 'server'),
       running_server(Mode, psk_ke_mode),
-      commit_server(HS, hs),
-      commit_server(AHS, ahs),
-      commit_server(MS, ms),
-      commit_server(Identity, C, auth_status),
-      commit_server(Transcript, messages),
-      SessionKey(tid, S, C, auth_status, <app_keys, app_keyc>),
-      commit_server(Nonces, nc, ns)
+      SessionKey(tid, S, C, auth_status, <app_keys, app_keyc>)
     ]->
     [ State(S4, tid, S, C, ServerState),
       Out(senc{Finished}ahs_keys),

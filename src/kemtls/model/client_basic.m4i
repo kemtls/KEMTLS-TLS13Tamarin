@@ -421,12 +421,13 @@ in
     ]
   --[ C3b(tid),
       Instance(tid, C, 'client'),
+      Eq(verify_data, exp_verify_data),
       commit_client(HS, hs),
       commit_client(AHS, ahs),
       commit_client(MS, ms),
-      Eq(verify_data, exp_verify_data),
       commit_client(Transcript, messages),
       commit_client(Identity, S, auth_status),
+      commit_client(Nonces, nc, ns),
       SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
     ]->
     [ State(C4, tid, C, S, ClientState),

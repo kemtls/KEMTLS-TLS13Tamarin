@@ -30,8 +30,6 @@ proofs: $(M4) $(wildcard oracles/*)
 	bash -c "$(TAM) secret_helpers.spthy --prove=matching_rms_posths* --prove=matching_transcripts_posths* --prove=matching_rms_actors* --bound=8 --heuristic=CCCiiiiiiii --output=../proofs/secret_helpers.2.spthy $(PIPE)"
 	bash -c "$(TAM) secret_helpers.spthy --prove=matching_sessions* --heuristic=CCCCCissssssssssssssssssssssss --output=../proofs/secret_helpers.3.spthy $(PIPE)"
 	# To prove manually:
-	#   - auth_psk (75% auto: autoprove for recv_server_auth{_cert} and  recv_client_auth_cert. The rest is manual by using CommitID -> $S.1 = $S.
-	#   - hsms_hs_thingy
 	#   - post_master_secret (quick)
 	#   - invariant_post_hs (quick: solve for RunningRMS then CommitIdentity)
 	#   - handshake_secret (the big one)

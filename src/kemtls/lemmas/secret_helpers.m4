@@ -35,72 +35,56 @@ include(includes/derive.m4i)
 
 include(includes/matching.m4i)
 
-dnl 
-dnl lemma_post_master_secret/* [reuse, hide_lemma=posths_rms]:
-dnl   "All tid actor peer role hs rms aas messages #i #k.
-dnl     running(PostHS, actor, role, hs, rms, peer, <aas, 'auth'>, messages)@i & 
-dnl     commit(HS, actor, role, hs)@i & 
-dnl     commit(IdentityPost, actor, role, peer, <aas, 'auth'>)@i &
-dnl     KU(rms)@k ==>
-dnl       (Ex #r. RevLtk(peer)@r & #r < #i) |
-dnl       (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
-dnl       (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
-dnl       (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
-dnl       (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
-dnl */
-dnl 
-dnl lemma_invariant_post_hs/* [reuse, use_induction, hide_lemma=posths_rms]:
-dnl   "All tid actor peer peer2 role hs hs2 rms rms2 as as2 msgs msgs2 #i #j.
-dnl     running(PostHS, actor, role, hs, rms, peer, as, msgs)@i & 
-dnl     running(PostHS, actor, role, hs2, rms2, peer2, as2, msgs2)@j ==>
-dnl       peer = peer2 & rms = rms2 & msgs = msgs2 & hs = hs2"
-dnl */
-dnl 
-dnl 
-dnl /*
-dnl   Strategy:
-dnl   Intutition is that if two matching RMS then at some point a cert was hashed
-dnl   into the handshake.
-dnl 
-dnl   To prove this, if RRMS and CommitIdentity(,... 'auth')
-dnl   and RRMS2 is matching,
-dnl   then there either there exists UseLtk and UsePk for the same person,
-dnl   or RevLtk of peer.
-dnl 
-dnl   This will have to prove inductively over both RRMS (similar to matching sessions)
-dnl   in fact, can probably roll it in to matching_sessions?
-dnl   
-dnl 
-dnl */
-dnl 
-dnl 
-dnl 
-dnl lemma_handshake_secret/* [reuse, use_induction, hide_lemma=posths_rms_weak]:
-dnl   "All tid actor peer role hs aas #i #k.
-dnl     commit(HS, actor, role, hs)@i &
-dnl     commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
-dnl     KU(hs)@k ==>
-dnl         (Ex #r. RevLtk(peer)@r & #r < #i) |
-dnl         (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
-dnl         (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
-dnl         (Ex rms #r. RevealPSK(actor, rms)@r & #r < #k) |
-dnl         (Ex rms #r. RevealPSK(peer, rms)@r & #r < #k)"
-dnl */
-dnl 
-dnl lemma_pfs_handshake_secret/* [reuse, hide_lemma=posths_rms_weak]:
-dnl   "All tid actor peer role hs aas psk_ke_mode #i #k.
-dnl     commit(HS, actor, role, hs)@i &
-dnl     running(Mode, actor, role, psk_ke_mode)@i &
-dnl     commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
-dnl     KU(hs)@k &
-dnl     (not psk_ke_mode = psk_ke) ==>
-dnl         (Ex #r. RevLtk(peer)@r & #r < #i) |
-dnl         (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
-dnl         (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
-dnl         (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) |
-dnl         (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i)"
-dnl */
-dnl 
+include(includes/secrets.m4i)
+
+// to know the AHS key for an authenticated server, the
+// server's ltk must've been revealed (to impersonate the server, because it needs to know HS as well).
+lemma authenticated_handshake_secret_client [reuse, heuristic=cic]:
+    "All tid actor peer hs ahs aas #i #k.
+        commit(HS, actor, 'client', hs)@#i &
+        commit(AHS, actor, 'client', ahs)@#i &
+        commit(Identity, actor, 'client', peer, <aas, 'auth'>)@#i &
+        KU(ahs)@k ==>
+            (Ex #e. KU(hs)@#e & #e < #k) &
+            (Ex #r. RevLtk(peer)@r & #r < #k)"
+
+// to know the server's ahs for an authenticated client, the client's LTK must have
+// been revealed (to impersonate the client, because it needs to know HS as well).
+lemma authenticated_handshake_secret_server [reuse]:
+    "All tid actor peer hs ahs aas #i #k.
+        commit(HS, actor, 'server', hs)@#i &
+        commit(AHS, actor, 'server', ahs)@#i &
+        commit(Identity, actor, 'server', peer, <aas, 'auth'>)@#i &
+        KU(ahs)@k ==>
+            (Ex #e. KU(hs)@#e & #e < #k) &
+            (Ex #r. RevLtk(peer)@r & #r < #k)"
+
+// To learn the handshake secret in an authed connection, the adversary needs to
+// either impersonate the peer (RevLtk), or reveal it.
+lemma handshake_secret [reuse, use_induction, hide_lemma=posths_rms_weak, heuristic=i]:
+  "All tid actor peer role hs aas #i #k.
+    commit(HS, actor, role, hs)@i &
+    commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
+    KU(hs)@k ==>
+        (Ex #l. RevLtk(peer)@l & #l < #i) |                         dnl for impersonation
+        (Ex tid3 esk #p. RevEKemSk(tid3, peer, esk)@p & #p < #i) |  dnl if the peer is client
+        (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) |   dnl if the actor is client
+        (Ex rms #r. RevealPSK(actor, rms)@r & #r < #k) |
+        (Ex rms #r. RevealPSK(peer, rms)@r & #r < #k)"
+
+// not really relevant unless we do resumption
+lemma pfs_handshake_secret [reuse, hide_lemma=posths_rms_weak, heuristic=s]:
+  "All tid actor peer role hs aas psk_ke_mode #i #k.
+    commit(HS, actor, role, hs)@i &
+    running(Mode, actor, role, psk_ke_mode)@i &
+    commit(Identity, actor, role, peer, <aas, 'auth'>)@i &
+    KU(hs)@k &
+    (not psk_ke_mode = psk_ke) ==>
+        (Ex #r. RevLtk(peer)@r & #r < #i) |
+        (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) |
+        (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) |
+        (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) |
+        (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i)"
 
 
 end

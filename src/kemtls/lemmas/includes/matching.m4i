@@ -126,3 +126,26 @@ lemma_auth_psk/* [reuse, use_induction, hide_lemma=posths_rms_weak, heuristic=c]
       peer2 = peer |
       Ex #r. RevLtk(peer2)@r & #r < #k"
 */
+
+
+ifdef(<!POST_HS!>, <!
+lemma_post_master_secret/* [reuse, hide_lemma=posths_rms]:
+  "All tid actor peer role hs rms aas messages #i #k.
+    running(PostHS, actor, role, hs, rms, peer, <aas, 'auth'>, messages)@i & 
+    commit(HS, actor, role, hs)@i & 
+    commit(IdentityPost, actor, role, peer, <aas, 'auth'>)@i &
+    KU(rms)@k ==>
+      (Ex #r. RevLtk(peer)@r & #r < #i) |
+      (Ex tid3 x #r. RevDHExp(tid3, peer, x)@r & #r < #i) |
+      (Ex tid4 y #r. RevDHExp(tid4, actor, y)@r & #r < #i) |
+      (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
+      (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
+*/
+
+lemma_invariant_post_hs/* [reuse, use_induction, hide_lemma=posths_rms]:
+  "All tid actor peer peer2 role hs hs2 rms rms2 as as2 msgs msgs2 #i #j.
+    running(PostHS, actor, role, hs, rms, peer, as, msgs)@i & 
+    running(PostHS, actor, role, hs2, rms2, peer2, as2, msgs2)@j ==>
+      peer = peer2 & rms = rms2 & msgs = msgs2 & hs = hs2"
+*/
+!>)

@@ -9,17 +9,17 @@ model=$1
 timelimit=$2
 lemma=$3
 
-heuristics=("s" "c" "i" "S" "C" "I" "cs" "is")
+heuristics=("c" "i" "s" "C" "I" "S" "cs" "is" "ci")
 
-for heuristic in $heuristics; do
-    echo -n "$(date) Trying heuristic '$heuristic' "
+for heuristic in ${heuristics}; do
+    echo -n "$(date) Trying heuristic '${heuristic}' "
     output=$(mktemp)
-    timeout --signal=KILL --foreground "$timelimit" tamarin-prover "$model" --prove="$lemma" --heuristic=$heuristic 2>/dev/null > $output
+    timeout --signal=KILL --foreground "${timelimit}" tamarin-prover "${model}" --prove="${lemma}" --heuristic="${heuristic}" 2>/dev/null > "${output}"
     if [ $? = 124 ]; then
-        echo "Timed out after $3 and was killed"
+        echo "Timed out after ${timelimit} and was killed"
     else 
-        result=$(grep -o "verified ([0-9]\+ steps)" $output)
-        echo "Success! $result"
+        result=$(grep -o "verified ([0-9]\+ steps)" "${output}")
+        echo "Success! ${result}"
     fi
-    rm $output
+    rm "${output}"
 done
