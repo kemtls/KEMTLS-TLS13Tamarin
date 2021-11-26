@@ -18,7 +18,8 @@ lemma ekem_sk_can_be_revealed:
 // unique 
 lemma one_ekem_per_x [reuse, heuristic=C]:
   "All tid tid2 esk a a2 #i #j.
-    EKem(tid, a, esk)@i & EKem(tid2, a2, esk)@j ==> #i = #j"
+    EKem(tid, a, esk)@i & EKem(tid2, a2, esk)@j ==> 
+      #i = #j & a = a2 & tid = tid2"
 
 
 //NTS: RevDH < RRMS
@@ -89,15 +90,6 @@ lemma ekem_getting_seed_requires_esk [reuse, heuristic=i]:
     ==> 
     Ex #r. KU(esk)@#r & #r < #j"
 
-// chal_dual
-lemma ekem_chal_dual [reuse, heuristic=c]:
-  "All tid tid2 actor actor2 ekem esk epk ect ess #i #j #r.
-    KemChal(ekem, esk, epk, ect, ess)@#i & Instance(tid, actor, 'client')@#i &
-    KemChal(ekem, esk, epk, ect, ess)@#j & Instance(tid2, actor2, 'server')@#j &
-    KU(ess)@#r
-    ==>
-    (Ex #p. (RevEKemSk(tid, actor, esk)@#p & #p < #r))"
-
 // static KEM
 lemma skem_getting_seed_requires_reveal [reuse, heuristic=i]:
   "All a kem ltk ss #a #i #j.
@@ -131,21 +123,26 @@ lemma kem_consistency_chal [reuse, heuristic=c]:
       ct = kemencaps(kem, ss, pk) &
       (Ex seed. ss = <kem, seed>)"
 
+lemma skem_consistency_chal [reuse, heuristic=c]:
+  "All kem sk pk ct ss #i.
+    SKemChal(kem, sk, pk, ct, ss)@#i
+    ==>
+      pk = kempk(kem, sk) &
+      ct = kemencaps(kem, ss, pk) &
+      (Ex seed. ss = <kem, seed>)"
+    
+lemma ckem_consistency_chal [reuse, heuristic=c]:
+  "All kem sk pk ct ss #i.
+    CKemChal(kem, sk, pk, ct, ss)@#i
+    ==>
+      pk = kempk(kem, sk) &
+      ct = kemencaps(kem, ss, pk) &
+      (Ex seed. ss = <kem, seed>)"
+
 lemma kem_encaps_unique [reuse, heuristic=c]:
   "All kem pk ss #i #j.
     KemEncap(kem, pk, ss)@#i &
     KemEncap(kem, pk, ss)@#j
-    ==>
-    #i = #j"
-
-// this doesn't hold for static keys, as it's easy to
-// make the decapsing party decaps the same ct twice by
-// repeating the ciphertext
-lemma kem_ephemeral_decaps_unique [reuse, heuristic=s]:
-  "All tid a kem sk ss #k #i #j.
-    EKem(tid, a, sk)@#k &
-    KemDecaps(kem, sk, ss)@#i &
-    KemDecaps(kem, sk, ss)@#j
     ==>
     #i = #j"
 
@@ -158,3 +155,40 @@ lemma kem_encaps_ordering [reuse, heuristic=o "oracles/kem_encaps_ordering.py"]:
     pk = kempk(kem, sk)
     ==>
     #i < #j"
+
+// this doesn't hold for static keys, as it's easy to
+// make the decapsing party decaps the same ct twice by
+// repeating the ciphertext
+lemma kem_ephemeral_decaps_unique [reuse, heuristic=s]:
+  "All tid a kem sk ss #k #i #j.
+    EKem(tid, a, sk)@#k &
+    KemDecaps(kem, sk, ss)@#i &
+    KemDecaps(kem, sk, ss)@#j
+    ==>
+    #i = #j"
+
+// chal_dual
+lemma ekem_chal_dual [reuse, heuristic=c]:
+  "All tid tid2 actor actor2 ekem esk epk ect ess #i #j #r.
+    KemChal(ekem, esk, epk, ect, ess)@#i & Instance(tid, actor, 'client')@#i &
+    KemChal(ekem, esk, epk, ect, ess)@#j & Instance(tid2, actor2, 'server')@#j &
+    KU(ess)@#r
+    ==>
+    (Ex #p. (RevEKemSk(tid, actor, esk)@#p & #p < #r))"
+
+// skem chal server
+lemma kem_chal_dual_server_auth [reuse, heuristic=S]:
+  "All tid tid2 actor actor2 kem sk pk ct ss #i #j #r.
+    SKemChal(kem, sk, pk, ct, ss)@#i & Instance(tid, actor, 'client')@#i &
+    SKemChal(kem, sk, pk, ct, ss)@#j & Instance(tid2, actor2, 'server')@#j &
+    KU(ss)@#r
+    ==>
+    (Ex #k. RevLtk(actor2)@#k & #k < #r)"
+
+lemma kem_chal_dual_client_auth [reuse, heuristic=c]:
+  "All tid tid2 actor actor2 kem sk pk ct ss #i #j #r.
+    CKemChal(kem, sk, pk, ct, ss)@#i & Instance(tid, actor, 'client')@#i &
+    CKemChal(kem, sk, pk, ct, ss)@#j & Instance(tid2, actor2, 'server')@#j &
+    KU(ss)@#r
+    ==>
+    (Ex #p. RevLtk(actor)@#p & #p < #r)"

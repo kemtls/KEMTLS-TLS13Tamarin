@@ -286,7 +286,8 @@ in
     running_client(HSAHS, hs, ahs, ss),
     running_client(AHS, ahs),
     running_client(Mode, psk_ke_mode),
-    KemEncap($k, certificate, ss)
+    KemEncap($k, certificate, ss),
+    SKemChal($k, ~ltkS, certificate, ciphertext, ss)
   ]->
   [
     State(C3, tid, C, S, ClientState),
@@ -386,6 +387,8 @@ in
     ]
   --[ C3a(tid),
       Instance(tid, C, 'client'),
+      KemDecaps($k, ~ltkC, clauth_ss),
+      CKemChal($k, ~ltkC, kempk($k, ~ltkC), ciphertext, clauth_ss),
       running_client(Transcript, messages),
       running_client(MS, clauth_ss, ms),
       running_client(AHSMS, ahs, ms, clauth_ss),
