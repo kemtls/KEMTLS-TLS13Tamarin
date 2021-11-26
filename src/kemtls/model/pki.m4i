@@ -39,4 +39,4 @@ rule Register_pk:
     Out(~ltkA) - provides the adversary with the long-term key
 */
 rule Reveal_Ltk:
-  [ !Ltk($A, ~ltkA) ] --[ RevLtk($A) ]-> [ Out(~ltkA) ]
+   [ !Ltk($A, ~ltkA) ] --[ RevLtk($A) ]-> [ Out(~ltkA) ]

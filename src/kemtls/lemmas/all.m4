@@ -38,6 +38,9 @@ include(includes/matching.m4i)
 
 include(includes/secrets.m4i)
 
+/* end-goal properties */
+dnl include(includes/properties.m4i)
+
 end
 
 
