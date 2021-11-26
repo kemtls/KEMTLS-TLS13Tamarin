@@ -15,6 +15,8 @@ include(header.m4i)
 include(model.m4i)
 include(all_lemmas.m4i)
 
+include(includes/sources.m4i)
+
 include(includes/uniqueness.m4i)
 
 include(includes/invariants.m4i)
