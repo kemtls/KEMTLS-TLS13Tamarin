@@ -123,22 +123,6 @@ lemma kem_consistency_chal [reuse, heuristic=c]:
       ct = kemencaps(kem, ss, pk) &
       (Ex seed. ss = <kem, seed>)"
 
-lemma skem_consistency_chal [reuse, heuristic=c]:
-  "All kem sk pk ct ss #i.
-    SKemChal(kem, sk, pk, ct, ss)@#i
-    ==>
-      pk = kempk(kem, sk) &
-      ct = kemencaps(kem, ss, pk) &
-      (Ex seed. ss = <kem, seed>)"
-    
-lemma ckem_consistency_chal [reuse, heuristic=c]:
-  "All kem sk pk ct ss #i.
-    CKemChal(kem, sk, pk, ct, ss)@#i
-    ==>
-      pk = kempk(kem, sk) &
-      ct = kemencaps(kem, ss, pk) &
-      (Ex seed. ss = <kem, seed>)"
-
 lemma kem_encaps_unique [reuse, heuristic=c]:
   "All kem pk ss #i #j.
     KemEncap(kem, pk, ss)@#i &
@@ -168,27 +152,12 @@ lemma kem_ephemeral_decaps_unique [reuse, heuristic=s]:
     #i = #j"
 
 // chal_dual
-lemma ekem_chal_dual [reuse, heuristic=c]:
+lemma kem_chal_dual [reuse, heuristic=c]:
   "All tid tid2 actor actor2 ekem esk epk ect ess #i #j #r.
     KemChal(ekem, esk, epk, ect, ess)@#i & Instance(tid, actor, 'client')@#i &
     KemChal(ekem, esk, epk, ect, ess)@#j & Instance(tid2, actor2, 'server')@#j &
     KU(ess)@#r
     ==>
-    (Ex #p. (RevEKemSk(tid, actor, esk)@#p & #p < #r))"
-
-// skem chal server
-lemma kem_chal_dual_server_auth [reuse, heuristic=S]:
-  "All tid tid2 actor actor2 kem sk pk ct ss #i #j #r.
-    SKemChal(kem, sk, pk, ct, ss)@#i & Instance(tid, actor, 'client')@#i &
-    SKemChal(kem, sk, pk, ct, ss)@#j & Instance(tid2, actor2, 'server')@#j &
-    KU(ss)@#r
-    ==>
-    (Ex #k. RevLtk(actor2)@#k & #k < #r)"
-
-lemma kem_chal_dual_client_auth [reuse, heuristic=c]:
-  "All tid tid2 actor actor2 kem sk pk ct ss #i #j #r.
-    CKemChal(kem, sk, pk, ct, ss)@#i & Instance(tid, actor, 'client')@#i &
-    CKemChal(kem, sk, pk, ct, ss)@#j & Instance(tid2, actor2, 'server')@#j &
-    KU(ss)@#r
-    ==>
-    (Ex #p. RevLtk(actor)@#p & #p < #r)"
+    (Ex #p. (RevEKemSk(tid, actor, esk)@#p & #p < #r)) |
+    (Ex #c. RevLtk(actor)@#c & #c < #r)  | 
+    (Ex #s. RevLtk(actor2)@#s & #s < #r)"

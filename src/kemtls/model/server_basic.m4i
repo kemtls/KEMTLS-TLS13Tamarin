@@ -288,7 +288,7 @@ in
       running_server(HSAHS, hs, ahs, ss),
       Eq(psk_ke_mode, 'na'),
       KemDecaps($k, ~ltkS, ss),
-      SKemChal($k, ~ltkS, kempk($k, ~ltkS), ciphertext, ss)
+      KemChal($k, ~ltkS, kempk($k, ~ltkS), ciphertext, ss)
     ]-> [
       State(S3, tid, S, C, ServerState)
     ]
@@ -322,7 +322,7 @@ in
   --[ S3_cert(tid),
       Instance(tid, S, 'server'),
       KemEncap($k, certificate, clauth_ss),
-      CKemChal($k, ~ltkC, certificate, ciphertext, clauth_ss)
+      KemChal($k, ~ltkC, certificate, ciphertext, clauth_ss)
     ]->
     [ State(S3a, tid, S, C, ServerState),
       Out(senc{KemEncapsulation}ahs_keys)

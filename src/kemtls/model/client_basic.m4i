@@ -287,7 +287,7 @@ in
     running_client(AHS, ahs),
     running_client(Mode, psk_ke_mode),
     KemEncap($k, certificate, ss),
-    SKemChal($k, ~ltkS, certificate, ciphertext, ss)
+    KemChal($k, ~ltkS, certificate, ciphertext, ss)
   ]->
   [
     State(C3, tid, C, S, ClientState),
@@ -383,12 +383,13 @@ let
     auth_status = <'auth', 'auth'>
 in
     [ State(C3a, tid, C, S, PrevClientState)[no_precomp],
-      In(senc{KemEncapsulation}ahs_keys)
+      In(senc{KemEncapsulation}ahs_keys),
+      !Ltk(C, ~ltkC)
     ]
   --[ C3a(tid),
       Instance(tid, C, 'client'),
       KemDecaps($k, ~ltkC, clauth_ss),
-      CKemChal($k, ~ltkC, kempk($k, ~ltkC), ciphertext, clauth_ss),
+      KemChal($k, ~ltkC, kempk($k, ~ltkC), ciphertext, clauth_ss),
       running_client(Transcript, messages),
       running_client(MS, clauth_ss, ms),
       running_client(AHSMS, ahs, ms, clauth_ss),

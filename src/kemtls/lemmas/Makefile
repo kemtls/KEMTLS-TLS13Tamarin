@@ -7,7 +7,7 @@ FLAGS=
 all: $(M4)
 
 clean:
-	rm -f $(M4)
+	$(RM) $(M4) *.proof output.log
 
 %.spthy: %.m4 $(DEPS)
 	m4 -E -Q $(FLAGS) -I ../ -I../model -I . $< > $@
@@ -17,6 +17,10 @@ clean:
 	perl -0777pi -e 's/prev_/p_/g' $@
 	tamarin-prover +RTS -N4 -RTS --quit-on-warning $@ > /dev/null
 
+
+%.proof: %.spthy
+	tamarin-prover --quit-on-warning $< --prove --output=$@ 2> output.log
+	@grep -qv falsified output.log
 
 proofs: $(M4) $(wildcard oracles/*)
 	rm -f error.log

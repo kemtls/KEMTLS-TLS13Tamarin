@@ -22,6 +22,10 @@ lemma revltk_source [sources, heuristic=s]:
   "All a #j.
     RevLtk(a)@j ==> Ex ltk #i. GenLtk(a, ltk)@i & #i < #j"
 
+lemma ephemeral_isnt_ltk [sources, heuristic=s]:
+  "All tid actor actor2 esk #i #j.
+    EKem(tid, actor, esk)@#i & GenLtk(actor2, esk)@#j ==> F"
+
 lemma kemencapsulation_origin [sources, heuristic=s]:
   "All kem ciphertext ss pk keys #i. 
     KU(senc{KemEncapsulation}keys)@i &
@@ -39,9 +43,25 @@ lemma kemencap_source [sources, heuristic=c]:
       (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) | 
       (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
 
-lemma kemdecap_source_sk [sources, heuristic=c]:
+lemma kemencap_source_pk [sources, heuristic=s]:
+  "All kem certificate sk ss #j.
+    certificate = kempk(kem, sk) &
+    KemEncap(kem, certificate, ss)@j
+    ==>
+      (Ex #ch. (KU(Extension('40', kem, certificate))@#ch & #ch < #j)) |
+      (Ex certificate_request_context keys #crt. KU(senc{Certificate}keys)@#crt & #crt < #j)"
+
+lemma kemdecap_source_ct [sources, heuristic=s]:
+  "All kem ciphertext sk ss #j.
+    KemDecaps(kem, sk, ss)@j &
+    ciphertext = kemencaps(kem, ss, kempk(kem, sk))
+    ==>
+      (Ex #sh. KU(Extension('40', kem, ciphertext))@#sh & #sh < #j) |
+      (Ex  keys #enc. KU(senc{KemEncapsulation}keys)@#enc & #enc < #j)"
+
+lemma kemdecap_source_sk [heuristic=c]:
   "All kem sk ss #j.
     KemDecaps(kem, sk, ss)@j
     ==>
       (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) |
-      (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
+      (Ex a #l. GenLtk(a, sk)@l & #l < #j)"
