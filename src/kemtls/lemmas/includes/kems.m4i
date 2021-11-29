@@ -16,7 +16,7 @@ lemma ekem_sk_can_be_revealed:
     EKem(tid, a, esk)@#i & RevEKemSk(tid, a, esk)@#j & #i < #j"
 
 // unique 
-lemma one_ekem_per_x [reuse, heuristic=C]:
+lemma one_ekem_per_esk [reuse, heuristic=C]:
   "All tid tid2 esk a a2 #i #j.
     EKem(tid, a, esk)@i & EKem(tid2, a2, esk)@j ==> 
       #i = #j & a = a2 & tid = tid2"

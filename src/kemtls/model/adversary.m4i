@@ -1,6 +1,3 @@
-rule Reveal_Ltk:
-  [ !Ltk($A, ~ltkA) ] --[ RevLtk($A) ]-> [ Out(~ltkA) ]
-
 rule Reveal_PSK:
     [ SecretPSK($A, res_psk)]--[ RevealPSK($A, res_psk) ]->[Out(res_psk)]
 
