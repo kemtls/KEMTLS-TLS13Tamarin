@@ -197,43 +197,6 @@ lemma posths_rms [reuse, use_induction]:
       )"
 !>)
 
-define(<!lemma_matching_transcripts_posths!>, <!
-lemma matching_transcripts_posths [reuse, heuristic=s]:
-  "All tid tid2 actor peer actor2 peer2 role role2 rms rms2 messages #i #j.
-    running(RMS, actor, role, peer2, rms, messages)@i &
-    running2(RMS, peer, role2, actor2, rms2, messages)@j & not (role = role2) ==>
-     rms = rms2"
-!>)
-
-define(<!lemma_matching_rms_posths!>, <!
-lemma matching_rms_posths [reuse, heuristic=c]:
-  "All tid tid2 actor peer actor2 peer2 role role2 rms messages messages2 #i #j.
-    running(RMS, actor, role, peer2, rms, messages)@i &
-    running2(RMS, peer, role2, actor2, rms, messages2)@j & not (role = role2) ==>
-     messages = messages2"
-!>)
-
-define(<!lemma_matching_rms_actors!>, <!
-lemma matching_rms_actors [reuse, heuristic=i]:
-  "All tid tid2 actor peer actor2 peer2 role rms messages messages2 #i #j.
-    running(RMS, actor, role, peer, rms, messages)@i &
-    running2(RMS, actor2, role, peer2, rms, messages2)@j ==>
-     actor = actor2 & tid = tid2"
-!>)
-
-define(<!lemma_matching_sessions!>, <!
-lemma matching_sessions [reuse, use_induction, heuristic=s, hide_lemma=posths_rms]:
-  "All tid tid2 actor actor2 role role2 peer peer2 rms messages #i #j #k.
-    running(RMS, actor, role, peer2, rms, messages)@i & 
-    running2(RMS, peer, role2, actor2, rms, messages)@j &
-    not (role = role2) &
-    KU(rms)@k ==>
-      (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i) |
-      (Ex tid4 esk #r. RevEKemSk(tid4, peer, esk)@r & #r < #j) |
-      (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
-      (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
-!>)
-
 define(<!lemma_post_master_secret!>, <!
 lemma post_master_secret [reuse, hide_lemma=posths_rms]:
   "All tid actor peer role hs rms aas messages #i #k.

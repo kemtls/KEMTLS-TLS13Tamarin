@@ -80,41 +80,35 @@ lemma_posths_rms_weak/* [reuse, use_induction]:
 !>)
 
 
-lemma_matching_transcripts_posths/* [reuse, heuristic=s]:
+lemma matching_transcripts_posths [reuse, heuristic=s]:
   "All tid tid2 actor peer actor2 peer2 role role2 rms rms2 messages #i #j.
     running(RMS, actor, role, peer2, rms, messages)@i &
     running2(RMS, peer, role2, actor2, rms2, messages)@j & not (role = role2) ==>
      rms = rms2"
-*/
 
-
-lemma_matching_rms_posths/* [reuse, heuristic=c]:
+lemma matching_rms_posths [reuse, heuristic=c]:
   "All tid tid2 actor peer actor2 peer2 role role2 rms messages messages2 #i #j.
     running(RMS, actor, role, peer2, rms, messages)@i &
     running2(RMS, peer, role2, actor2, rms, messages2)@j & not (role = role2) ==>
      messages = messages2"
-*/
 
-
-lemma_matching_rms_actors/* [reuse, heuristic=i]:
+lemma matching_rms_actors [reuse, heuristic=i]:
   "All tid tid2 actor peer actor2 peer2 role rms messages messages2 #i #j.
     running(RMS, actor, role, peer, rms, messages)@i &
     running2(RMS, actor2, role, peer2, rms, messages2)@j ==>
      actor = actor2 & tid = tid2"
-*/
 
-// takes 4 minutes to autoprove, but autoproves!
-lemma_matching_sessions/* [reuse, use_induction, heuristic=s, hide_lemma=posths_rms]:
+// takes 4-5 minutes to autoprove, but autoproves!
+lemma matching_sessions [reuse, use_induction, heuristic=s, hide_lemma=posths_rms]:
   "All tid tid2 actor actor2 role role2 peer peer2 rms messages #i #j #k.
     running(RMS, actor, role, peer2, rms, messages)@i & 
     running2(RMS, peer, role2, actor2, rms, messages)@j &
     not (role = role2) &
     KU(rms)@k ==>
-      (Ex tid3 x #r. RevDHExp(tid3, actor, x)@r & #r < #i) |
-      (Ex tid4 y #r. RevDHExp(tid4, peer, y)@r & #r < #j) |
+      (Ex #r. RevLtk(actor)@#r) |
+      (Ex #r. RevLtk(peer)@#r)  |
       (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
       (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
-*/
 
 lemma auth_psk [reuse, use_induction, heuristic=c, hide_lemma=posths_rms_weak]:
   "All tid tid2 actor actor2 role role2 peer peer2 rms messages aas #i #j #k.
