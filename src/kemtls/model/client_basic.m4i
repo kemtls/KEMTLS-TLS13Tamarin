@@ -28,7 +28,7 @@ dnl(
 
 dnl Extensions definitions for basic ClientHello
 define(<!ClientHelloExtensions!>, <!<SupportedVersions, NamedGroupList, SignatureSchemeList, KeyShareCH >!>)
-rule client_hello:
+rule client_emit_hello:
 let
     // Initialise state variables to zero.
     init_state()
@@ -78,7 +78,7 @@ in
     ]
 
 define(<!HelloRetryRequestExtensions!>, <!<KeyShareHRR>!>)
-rule recv_hello_retry_request:
+rule client_recv_hello_retry_request:
 let
     k1 = $k1
     k2 = $k2
@@ -126,7 +126,7 @@ in
 
 dnl Extensions definitions for basic ServerHello
 define(<!ServerHelloExtensions!>, <!<SignatureSchemeList, KeyShareSH>!>)
-rule recv_server_hello:
+rule client_recv_server_hello:
 let
     prev_ekem = $k1
     prev_esk = ~esk
@@ -189,7 +189,7 @@ in
       State(C2b, tid, C, S, ClientState)
     ]
 
-rule recv_encrypted_extensions:
+rule client_recv_encrypted_extensions:
 let
     set_state()
 
@@ -208,7 +208,7 @@ in
     [ State(C2c, tid, C, S, ClientState)
     ]
 
-rule recv_certificate_request:
+rule client_recv_certificate_request:
 let
     prev_psk_ke_mode ='na'
     set_state()
@@ -230,7 +230,7 @@ in
     [ State(C2d, tid, C, S, ClientState)
     ]
 
-rule skip_recv_certificate_request:
+rule client_skip_recv_certificate_request:
 let
     set_state()
 
@@ -246,7 +246,7 @@ in
     [ State(C2d, tid, C, S, ClientState)
     ]
 
-rule recv_server_cert_emit_kex:
+rule client_recv_server_cert_emit_kex:
 let
   prev_psk_ke_mode = 'na'
   set_state()
@@ -286,6 +286,7 @@ in
     running_client(HSAHS, hs, ahs, ss),
     running_client(AHS, ahs),
     running_client(Mode, psk_ke_mode),
+    running_client(Identity, S, auth_status),
     KemEncap($k, certificate, ss),
     KemChal($k, ~ltkS, certificate, ciphertext, ss)
   ]->
@@ -294,7 +295,7 @@ in
     Out(senc{KemEncapsulation}hs_keyc)
   ]
 
-rule client_auth:
+rule client_emit_finished:
 let
     // If certificate was requested, cannot ignore
     prev_cert_req = '0'
@@ -330,7 +331,7 @@ in
       SendStream(tid, C, S, auth_status, app_keyc)
     ]
 
-rule client_send_cert:
+rule client_send_client_cert:
 let
     prev_cert_req = '1'
     prev_psk_ke_mode = 'na'
@@ -395,14 +396,15 @@ in
       running_client(AHSMS, ahs, ms, clauth_ss),
       running_client(HSAHSMS, hs, ahs, ms),
       running_client(RMS, S, rms, messages),
-      running_client(Mode, psk_ke_mode)
+      running_client(Mode, psk_ke_mode),
+      running_client(Identity, S, auth_status)
     ]->
     [ State(C3b, tid, C, S, ClientState),
       Out(senc{Finished}ahs_keyc),
       SendStream(tid, C, S, auth_status, app_keyc)
     ]
 
-rule recv_server_auth:
+rule client_recv_server_finished:
 let
     set_state()
 

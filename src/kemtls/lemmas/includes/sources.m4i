@@ -22,6 +22,16 @@ lemma revltk_source [sources, heuristic=s]:
   "All a #j.
     RevLtk(a)@j ==> Ex ltk #i. GenLtk(a, ltk)@i & #i < #j"
 
+ifdef(<!PSK!>, <!
+lemma revpsk_source [sources]:
+  "All a psk #k. 
+    RevealPSK(actor, psk)@#k ==> Ex ticket #j. (FreshPSK(ticket,psk)@#j & #j < #k)"
+!>, <!
+dnl lemma revpsk_source [sources]:
+dnl  "All a psk #k. 
+dnl    RevealPSK(a, psk)@#k ==> F"
+!>)
+
 lemma ephemeral_isnt_ltk [sources, heuristic=s]:
   "All tid actor actor2 esk #i #j.
     EKem(tid, actor, esk)@#i & GenLtk(actor2, esk)@#j ==> F"

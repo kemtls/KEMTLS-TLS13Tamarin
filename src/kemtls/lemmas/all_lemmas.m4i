@@ -117,8 +117,11 @@ define(<!lemma_ku_expand!>, <!
 lemma ku_expand [reuse, use_induction, heuristic=c]:
 "All secret label len #i. KU(Expand(secret, label, len))@i ==>
   (Ex #j. KU(secret)@j & #j < #i) |
-  (not (Ex #k. KU(secret)@k & #k < #i) &
-  (Ex actor #l. RevealPSK(actor, Expand(secret, label, len))@l & #l < #i))"
+  (not (Ex #k. KU(secret)@k & #k < #i) 
+  ifdef(<!PSK!>, <! &
+  (Ex actor #l. RevealPSK(actor, Expand(secret, label, len))@l & #l < #i)
+  !>)
+  )"
 !>)
 
 define(<!lemma_ku_hs!>, <!
@@ -206,9 +209,13 @@ lemma post_master_secret [reuse, hide_lemma=posths_rms]:
     KU(rms)@k ==>
       (Ex #r. RevLtk(peer)@r & #r < #i) |
       (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) |
-      (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) |
+      (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) 
+      ifdef(<!PSK!>, <!
+      |
       (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
-      (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
+      (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k
+      !>)
+      )"
 !>)
 
 define(<!lemma_invariant_post_hs!>, <!
@@ -234,9 +241,12 @@ lemma session_key_agreement [hide_lemma=sig_origin]:
      running2(Nonces, peer, 'server', nonces)@l &
       // not (Ex #r. RevLtk(actor)@r & #r < #i) &
       not (Ex #r. RevLtk(peer)@r & #r < #i & #r < #k) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i & #r < #k) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i & #r < #k) 
+      ifdef(<!PSK!>, <! 
+      &
       not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i & #r < #k) &
       not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i & #r < #k)
+      !>)
       ==>
        keys = keys2"
 !>)

@@ -49,7 +49,7 @@ in
 */
 dnl Extensions definitions for vanilla ClientHello
 define(<!ClientHelloExtensions!>, <!<SupportedVersions, NamedGroupList, SignatureSchemeList, KeyShareCH >!>)
-rule recv_client_hello:
+rule server_recv_client_hello:
 let
     set_state()
     psk_ke_mode = 'na'
@@ -89,7 +89,7 @@ in
     ]
 
 define(<!HelloRetryRequestExtensions!>, <!<KeyShareHRR>!>)
-rule hello_retry_request:
+rule server_hello_retry_request:
 let
     // Cannot HRR twice in a handshake
     prev_hrr = '0'
@@ -121,7 +121,7 @@ in
 */
 dnl Extensions definitions for vanilla ServerHello
 define(<!ServerHelloExtensions!>, <!<SignatureSchemeList, KeyShareSH>!>)
-rule server_hello:
+rule server_emit_hello:
 let
     prev_ekem = $prev_ekem
     prev_epk = kempk(prev_ekem, some_esk)
@@ -196,7 +196,7 @@ in
       Out(senc{EncryptedExtensions}hs_keys)
     ]
 
-rule certificate_request:
+rule server_emit_certificate_request:
 let
     prev_psk_ke_mode = 'na'
     set_state()
@@ -218,7 +218,7 @@ in
       Out(senc{CertificateRequest}hs_keys)
     ]
 
-rule skip_certificate_request:
+rule server_skip_certificate_request:
 let
     set_state()
 
@@ -286,6 +286,7 @@ in
       Instance(tid, S, 'server'),
       running_server(AHS, ahs),
       running_server(HSAHS, hs, ahs, ss),
+      running_server(Identity, C, auth_status),
       Eq(psk_ke_mode, 'na'),
       KemDecaps($k, ~ltkS, ss),
       KemChal($k, ~ltkS, kempk($k, ~ltkS), ciphertext, ss)
@@ -293,7 +294,7 @@ in
       State(S3, tid, S, C, ServerState)
     ]
 
-rule recv_client_cert:
+rule server_recv_client_cert:
 let
     prev_cert_req = '1'
     set_state()
@@ -328,7 +329,7 @@ in
       Out(senc{KemEncapsulation}ahs_keys)
     ]
 
-rule skip_client_cert:
+rule server_skip_client_cert:
 let
     prev_cert_req = '0'
     set_state()
@@ -340,7 +341,7 @@ in
     ]->
     [ State(S3a, tid, S, C, ServerState) ]
 
-rule recv_client_auth:
+rule server_recv_finished:
 let
     set_state()
 
@@ -366,6 +367,7 @@ in
       running_server(HSAHSMS, hs, ahs, ms),
       running_server(MS, clauth_ss, ms),
       running_server(RMS, C, rms, messages),
+      running_server(Identity, C, auth_status),
       Eq(verify_data, exp_verify_data),
       commit_server(HS, hs),
       commit_server(AHS, ahs),
@@ -379,7 +381,7 @@ in
       RecvStream(tid, S, C, auth_status, app_keyc)
     ]
 
-rule emit_server_auth:
+rule server_emit_finished:
 let
     //prev_auth_status = <sas, cas>
     set_state()

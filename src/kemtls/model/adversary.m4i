@@ -1,5 +1,7 @@
+ifdef(<!PSK!>, <!
 rule Reveal_PSK:
     [ SecretPSK($A, res_psk)]--[ RevealPSK($A, res_psk) ]->[Out(res_psk)]
+!>)
 
 // Reveal the KEM secret key
 rule Reveal_KemSk:

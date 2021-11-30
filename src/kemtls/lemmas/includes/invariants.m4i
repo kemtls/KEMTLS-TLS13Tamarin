@@ -12,6 +12,6 @@ lemma_one_start_per_tid/* [reuse]:
 ifdef(<!PSK!>, <!
 // PSK enabled 
 !>, <!
-lemma psk_cant_be_revealed_if_no_psk_model [reuse]:
-    "not (Ex a res_psk #j. RevealPSK(a, res_psk)@#j)"
+dnl lemma psk_cant_be_revealed_if_no_psk_model [reuse]:
+dnl    "not (Ex a res_psk #j. RevealPSK(a, res_psk)@#j)"
 !>)

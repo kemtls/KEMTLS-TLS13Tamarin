@@ -106,9 +106,13 @@ lemma matching_sessions [reuse, use_induction, heuristic=s, hide_lemma=posths_rm
     not (role = role2) &
     KU(rms)@k ==>
       (Ex #r. RevLtk(actor)@#r) |
-      (Ex #r. RevLtk(peer)@#r)  |
+      (Ex #r. RevLtk(peer)@#r)
+      ifdef(<!PSK!>, <!
+      |
       (Ex rms2 #r. RevealPSK(actor, rms2)@r & #r < #k) |
-      (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)"
+      (Ex rms2 #r. RevealPSK(peer, rms2)@r & #r < #k)
+      !>)
+      "
 
 lemma auth_psk [reuse, use_induction, heuristic=c, hide_lemma=posths_rms_weak]:
   "All tid tid2 actor actor2 role role2 peer peer2 rms messages aas #i #j #k.
