@@ -348,11 +348,12 @@ let
     C = $C
     S = $S
 
+    ms = MasterSecret
+
     exp_verify_data = compute_finished(client)
 
     messages = <messages, Finished>
 
-    ms = MasterSecret
     rms = resumption_master_secret()
 
     app_keyc = keygen(cats, app_key_label())

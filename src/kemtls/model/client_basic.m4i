@@ -304,11 +304,12 @@ let
     S = $S
     C = $C
 
+    ms = MasterSecret
+
     verify_data = compute_finished(client)
 
     messages = <messages, Finished>
 
-    ms = MasterSecret
     rms = resumption_master_secret()
 
     app_keyc = keygen(cats, app_key_label())
@@ -369,11 +370,12 @@ let
     clauth_ss = kemdecaps($k, ciphertext, ~ltkC)
     messages = <messages, KemEncapsulation>
 
+    ms = MasterSecret
+
     verify_data = compute_finished(client)
 
     messages = <messages, Finished>
 
-    ms = MasterSecret
     rms = resumption_master_secret()
     
     app_keyc = keygen(cats, app_key_label())

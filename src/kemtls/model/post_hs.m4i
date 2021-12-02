@@ -142,7 +142,7 @@ let
 
     signature = compute_signature(~ltkC, client)
 
-    fin_keyc = keygen(cats, fin_key_label())
+    fin_keyc = keygen(cats, fin_key_label(client))
     verify_data = compute_finished(fin_keyc)
 
 //    cert_req_ctxt = '0'
@@ -185,7 +185,7 @@ let
 
     sig_messages = signature_input(client)
 
-    fin_keyc = keygen(cats, fin_key_label())
+    fin_keyc = keygen(cats, fin_key_label(server))
     exp_verify_data = compute_finished(fin_keyc)
 
 //    cert_req_ctxt = '0'
