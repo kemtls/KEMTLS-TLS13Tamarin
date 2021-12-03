@@ -390,6 +390,7 @@ let
     C = $C
 
     verify_data = compute_finished(server)
+    finished_messages = messages
     messages = <messages, Finished>
 
     app_keys = keygen(sats, app_key_label())
@@ -403,6 +404,7 @@ in
       S3fin(tid),
       Instance(tid, S, 'server'),
       running_server(Mode, psk_ke_mode),
+      running_server(Transcript, finished_messages),
       SessionKey(tid, S, C, auth_status, <app_keys, app_keyc>)
     ]->
     [ State(S4, tid, S, C, ServerState),

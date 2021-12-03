@@ -307,6 +307,7 @@ let
     ms = MasterSecret
 
     verify_data = compute_finished(client)
+    finished_messages = messages
 
     messages = <messages, Finished>
 
@@ -320,7 +321,7 @@ in
     ]
   --[ C3_skip_cert(tid),
       Instance(tid, C, 'client'),
-      running_client(Transcript, messages),
+      running_client(Transcript, finished_messages),
       running_client(MS, clauth_ss, ms),
       running_client(AHSMS, ahs, ms, clauth_ss),
       running_client(HSAHSMS, hs, ahs, ms),
@@ -373,6 +374,7 @@ let
     ms = MasterSecret
 
     verify_data = compute_finished(client)
+    finished_messages = messages
 
     messages = <messages, Finished>
 
@@ -393,7 +395,7 @@ in
       Instance(tid, C, 'client'),
       KemDecaps($k, ~ltkC, clauth_ss),
       KemChal($k, ~ltkC, kempk($k, ~ltkC), ciphertext, clauth_ss),
-      running_client(Transcript, messages),
+      running_client(Transcript, finished_messages),
       running_client(MS, clauth_ss, ms),
       running_client(AHSMS, ahs, ms, clauth_ss),
       running_client(HSAHSMS, hs, ahs, ms),
