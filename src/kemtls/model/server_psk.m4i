@@ -179,5 +179,5 @@ in
     ]->
     [ State(S3, tid, S, C, ServerState),
       SendStream(tid, S, C, auth_status, app_keys),
-      Out(senc{Finished}hs_keys)
+      Out(senc{Finished}ahs_keys)
     ]

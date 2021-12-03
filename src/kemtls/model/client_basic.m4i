@@ -379,6 +379,8 @@ let
     messages = <messages, Finished>
 
     rms = resumption_master_secret()
+
+    cats = application_traffic_secret_0(client)
     
     app_keyc = keygen(cats, app_key_label())
     // we compute this in KEMTLS when SFIN is received

@@ -356,6 +356,8 @@ let
 
     rms = resumption_master_secret()
 
+    cats = application_traffic_secret_0(client)
+
     app_keyc = keygen(cats, app_key_label())
     // auth status?
 in
@@ -393,6 +395,7 @@ let
     finished_messages = messages
     messages = <messages, Finished>
 
+    sats = application_traffic_secret_0(server)
     app_keys = keygen(sats, app_key_label())
     //auth_status = <'auth', cas>
 in

@@ -76,23 +76,23 @@ lemma kemdecap_source_sk [heuristic=c]:
       (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) |
       (Ex a #l. GenLtk(a, sk)@l & #l < #j)"
 
-lemma client_finished_running [reuse, sources]:
+lemma client_finished_running [reuse, sources, heuristic=s]:
     "
     All keys verify_data ms messages #fin.
     verify_data = compute_finished(client) &
     KU(senc{Finished}keys)@#fin
     ==>
-        (Ex #kms. KU(ms)@#kms & #kms < #fin) |
+        (Ex #kms #msgs. KU(ms)@#kms & KU(messages)@#msgs & #kms < #fin & #msgs < #fin) |
         (Ex tid actor #run. running(Transcript, actor, 'client', messages)@#run)
     "
 
-lemma server_finished_running [reuse, sources]:
+lemma server_finished_running [reuse, sources, heuristic=s]:
     "
     All keys verify_data ms messages #fin.
     verify_data = compute_finished(server) &
     KU(senc{Finished}keys)@#fin
     ==>
-        (Ex #kms. KU(ms)@#kms & #kms < #fin) |
+        (Ex #kms #msgs. KU(ms)@#kms & KU(messages)@#msgs & #kms < #fin & #msgs < #fin) |
         (Ex tid actor #run. running(Transcript, actor, 'server', messages)@#run)
     "
 
