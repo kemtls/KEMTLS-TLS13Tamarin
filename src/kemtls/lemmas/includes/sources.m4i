@@ -75,3 +75,25 @@ lemma kemdecap_source_sk [heuristic=c]:
     ==>
       (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) |
       (Ex a #l. GenLtk(a, sk)@l & #l < #j)"
+
+lemma client_finished_running [reuse, sources]:
+    "
+    All keys verify_data ms messages #fin.
+    verify_data = compute_finished(client) &
+    KU(senc{Finished}keys)@#fin
+    ==>
+        (Ex #kms. KU(ms)@#kms & #kms < #fin) |
+        (Ex tid actor #run. running(Transcript, actor, 'client', messages)@#run)
+    "
+
+lemma server_finished_running [reuse, sources]:
+    "
+    All keys verify_data ms messages #fin.
+    verify_data = compute_finished(server) &
+    KU(senc{Finished}keys)@#fin
+    ==>
+        (Ex #kms. KU(ms)@#kms & #kms < #fin) |
+        (Ex tid actor #run. running(Transcript, actor, 'server', messages)@#run)
+    "
+
+dnl vim: set ft=spthy ts=4 sw=4 tw=0 et :
