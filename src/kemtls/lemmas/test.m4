@@ -8,7 +8,7 @@ define(<!CachePSK!>, <!F_CachePSK($@)!>)dnl
 define(<!SecretPSK!>, <!F_SecretPSK($@)!>)dnl
 
 
-theory TLS_13_secret_helpers
+theory TLS_13_work
 begin
 
 include(header.m4i)
@@ -37,6 +37,6 @@ include(includes/matching.m4i)
 
 include(includes/secrets.m4i)
 
-dnl include(includes/secrets_todo.m4i)
+include(includes/secrets_todo.m4i)
 
 end
