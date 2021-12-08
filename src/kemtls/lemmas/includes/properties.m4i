@@ -1,29 +1,35 @@
 
 lemma secret_session_keys [hide_lemma=sig_origin,hide_lemma=posths_rms]:
   "All tid actor peer kw kr pas #i.
-      SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i & 
+      SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      dnl not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
-      dnl not (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
+      not (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i)
+      ifdef(<!PSK!>, <!
+      &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
+      !>)
     ==> not Ex #j. K(kr)@j"
 
 lemma secret_session_keys_pfs [hide_lemma=sig_origin,hide_lemma=posths_rms]:
   "All tid actor peer role kw kr pas psk_ke_mode #i.
-      SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i & 
+      SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i &
       running(Mode, actor, role, psk_ke_mode)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
       not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
       not (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) &
+      not (psk_ke_mode = psk_ke)
+      ifdef(<!PSK!>, <!
+      &
       not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) &
       not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i) &
-      not (psk_ke_mode = psk_ke)
+      !>)
     ==> not Ex #j. K(kr)@j"
 
 lemma unique_session_keys:
   "All tid tid2 actor peer peer2 kr kw as as2 #i #j.
-     SessionKey(tid, actor, peer, as, <kr, kw>)@i & 
+     SessionKey(tid, actor, peer, as, <kr, kw>)@i &
      SessionKey(tid2, actor, peer2, as2, <kr, kw>)@j
       ==>
         #i = #j"

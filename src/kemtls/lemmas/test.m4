@@ -37,22 +37,6 @@ include(includes/matching.m4i)
 
 include(includes/secrets.m4i)
 
-lemma ms_secret [hide_lemma=ku_encaps, hide_lemma=ku_decaps, hide_lemma=ku_ms,
-                 hide_lemma=ku_extract, hide_lemma=ku_expand, hide_lemma=client_finished_running,
-                 hide_lemma=server_finished_running]:
-    "
-    All tid tid2 server client sas cas ms #i #j.
-    commit(MS, server, 'server', ms)@#i &
-    commit(Identity, server, 'server', client, <sas, 'auth'>)@#i & 
-    commit2(MS, client, 'client', ms)@#j &
-    commit2(Identity, client, 'client', server, <cas, 'auth'>)@#j &
-    not (Ex #revserv. RevLtk(server)@#revserv & #revserv < #i) &
-    not (Ex #revcl.   RevLtk(client)@#revcl & #revcl < #j) &
-    not (Ex esk #revesk. RevEKemSk(tid2, client, esk)@#revesk)
-    ==>
-    not (Ex #kums. KU(ms)@#kums)
-    " 
-
-include(includes/secrets_todo.m4i)
+include(includes/properties.m4i)
 
 end
