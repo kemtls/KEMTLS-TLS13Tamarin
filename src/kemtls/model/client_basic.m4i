@@ -140,7 +140,7 @@ let
 
     // equivalent to checking kempk in <$ekem>
     // pattern matches through In(SH)
-    ect = kemencaps(ekem, <ekem, new_eseed>, epk)
+    ect = kemencaps(ekem, kemss(ekem, new_eseed), epk)
 
     // Derive the shared secret
     ess = kemdecaps(ekem, ect, esk)
@@ -259,7 +259,7 @@ let
   
   messages = <messages, Certificate>
   
-  ss = <$k, ~seed>
+  ss = kemss($k, ~seed)
   ciphertext = kemencaps($k, ss, certificate)
 
   messages = <messages, KemEncapsulation>
@@ -367,7 +367,7 @@ let
     C = $C
 
 
-    ciphertext = kemencaps($k, <$k, ~eseed>, kempk($k, ~ltkC))
+    ciphertext = kemencaps($k, kemss($k, ~eseed), kempk($k, ~ltkC))
     clauth_ss = kemdecaps($k, ciphertext, ~ltkC)
     messages = <messages, KemEncapsulation>
 

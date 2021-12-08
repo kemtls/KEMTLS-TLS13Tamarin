@@ -54,18 +54,18 @@ lemma rev_ekem_before_hs  [reuse, heuristic=I]:
 lemma ku_encaps [reuse]:
   "All kem pk ss sk seed #i #j.
     KemEncap(kem, pk, ss)@#i &
-    ss = <kem, seed> &
+    ss = kemss(kem, seed) &
     pk = kempk(kem, sk) &
     KU(ss)@#j
     ==>
-    (Ex #r. KU(seed)@r & #r < #j) |
-    (Ex #r. KU(sk)@r & #r < #j)
+    (Ex #rseed. KU(seed)@#rseed & #rseed < #j) |
+    (Ex #rsk. KU(sk)@#rsk & #rsk < #j)
   "
 
 lemma ku_decaps [reuse]:
-  "All kem sk ss seed #i #j.
-    KemDecaps(kem, sk, ss)@#i &
-    ss = <kem, seed> &
+  "All kem sk ss seed #decaps #j.
+    KemDecaps(kem, sk, ss)@#decaps &
+    ss = kemss(kem, seed) &
     KU(ss)@#j
     ==>
     (Ex #r. KU(seed)@#r & #r < #j) |
@@ -79,19 +79,19 @@ lemma ekem_esk_can_only_be_revealed [reuse, heuristic=c]:
     (EKem(tid, a, esk)@#i & KU(esk)@#j) 
     ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 
-lemma ekem_seed_needs_rev_esk [reuse, heuristic=i]:
-    "All a tid ekem esk eseed #a #i #j.
-    (EKem(tid, a, esk)@#a & KemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j)
+lemma ekem_ss_needs_rev_esk [reuse, heuristic=i]:
+    "All a tid ekem esk ess #a #i #j.
+    (EKem(tid, a, esk)@#a & KemEncap(ekem, kempk(ekem, esk), ess)@#i & KU(ess)@#j)
       ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 
-lemma ekem_getting_seed_requires_esk [reuse, heuristic=i]:
-  "All ekem esk eseed #i #j.
-    (KemEncap(ekem, kempk(ekem, esk), eseed)@#i & KU(eseed)@#j)
+lemma ekem_getting_ess_requires_esk [reuse, heuristic=i]:
+  "All ekem esk ess #i #j.
+    (KemEncap(ekem, kempk(ekem, esk), ess)@#i & KU(ess)@#j)
     ==> 
     Ex #r. KU(esk)@#r & #r < #j"
 
 // static KEM
-lemma skem_getting_seed_requires_reveal [reuse, heuristic=i]:
+lemma skem_getting_ss_requires_reveal [reuse, heuristic=i]:
   "All a kem ltk ss #a #i #j.
   (GenLtk(a, ltk)@#a & KemEncap(kem, kempk(kem, ltk), ss)@#i & KU(ss)@#j)
   ==>
@@ -107,13 +107,13 @@ lemma kem_consistency [reuse, heuristic=s]:
     KemEncap(kem, pk, ss)@i
     ==>
       (Ex sk. pk = kempk(kem, sk)) &
-      (Ex seed. ss = <kem, seed>)"
+      (Ex seed. ss = kemss(kem, seed))"
 
 lemma kem_consistency_decaps [reuse, heuristic=s]:
   "All kem sk ss #i.
     KemDecaps(kem, sk, ss)@i
     ==>
-      (Ex seed. ss = <kem, seed>)"
+      (Ex seed. ss = kemss(kem, seed))"
 
 lemma kem_consistency_chal [reuse, heuristic=c]:
   "All kem sk pk ct ss #i.
@@ -121,7 +121,7 @@ lemma kem_consistency_chal [reuse, heuristic=c]:
     ==>
       pk = kempk(kem, sk) &
       ct = kemencaps(kem, ss, pk) &
-      (Ex seed. ss = <kem, seed>)"
+      (Ex seed. ss = kemss(kem, seed))"
 
 lemma kem_encaps_unique [reuse, heuristic=c]:
   "All kem pk ss #i #j.
@@ -153,11 +153,11 @@ lemma kem_ephemeral_decaps_unique [reuse, heuristic=s]:
 
 // chal_dual
 lemma kem_chal_dual [reuse, heuristic=c]:
-  "All tid tid2 actor actor2 ekem esk epk ect ess #i #j #r.
-    KemChal(ekem, esk, epk, ect, ess)@#i & Instance(tid, actor, 'client')@#i &
-    KemChal(ekem, esk, epk, ect, ess)@#j & Instance(tid2, actor2, 'server')@#j &
-    KU(ess)@#r
+  "All tid tid2 actor actor2 kem sk pk ct ss #i #j #r.
+    KemChal(kem, sk, pk, ct, ss)@#i & Instance(tid, actor, 'client')@#i &
+    KemChal(kem, sk, pk, ct, ss)@#j & Instance(tid2, actor2, 'server')@#j &
+    KU(ss)@#r
     ==>
-    (Ex #p. (RevEKemSk(tid, actor, esk)@#p & #p < #r)) |
-    (Ex #c. RevLtk(actor)@#c & #c < #r)  | 
-    (Ex #s. RevLtk(actor2)@#s & #s < #r)"
+    (Ex #kg #p. (EKem(tid, actor, sk)@#kg & RevEKemSk(tid, actor, sk)@#p & #p < #r)) |
+    (Ex #kg #c. (GenLtk(actor, sk)@#kg & RevLtk(actor)@#c & #c < #r))  | 
+    (Ex #kg #s. (GenLtk(actor2, sk)@#kg & RevLtk(actor2)@#s & #s < #r))"

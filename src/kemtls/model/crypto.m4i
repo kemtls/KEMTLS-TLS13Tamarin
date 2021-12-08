@@ -79,15 +79,15 @@ define(<!resumption_master_secret!>, <!Derive_Secret(ms, 'rms', <!<!HashValue!>!
 
 
 dnl KEM operations
-functions: kempk/2,kemencaps/3,kemdecaps/3
+functions: kempk/2,kemencaps/3,kemdecaps/3,kemss/2
 
 dnl(
 /*
     kempk(kem, secret) = pk
-    kemencaps(kem, <g, ~k>, pk) = ct
-    kemdecaps(kem, ct, sk) = <g, ~k>
+    kemencaps(kem, kemss(kem, seed), pk) = ct
+    kemdecaps(kem, ct, sk) = kemss(kem, seed)
 */
 )
 
 equations:
-    kemdecaps(kem, kemencaps(kem, <kem, k>, kempk(kem, sk)), sk) = <kem, k>
+    kemdecaps(kem, kemencaps(kem, kemss(kem, seed), kempk(kem, sk)), sk) = kemss(kem, seed)

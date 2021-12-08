@@ -136,7 +136,7 @@ let
 
     // Kem ct 
     eseed = ~eseed dnl fresh value
-    ess = <ekem, eseed>
+    ess = kemss(ekem, eseed)
     ect = kemencaps(ekem, ess, epk)
 
     es = EarlySecret
@@ -262,7 +262,7 @@ rule server_receive_kemencaps:
 let
     set_state()
 
-    shared_secret = <$k, ~seed>
+    shared_secret = kemss($k, ~seed)
     ciphertext = kemencaps($k, shared_secret, kempk($k, ~ltkS))
 
     ss = kemdecaps($k, ciphertext, ~ltkS)
@@ -307,7 +307,7 @@ let
     messages = <messages, Certificate>
 
     dnl clauth_ss is part of the state and passed through to ms later
-    clauth_ss = <$k, ~seed>   
+    clauth_ss = kemss($k, ~seed)  
     ciphertext = kemencaps($k, clauth_ss, certificate)
     messages = <messages, KemEncapsulation>
 

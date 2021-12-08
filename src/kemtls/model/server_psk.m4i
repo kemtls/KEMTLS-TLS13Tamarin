@@ -95,7 +95,7 @@ let
 
     // Kem ct
     eseed = ~eseed   dnl fresh value
-    ess = <ekem, eseed>
+    ess = kemss(ekem, eseed)
     ect = kemencaps(ekem, ess, epk)
 
     identity = psk_id
