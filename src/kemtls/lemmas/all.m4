@@ -38,8 +38,6 @@ include(includes/matching.m4i)
 
 include(includes/secrets.m4i)
 
-include(includes/authentication.m4i)
-
 /* end-goal properties */
 include(includes/authentication.m4i)
 
