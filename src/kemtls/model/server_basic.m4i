@@ -351,6 +351,7 @@ let
     ms = MasterSecret
 
     exp_verify_data = compute_finished(client)
+    finished_messages = messages
 
     messages = <messages, Finished>
 
@@ -376,7 +377,7 @@ in
       commit_server(AHS, ahs),
       commit_server(MS, ms),
       commit_server(Identity, C, auth_status),
-      commit_server(Transcript, messages),
+      commit_server(Transcript, finished_messages),
       commit_server(Nonces, nc, ns)
     ]->
     [ 

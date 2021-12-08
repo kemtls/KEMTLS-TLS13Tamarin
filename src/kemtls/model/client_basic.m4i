@@ -418,6 +418,7 @@ let
     C = $C
 
     exp_verify_data = compute_finished(server)
+    finished_messages = messages
 
     messages = <messages, Finished>
 
@@ -437,7 +438,7 @@ in
       commit_client(HS, hs),
       commit_client(AHS, ahs),
       commit_client(MS, ms),
-      commit_client(Transcript, messages),
+      commit_client(Transcript, finished_messages),
       commit_client(Identity, S, auth_status),
       commit_client(Nonces, nc, ns),
       SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
