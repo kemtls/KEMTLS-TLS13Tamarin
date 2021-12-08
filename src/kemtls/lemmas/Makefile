@@ -22,7 +22,9 @@ clean:
 	tamarin-prover --quit-on-warning $< --prove --output=$@ 2> output.log
 	@grep -qv falsified output.log
 
-proofs: sources.proof invariants.proof uniqueness.proof kem_chal.proof auth_helpers.proof secret_helpers.proof
+quick-proofs: sources.proof invariants.proof uniqueness.proof kem_chal.proof auth_helpers.proof 
+
+all-proofs: proofs secret_helpers.proof
 
 proofs_: $(M4) $(wildcard oracles/*)
 	rm -f error.log
