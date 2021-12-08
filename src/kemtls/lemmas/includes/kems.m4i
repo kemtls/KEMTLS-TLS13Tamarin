@@ -7,7 +7,7 @@ lemma ekem_pk_can_be_decapsed:
   exists-trace
   "Ex tid a esk ekem ess #i #j.
      EKem(tid, a, esk)@#i
-     & KemDecaps(ekem, esk, ess)@#j 
+     & KemDecaps(ekem, esk, ess)@#j
      & not (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 
 lemma ekem_sk_can_be_revealed:
@@ -15,15 +15,15 @@ lemma ekem_sk_can_be_revealed:
   "Ex tid a esk #i #j.
     EKem(tid, a, esk)@#i & RevEKemSk(tid, a, esk)@#j & #i < #j"
 
-// unique 
+// unique
 lemma one_ekem_per_esk [reuse, heuristic=C]:
   "All tid tid2 esk a a2 #i #j.
-    EKem(tid, a, esk)@i & EKem(tid2, a2, esk)@j ==> 
+    EKem(tid, a, esk)@i & EKem(tid2, a2, esk)@j ==>
       #i = #j & a = a2 & tid = tid2"
 
 
 //NTS: RevDH < RRMS
-//May have to add tid's to RevDH. 
+//May have to add tid's to RevDH.
 // ordering
 lemma ekem_rev_secret_ordering [reuse, heuristic=C]:
   "All esk tid a #i #j.
@@ -34,15 +34,15 @@ lemma ekem_only_revsk_in_client [reuse, heuristic=s]:
     All tid a esk #i #j.
     EKem(tid, a, esk)@#i & RevEKemSk(tid, a, esk)@#j
     ==> (
-      (Ex #r. Start(tid, a, 'client')@#r & #r < #j) & 
+      (Ex #r. Start(tid, a, 'client')@#r & #r < #j) &
       not (Ex #r. Start(tid, a, 'server')@#r)
     )
     "
 
 lemma rev_ekem_ordering  [reuse, use_induction, heuristic=C]:
-  "All tid actor esk #j. 
+  "All tid actor esk #j.
     DelEKemSk(tid, actor, esk)@#j ==>
-      ((Ex #i. EKem(tid, actor, esk)@#i & #i < #j) & 
+      ((Ex #i. EKem(tid, actor, esk)@#i & #i < #j) &
        (All #r. RevEKemSk(tid, actor, esk)@#r  ==>  #r < #j))"
 
 lemma rev_ekem_before_hs  [reuse, heuristic=I]:
@@ -51,32 +51,10 @@ lemma rev_ekem_before_hs  [reuse, heuristic=I]:
     RevEKemSk(tid, actor, esk)@i ==>
     #i < #j"
 
-lemma ku_encaps [reuse]:
-  "All kem pk ss sk seed #i #j.
-    KemEncap(kem, pk, ss)@#i &
-    ss = kemss(kem, seed) &
-    pk = kempk(kem, sk) &
-    KU(ss)@#j
-    ==>
-    (Ex #rseed. KU(seed)@#rseed & #rseed < #j) |
-    (Ex #rsk. KU(sk)@#rsk & #rsk < #j)
-  "
-
-lemma ku_decaps [reuse]:
-  "All kem sk ss seed #decaps #j.
-    KemDecaps(kem, sk, ss)@#decaps &
-    ss = kemss(kem, seed) &
-    KU(ss)@#j
-    ==>
-    (Ex #r. KU(seed)@#r & #r < #j) |
-    (Ex #r. KU(sk)@#r & #r < #j)
-  "
-
 // requirements
-
 lemma ekem_esk_can_only_be_revealed [reuse, heuristic=c]:
   "All tid a esk #i #j.
-    (EKem(tid, a, esk)@#i & KU(esk)@#j) 
+    (EKem(tid, a, esk)@#i & KU(esk)@#j)
     ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 
 lemma ekem_ss_needs_rev_esk [reuse, heuristic=i]:
@@ -87,7 +65,7 @@ lemma ekem_ss_needs_rev_esk [reuse, heuristic=i]:
 lemma ekem_getting_ess_requires_esk [reuse, heuristic=i]:
   "All ekem esk ess #i #j.
     (KemEncap(ekem, kempk(ekem, esk), ess)@#i & KU(ess)@#j)
-    ==> 
+    ==>
     Ex #r. KU(esk)@#r & #r < #j"
 
 // static KEM
@@ -99,7 +77,7 @@ lemma skem_getting_ss_requires_reveal [reuse, heuristic=i]:
 
 // Ordering of the shared secret
 lemma rev_kem_seed_ordering [reuse, heuristic=i]:
-  "All kem pk ss #i #j. 
+  "All kem pk ss #i #j.
     KemEncap(kem, pk, ss)@i & KU(ss)@j ==> #i < #j"
 
 lemma kem_consistency [reuse, heuristic=s]:
@@ -159,5 +137,5 @@ lemma kem_chal_dual [reuse, heuristic=c]:
     KU(ss)@#r
     ==>
     (Ex #kg #p. (EKem(tid, actor, sk)@#kg & RevEKemSk(tid, actor, sk)@#p & #p < #r)) |
-    (Ex #kg #c. (GenLtk(actor, sk)@#kg & RevLtk(actor)@#c & #c < #r))  | 
+    (Ex #kg #c. (GenLtk(actor, sk)@#kg & RevLtk(actor)@#c & #c < #r))  |
     (Ex #kg #s. (GenLtk(actor2, sk)@#kg & RevLtk(actor2)@#s & #s < #r))"
