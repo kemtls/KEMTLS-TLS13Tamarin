@@ -102,7 +102,6 @@ lemma source_recvstream [sources]:
     ==>
       (Ex #pred. Recv(tid)@#pred & #pred < #recv) |
       (Ex #creac. C3b(tid)@#creac & #creac < #recv) |
-      (Ex #creas. S3a(tid)@#creas & #creas < #recv) |
       (Ex #sfin. S3fin(tid)@#sfin & #sfin < #recv)
   "
 

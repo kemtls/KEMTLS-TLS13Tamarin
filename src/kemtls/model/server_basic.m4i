@@ -359,7 +359,6 @@ let
 
     cats = application_traffic_secret_0(client)
 
-    app_keyc = keygen(cats, app_key_label())
     // auth status?
 in
     [ State(S3a, tid, S, C, PrevServerState)[no_precomp],
@@ -381,8 +380,7 @@ in
       commit_server(Nonces, nc, ns)
     ]->
     [ 
-      State(S3fin, tid, S, C, ServerState),
-      RecvStream(tid, S, C, auth_status, app_keyc)
+      State(S3fin, tid, S, C, ServerState)
     ]
 
 rule server_emit_finished:
@@ -398,11 +396,11 @@ let
 
     sats = application_traffic_secret_0(server)
     app_keys = keygen(sats, app_key_label())
+    app_keyc = keygen(cats, app_key_label())
     //auth_status = <'auth', cas>
 in
     [
-      State(S3fin, tid, S, C, PrevServerState)[no_precomp],
-      RecvStream(tid, S, C, prev_auth_status, app_keyc)
+      State(S3fin, tid, S, C, PrevServerState)[no_precomp]
     ]
     --[
       S3fin(tid),
