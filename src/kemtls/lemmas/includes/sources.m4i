@@ -96,4 +96,14 @@ lemma server_finished_running [sources, heuristic=s]:
         (Ex tid actor #run. running(Transcript, actor, 'server', messages)@#run)
     "
 
+lemma source_recvstream [sources]:
+  "All tid actor peer auth_status data #recv.
+    RecvData(tid, actor, peer, auth_status, data)@#recv
+    ==>
+      (Ex #pred. Recv(tid)@#pred & #pred < #recv) |
+      (Ex #creac. C3b(tid)@#creac & #creac < #recv) |
+      (Ex #creas. S3a(tid)@#creas & #creas < #recv) |
+      (Ex #sfin. S3fin(tid)@#sfin & #sfin < #recv)
+  "
+
 dnl vim: set ft=spthy ts=4 sw=4 tw=0 et :
