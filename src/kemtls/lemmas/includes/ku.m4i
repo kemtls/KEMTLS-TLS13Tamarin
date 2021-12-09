@@ -2,7 +2,7 @@ lemma_ku_extract/* [reuse, use_induction]:
   "All a b #i. KU(Extract(a, b))@i ==> Ex #j #k. KU(a)@j & KU(b)@k & #j < #i & #k < #i"
 */
 
-lemma_ku_expand/* [reuse, use_induction]:
+lemma_ku_expand/* [use_induction]:
   "All secret label len #i. KU(Expand(secret, label, len))@i ==>
     (Ex #j. KU(secret)@j & #j < #i) |
     (not (Ex #k. KU(secret)@k & #k < #i) &

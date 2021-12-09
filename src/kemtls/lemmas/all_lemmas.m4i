@@ -114,7 +114,7 @@ lemma ku_extract [reuse, use_induction, heuristic=c]:
 !>)
 
 define(<!lemma_ku_expand!>, <!
-lemma ku_expand [reuse, use_induction, heuristic=c]:
+lemma ku_expand [use_induction, heuristic=c]:
 "All secret label len #i. KU(Expand(secret, label, len))@i ==>
   (Ex #j. KU(secret)@j & #j < #i) |
   (not (Ex #k. KU(secret)@k & #k < #i) 

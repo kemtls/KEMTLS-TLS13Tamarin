@@ -39,6 +39,7 @@ CRIBS = [
 
 IGNORE = [
     "EKemSk(~seed",
+    "RecvStream(",
 ]
 
 
@@ -57,14 +58,14 @@ def match_crib(crib: re.Pattern, lines: List[str]) -> Optional[str]:
 
 
 def order_actions(lines: List[str], lemma: str, *args) -> str:
-    if lemma != "master_secret_pfs":
+    if lemma not in ("master_secret_pfs", "secret_session_keys"):
         eprint("Unexpected lemma")
         sys.exit(1)
 
     for crib in CRIBS:
         if (result := match_crib(crib, lines)) is not None:
             return result
-    
+
     for line in lines:
         num, rule = line.split(': ', maxsplit=2)
 
@@ -81,7 +82,7 @@ def order_actions(lines: List[str], lemma: str, *args) -> str:
 
     # default
     return f"0\n # default"
-    
+
 
 
 if __name__ == "__main__":
