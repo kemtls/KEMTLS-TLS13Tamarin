@@ -1,5 +1,11 @@
 
-lemma secret_session_keys [hide_lemma=kem_chal_dual,hide_lemma=ku_expand,hide_lemma=mutual_transcript_agreement,hide_lemma=transcript_agreement,hide_lemma=posths_rms,heuristic=O "oracles/master_secret_pfs.py"]:
+lemma secret_session_keys [
+      hide_lemma=kem_chal_dual,
+      hide_lemma=ku_expand,
+      hide_lemma=mutual_transcript_agreement,
+      hide_lemma=transcript_agreement,
+      hide_lemma=posths_rms,
+      heuristic=O "oracles/master_secret_pfs.py"]:
   "All tid actor peer kw kr pas #i.
       SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
@@ -37,22 +43,28 @@ lemma secret_session_keys_pfs [
       !>)
     ==> not Ex #j. K(kr)@j"
 
-lemma session_key_agreement [hide_lemma=sig_origin]:
-  "All tid tid2 actor peer actor2 peer2 nonces keys keys2 cas as2 #i #j #k #l.
-     SessionKey(tid, actor, peer2, <cas, 'auth'>, keys)@i & 
+lemma session_key_agreement [
+        hide_lemma=authenticated_handshake_secret,
+        hide_lemma=authenticated_handshake_secret_pfs,
+        hide_lemma=ku_extract,
+        hide_lemma=ku_ms,
+        hide_lemma=posths_rms,
+        heuristic=O "oracles/session_key_agreement.py"]:
+  "All tid tid2 actor peer actor2 peer2 nonces kr kr2 kw kw2 cas as2 #i #j #k #l.
+     SessionKey(tid, actor, peer2, <cas, 'auth'>, <kr, kw>)@i &
      running(Nonces, actor, 'client', nonces)@j &
-     SessionKey(tid2, peer, actor2, as2, keys2)@k &
+     SessionKey(tid2, peer, actor2, as2, <kw2, kr2>)@k &
      running2(Nonces, peer, 'server', nonces)@l &
-      // not (Ex #r. RevLtk(actor)@r & #r < #i) &
+      not (Ex #r. RevLtk(actor)@r & #r < #i) &
       not (Ex #r. RevLtk(peer)@r & #r < #i & #r < #k) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i & #r < #k) 
-      ifdef(<!PSK!>, <! 
+      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i & #r < #k)
+      ifdef(<!PSK!>, <!
       &
       not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i & #r < #k) &
       not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i & #r < #k)
       !>)
       ==>
-       keys = keys2"
+       (kr = kr2 & kw = kw2)"
 
 lemma unique_session_keys:
   "All tid tid2 actor peer peer2 kr kw as as2 #i #j.

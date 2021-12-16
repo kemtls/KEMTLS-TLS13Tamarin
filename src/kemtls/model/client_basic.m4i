@@ -313,6 +313,7 @@ let
 
     rms = resumption_master_secret()
 
+    cats = application_traffic_secret_0(client)
     app_keyc = keygen(cats, app_key_label())
     //app_keys = keygen(sats, app_key_label())
 in
@@ -381,9 +382,9 @@ let
     rms = resumption_master_secret()
 
     cats = application_traffic_secret_0(client)
-    
     app_keyc = keygen(cats, app_key_label())
-    // we compute this in KEMTLS when SFIN is received
+
+    // we compute SATS in KEMTLS when SFIN is received
     //app_keys = keygen(sats, app_key_label())
 
     // auth_status = <cas, sas>
