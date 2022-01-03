@@ -26,3 +26,21 @@ lemma_matching_rms_nonces/* [reuse]:
         commit(Nonces, actor, 'client', nonces)@a & 
         #a < #i"
 */
+
+lemma nonces_paired [reuse]:
+      "All tid tid2 tid3 a1 a2 a3 role nonces #i #j #third.
+            running(Nonces, a1, 'client', nonces)@#i &
+            running2(Nonces, a2, 'server', nonces)@#j &
+            running3(Nonces, a3, role, nonces)@#third
+            ==>
+            (#third = #i | #third = #j)
+      "
+  
+lemma nonces_paired_commit [reuse]:
+      "All tid tid2 tid3 a1 a2 a3 role nonces #i #j #third.
+            commit(Nonces, a1, 'client', nonces)@#i &
+            commit2(Nonces, a2, 'server', nonces)@#j &
+            commit3(Nonces, a3, role, nonces)@#third
+            ==>
+            (#third = #i | #third = #j)
+      "

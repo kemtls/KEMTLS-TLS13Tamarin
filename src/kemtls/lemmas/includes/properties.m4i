@@ -43,9 +43,69 @@ lemma secret_session_keys_pfs [
       !>)
     ==> not Ex #j. K(kr)@j"
 
+
+lemma session_key_auth_agreement_left [
+        reuse,
+        hide_lemma=authenticated_handshake_secret,
+        hide_lemma=authenticated_handshake_secret_pfs,
+        hide_lemma=handshake_secret_pfs,
+        hide_lemma=ku_extract,
+        hide_lemma=ku_ms,
+        hide_lemma=posths_rms]:
+  "All tid tid2 actor peer actor2 peer2 nonces keys keys2 cas sas cas2 sas2 #i #j #k #l.
+     SessionKey(tid, actor, peer2, <cas, sas>, keys)@i &
+     running(Nonces, actor, 'client', nonces)@j &
+     SessionKey(tid2, peer, actor2, <sas2, cas2>, keys2)@k &
+     running2(Nonces, peer, 'server', nonces)@l &
+      not (Ex #r. RevLtk(actor)@r & #r < #i) &
+      not (Ex #r. RevLtk(peer)@r & #r < #i & #r < #k) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i & #r < #k)
+      ifdef(<!PSK!>, <!
+      &
+      not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i & #r < #k) &
+      not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i & #r < #k)
+      !>)
+      ==>
+       cas = cas2"
+
+lemma session_key_auth_agreement_both [
+   reuse,
+   hide_lemma=authenticated_handshake_secret_server,
+    hide_lemma=handshake_secret,
+    hide_lemma=handshake_secret_pfs,
+    hide_lemma=kem_chal_dual,
+    hide_lemma=authenticated_handshake_secret,
+    hide_lemma=entity_authentication,
+    hide_lemma=mutual_entity_authentication,
+    hide_lemma=injective_mutual_entity_authentication,
+    hide_lemma=transcript_agreement,
+    hide_lemma=mutual_transcript_agreement,
+    hide_lemma=authenticated_handshake_secret_pfs,
+    hide_lemma=ku_extract,
+    hide_lemma=master_secret,
+    hide_lemma=master_secret_pfs,
+    hide_lemma=posths_rms]:
+  "All tid tid2 actor peer actor2 peer2 nonces keys keys2 cas sas cas2 sas2 #i #j #k #l.
+     SessionKey(tid, actor, peer2, <cas, sas>, keys)@i &
+     running(Nonces, actor, 'client', nonces)@j &
+     SessionKey(tid2, peer, actor2, <sas2, cas2>, keys2)@k &
+     running2(Nonces, peer, 'server', nonces)@l &
+      not (Ex #r. RevLtk(actor)@r & #r < #i) &
+      not (Ex #r. RevLtk(peer)@r & #r < #i & #r < #k) &
+      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i & #r < #k)
+      ifdef(<!PSK!>, <!
+      &
+      not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i & #r < #k) &
+      not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i & #r < #k)
+      !>)
+      ==>
+       cas = cas2 & sas = sas2"
+
 lemma session_key_agreement [
         hide_lemma=authenticated_handshake_secret,
         hide_lemma=authenticated_handshake_secret_pfs,
+        hide_lemma=handshake_secret,
+        hide_lemma=handshake_secret_pfs,
         hide_lemma=ku_extract,
         hide_lemma=ku_ms,
         hide_lemma=posths_rms,

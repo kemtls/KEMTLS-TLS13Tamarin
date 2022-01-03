@@ -41,6 +41,15 @@ lemma matching_ahsms_ms [reuse, heuristic=c]:
       ms = ms2"
 !>)
 
+
+lemma commit_identity_authsecret_consistency [reuse]:
+  "All tid actor role peer pas cas #ctime.
+    commit(Identity, actor, role, peer, <pas, cas>)@#ctime
+    ==>
+      (Ex secret pas2 #authstat. running(AuthSecret, actor, role, secret, <pas2, cas>)@#authstat & #authstat < #ctime) &
+      (Ex secret cas2 #pauthstat. running(MutualAuthSecret, actor, role, secret, <pas, cas2>)@#pauthstat & #pauthstat < #ctime)"
+
+
 lemma_matching_hsahs
 lemma_matching_ahsms
 lemma_matching_hsahsms
@@ -146,3 +155,111 @@ lemma_invariant_post_hs/* [reuse, use_induction, hide_lemma=posths_rms]:
       peer = peer2 & rms = rms2 & msgs = msgs2 & hs = hs2"
 */
 !>)
+
+lemma matching_transcript_requires_matching_nonces [reuse]:
+  "All tid tid2 actor peer transcript #i #ii.
+    running(Transcript, actor, 'server', transcript)@#i &
+    commit2(Transcript, peer, 'client', transcript)@#ii
+    ==>
+    Ex nonces #j #jj.
+      commit(Nonces, actor, 'server', nonces)@#j & #j < #i &
+      commit2(Nonces, peer, 'client', nonces)@#jj & #jj = #ii
+  "
+
+lemma cert_reception_matches_transcript [reuse,
+      hide_lemma=authenticated_handshake_secret,
+      hide_lemma=authenticated_handshake_secret_pfs,
+      hide_lemma=kem_chal_dual,
+      hide_lemma=entity_authentication,
+      hide_lemma=mutual_entity_authentication,
+      hide_lemma=injective_mutual_entity_authentication,
+      hide_lemma=transcript_agreement,
+      hide_lemma=mutual_transcript_agreement,
+      hide_lemma=handshake_secret,
+      hide_lemma=handshake_secret_pfs]:
+  "All tid tid2 actor peer transcript #i #ii.
+    running(Transcript, actor, 'server', transcript)@#i &
+    commit2(Transcript, peer, 'client', transcript)@#ii
+    ==>
+      (Ex #sendcrt #recvcrt. C3_cert(tid2)@#sendcrt & S3_cert(tid)@#recvcrt & #sendcrt < #ii & #recvcrt < #i) |
+      ((not Ex #sendcrt. C3_cert(tid2)@#sendcrt & #sendcrt < #ii) & not (Ex #recvcrt. S3_cert(tid)@#recvcrt & #recvcrt < #i))
+  "
+
+lemma auth_secret_consistency [reuse]:
+  "All tid actor role aas pas secret #as.
+    running(AuthSecret, actor, role, secret, <aas, pas>)@#as
+    ==>
+    (pas = '0' & secret = '0') |
+    (pas = 'auth' & not (secret = '0'))"
+
+lemma mutual_auth_secret_consistency [reuse]:
+  "All tid actor role aas pas secret #as.
+    running(MutualAuthSecret, actor, role, secret, <aas, pas>)@#as
+    ==>
+    (aas = '0' & secret = '0') |
+    (aas = 'auth' & not (secret = '0'))"
+
+// proves but not useful?
+lemma auth_secret_ms_consistency [
+    hide_lemma=kem_chal_dual]:
+  "All tid actor role clauth_ss ms #t.
+    running(MS, actor, role, clauth_ss, ms)@#t
+    ==>
+      (Ex auth_status #preauth. running(AuthSecret, actor, 'server', clauth_ss, auth_status)@#preauth & #preauth < #t) |
+      (Ex auth_status #premutauth. running(MutualAuthSecret, actor, 'client', clauth_ss, auth_status)@#premutauth & #premutauth = #t)  
+    " 
+
+// autoproves but takes a while
+lemma auth_implies_cert_was_sent_by_same_nonces [reuse,
+    hide_lemma=kem_chal_dual]:
+  "All tid tid2 actor peer aas nonces #t1 #t2.
+    commit(Identity, actor, 'server', peer, <aas, 'auth'>)@#t1 &
+    commit(Nonces, actor, 'server', nonces)@#t1 &
+    commit2(Nonces, peer, 'client', nonces)@#t2
+    ==>
+      (Ex #recvcrt. S3_cert(tid)@#recvcrt & #recvcrt < #t1) & (
+        (Ex #sendcert. C3_cert(tid2)@#sendcert & #sendcert < #t1) | 
+        (Ex #revclcrt. RevLtk(peer)@#revclcrt)
+      )"
+
+
+lemma client_auth_means_clauth_ss_nonzero_client [reuse, 
+    hide_lemma=authenticated_handshake_secret_server,
+    hide_lemma=handshake_secret,
+    hide_lemma=handshake_secret_pfs,
+    hide_lemma=kem_chal_dual,
+    hide_lemma=authenticated_handshake_secret,
+    hide_lemma=entity_authentication,
+    hide_lemma=mutual_entity_authentication,
+    hide_lemma=injective_mutual_entity_authentication,
+    hide_lemma=transcript_agreement,
+    hide_lemma=mutual_transcript_agreement,
+    hide_lemma=authenticated_handshake_secret_pfs,
+    hide_lemma=ku_extract,
+    hide_lemma=master_secret,
+    hide_lemma=master_secret_pfs]:
+  "All tid actor peer sas #cid.
+    commit(Identity, actor, 'client', peer, <'auth', sas>)@#cid
+    ==> 
+    (Ex clauth_ss ms #runms. running(MS, actor, 'client', clauth_ss, ms)@#runms & #runms < #cid & not (clauth_ss = '0'))"
+
+
+lemma client_auth_means_clauth_ss_nonzero_server [reuse,
+    hide_lemma=authenticated_handshake_secret_server,
+    hide_lemma=handshake_secret,
+    hide_lemma=handshake_secret_pfs,
+    hide_lemma=kem_chal_dual,
+    hide_lemma=authenticated_handshake_secret,
+    hide_lemma=entity_authentication,
+    hide_lemma=mutual_entity_authentication,
+    hide_lemma=injective_mutual_entity_authentication,
+    hide_lemma=transcript_agreement,
+    hide_lemma=mutual_transcript_agreement,
+    hide_lemma=authenticated_handshake_secret_pfs,
+    hide_lemma=ku_extract,
+    hide_lemma=master_secret,
+    hide_lemma=master_secret_pfs]:
+  "All tid actor peer sas #cid.
+    commit(Identity, actor, 'server', peer, <sas, 'auth'>)@#cid
+    ==> 
+    (Ex clauth_ss ms #runms. running(MS, actor, 'server', clauth_ss, ms)@#runms & #runms = #cid & not (clauth_ss = '0'))"

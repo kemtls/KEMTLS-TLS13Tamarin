@@ -105,4 +105,54 @@ lemma source_recvstream [sources]:
       (Ex #sfin. S3fin(tid)@#sfin & #sfin < #recv)
   "
 
+lemma source_sendstream [sources]:
+  "All tid actor peer auth_status data #send.
+    SendData(tid, actor, peer, auth_status, data)@#send
+    ==>
+      (Ex #pred. Send(tid)@#pred & #pred < #send) |
+      (Ex #creac. C3a(tid)@#creac & #creac < #send) |
+      (Ex #creanocrt. C3_skip_cert(tid)@#creanocrt & #creanocrt < #send) |
+      (Ex #sfin. S3fin(tid)@#sfin & #sfin < #send)
+  "
+
+lemma source_auth_status [sources]:
+  "All tid actor role peer pas #i.
+    commit(Identity, actor, role, peer, <'auth', pas>)@#i
+    ==>
+      (role = 'server' & Ex #j. S2e(tid)@#j & #j < #i) |
+      (role = 'client' & (Ex #c. C3a(tid)@#c & #c < #i) & (Ex #req. C2c_req(tid)@#req & #req < i))
+  "
+
+lemma source_auth_status_peer [sources]:
+  "All tid actor role peer aas #i.
+    commit(Identity, actor, role, peer, <aas, 'auth'>)@#i
+    ==>
+      (role = 'server' & (Ex #j. S3_cert(tid)@#j & #j < #i) & (Ex #req. S2c_req(tid)@#req & #req < #i)) |
+      (role = 'client' & (Ex #c. C2d(tid)@#c & #c < #i))
+  "
+
+lemma unique_nonces_source [sources]:
+  "All tid tid2 actor actor2 role nonces #i #j.
+      commit(Nonces, actor, role, nonces)@#i &
+      commit2(Nonces, actor2, role, nonces)@#j
+      ==> #i = #j"
+
+lemma unique_running_nonces_source [sources]:
+  "All tid tid2 actor actor2 role nonces #i #j.
+      running(Nonces, actor, role, nonces)@#i &
+      running2(Nonces, actor2, role, nonces)@#j
+      ==> #i = #j"
+
+lemma unique_transcripts [sources]:
+  "All tid tid2 actor actor2 role transcript #i #j.
+    commit(Transcript, actor, role, transcript)@#i &
+    commit2(Transcript, actor2, role, transcript)@#j
+    ==> #i = #j"
+
+lemma unique_transcripts_running [sources]:
+  "All tid tid2 actor actor2 role transcript #i #j.
+    running(Transcript, actor, role, transcript)@#i &
+    running2(Transcript, actor2, role, transcript)@#j
+    ==> #i = #j"
+
 dnl vim: set ft=spthy ts=4 sw=4 tw=0 et :

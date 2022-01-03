@@ -3,9 +3,9 @@
 */
 lemma entity_authentication [reuse, use_induction]:
   "All tid actor peer nonces cas #i. 
-      commit(Nonces, actor, 'client', nonces)@i & commit(Identity, actor, 'client', peer, <cas, 'auth'>)@i &
-      not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i)
+      commit(Nonces, actor, 'client', nonces)@i & 
+      commit(Identity, actor, 'client', peer, <cas, 'auth'>)@i &
+      not (Ex #r. RevLtk(peer)@r & #r < #i)
       ifdef(<!PSK!>, <! &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
@@ -18,8 +18,7 @@ lemma entity_authentication [reuse, use_induction]:
 lemma transcript_agreement [reuse]:
   "All tid actor peer transcript cas #i.
       commit(Transcript, actor, 'client', transcript)@i & commit(Identity, actor, 'client', peer, <cas, 'auth'>)@i &
-      not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, actor, esk)@r & #r < #i)
+      not (Ex #r. RevLtk(peer)@r & #r < #i)
       ifdef(<!PSK!>, <! 
       &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
@@ -30,11 +29,17 @@ lemma transcript_agreement [reuse]:
 /*
   Mutual (entity) authentication
 */
-lemma mutual_entity_authentication [reuse, use_induction]:
+lemma mutual_entity_authentication [
+      hide_lemma=authenticated_handshake_secret_server,
+      hide_lemma=handshake_secret,
+      hide_lemma=handshake_secret_pfs,
+      hide_lemma=kem_chal_dual,
+      hide_lemma=authenticated_handshake_secret,
+      reuse]:
   "All tid actor peer nonces sas #i.
-      commit(Nonces, actor, 'server', nonces)@i & commit(Identity, actor, 'server', peer, <sas, 'auth'>)@i &
-      not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) 
+      commit(Nonces, actor, 'server', nonces)@i & 
+      commit(Identity, actor, 'server', peer, <sas, 'auth'>)@i &
+      not (Ex #r. RevLtk(peer)@r & #r < #i)
       ifdef(<!PSK!>, <! &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
@@ -44,11 +49,15 @@ lemma mutual_entity_authentication [reuse, use_induction]:
 /*
   Integrity of handshake messages
 */
-lemma mutual_transcript_agreement [reuse]:
+lemma mutual_transcript_agreement [reuse,
+      hide_lemma=authenticated_handshake_secret_server,
+      hide_lemma=handshake_secret,
+      hide_lemma=handshake_secret_pfs,
+      hide_lemma=kem_chal_dual,
+      hide_lemma=authenticated_handshake_secret]:
   "All tid actor transcript peer sas #i.
       commit(Transcript, actor, 'server', transcript)@i & commit(Identity, actor, 'server', peer, <sas, 'auth'>)@i & 
-      not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) 
+      not (Ex #r. RevLtk(peer)@r & #r < #i)
       ifdef(<!PSK!>, <!
       &
       not (Ex rms #r. RevealPSK(actor, rms)@r) &

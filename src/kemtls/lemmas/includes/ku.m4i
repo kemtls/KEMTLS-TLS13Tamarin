@@ -43,3 +43,37 @@ lemma ku_rms [reuse, heuristic=o "oracles/ku_rms.py"]:
     rms = resumption_master_secret() &
     KU(rms)@j ==>
       Ex #k #l. KU(ms)@k & KU(messages)@l & #k < #j & #l < #j"
+
+lemma ku_expand_extract_ss [reuse]:
+  "All kem seed lab1 lab2 l1 #i.
+    KU(Expand(
+          Extract(
+            kemss(kem, seed), 
+            lab1), 
+        lab2, l1)
+    )@#i 
+    ==> 
+    (Ex #j. KU(kemss(kem, seed))@#j & #j < #i)"
+
+lemma ku_expand_expand_extract_ss [reuse]:
+  "All kem seed lab1 lab2 lab3 l1 l2 #i.
+    KU(Expand(
+        Expand(
+          Extract(
+            kemss(kem, seed), 
+            lab1), 
+        lab2, l1), 
+      lab3, l2)
+    )@#i 
+    ==> 
+    (Ex #j. KU(kemss(kem, seed))@#j & #j < #i)"
+
+lemma ku_finished_hmac [hide_lemma=kem_chal_dual]:
+  "All clauth_ss ahs label messages verify_data #i.
+    verify_data = hmac(keygen(MasterSecret, label), h(messages)) &
+    KU(verify_data)@#i
+    ==>
+    (Ex #m #j. KU(MasterSecret)@#j & KU(messages)@#m & #m < #i & #j < #i) |
+    (Ex tid role actor #ms #emit.
+      running(MS, actor, role, clauth_ss, MasterSecret)@#ms & #ms < #i &
+      running(Transcript, actor, role, messages)@#emit & #emit < #i)"

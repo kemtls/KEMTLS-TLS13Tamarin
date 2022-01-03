@@ -287,6 +287,7 @@ in
     running_client(AHS, ahs),
     running_client(Mode, psk_ke_mode),
     running_client(Identity, S, auth_status),
+    running_client(AuthSecret, ss, auth_status),
     KemEncap($k, certificate, ss),
     KemChal($k, ~ltkS, certificate, ciphertext, ss)
   ]->
@@ -295,7 +296,7 @@ in
     Out(senc{KemEncapsulation}hs_keyc)
   ]
 
-rule client_emit_finished:
+rule client_skip_cert_emit_finished:
 let
     // If certificate was requested, cannot ignore
     prev_cert_req = '0'
@@ -304,6 +305,7 @@ let
     S = $S
     C = $C
 
+    clauth_ss = '0'
     ms = MasterSecret
 
     verify_data = compute_finished(client)
@@ -327,7 +329,10 @@ in
       running_client(AHSMS, ahs, ms, clauth_ss),
       running_client(HSAHSMS, hs, ahs, ms),
       running_client(RMS, S, rms, messages),
-      running_client(Mode, psk_ke_mode)
+      running_client(Mode, psk_ke_mode),
+      running_client(Identity, S, auth_status),
+      running_client(MutualAuthSecret, clauth_ss, auth_status),
+      Eq(auth_status, <'0', 'auth'>)
     ]->
     [ State(C3b, tid, C, S, ClientState),
       Out(senc{Finished}ahs_keyc),
@@ -360,8 +365,9 @@ in
     Out(senc{Certificate}ahs_keyc)
   ]
 
-rule client_recv_encaps:
+rule client_recv_encaps_emit_finished:
 let
+    prev_auth_status = <pcas, psas>
     set_state()
 
     S = $S
@@ -388,7 +394,7 @@ let
     //app_keys = keygen(sats, app_key_label())
 
     // auth_status = <cas, sas>
-    auth_status = <'auth', 'auth'>
+    auth_status = <'auth', psas>
 in
     [ State(C3a, tid, C, S, PrevClientState)[no_precomp],
       In(senc{KemEncapsulation}ahs_keys),
@@ -404,6 +410,7 @@ in
       running_client(HSAHSMS, hs, ahs, ms),
       running_client(RMS, S, rms, messages),
       running_client(Mode, psk_ke_mode),
+      running_client(MutualAuthSecret, clauth_ss, auth_status),
       running_client(Identity, S, auth_status)
     ]->
     [ State(C3b, tid, C, S, ClientState),
@@ -418,6 +425,9 @@ let
     S = $S
     C = $C
 
+    // recompute here to make Tamarin's life easier?
+    app_keyc = keygen(cats, app_key_label())
+
     exp_verify_data = compute_finished(server)
     finished_messages = messages
 
@@ -430,8 +440,8 @@ let
     auth_status = prev_auth_status
 in
     [ State(C3b, tid, C, S, PrevClientState)[no_precomp],
-      In(senc{Finished}ahs_keys),
-      SendStream(tid, C, S, prev_auth_status, app_keyc)
+      In(senc{Finished}ahs_keys)
+      //, SendStream(tid, C, S, prev_auth_status, app_keyc)
     ]
   --[ C3b(tid),
       Instance(tid, C, 'client'),
@@ -445,6 +455,6 @@ in
       SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
     ]->
     [ State(C4, tid, C, S, ClientState),
-      RecvStream(tid, C, S, auth_status, app_keys),
-      SendStream(tid, C, S, auth_status, app_keyc)
+      RecvStream(tid, C, S, auth_status, app_keys)
+      //, SendStream(tid, C, S, auth_status, app_keyc)
     ]
