@@ -325,7 +325,8 @@ in
       Instance(tid, S, 'server'),
       KemEncap($k, certificate, clauth_ss),
       KemChal($k, ~ltkC, certificate, ciphertext, clauth_ss),
-      running_server(AuthSecret, clauth_ss, auth_status)
+      running_server(AuthSecret, clauth_ss, auth_status),
+      running_server(Identity, C, auth_status)
     ]->
     [ State(S3a, tid, S, C, ServerState),
       Out(senc{KemEncapsulation}ahs_keys)
@@ -349,7 +350,8 @@ in
       Eq(clauth_ss, '0'),
       Eq(aas, 'auth'),
       Instance(tid, S, 'server'),
-      running_server(AuthSecret, clauth_ss, auth_status)
+      running_server(AuthSecret, clauth_ss, auth_status),
+      running_server(Identity, C, auth_status)
     ]->
     [ State(S3a, tid, S, C, ServerState) ]
 
@@ -382,7 +384,6 @@ in
       running_server(HSAHSMS, hs, ahs, ms),
       running_server(MS, clauth_ss, ms),
       running_server(RMS, C, rms, messages),
-      running_server(Identity, C, auth_status),
       Eq(verify_data, exp_verify_data),
       commit_server(HS, hs),
       commit_server(AHS, ahs),

@@ -10,7 +10,7 @@ lemma entity_authentication [reuse, use_induction]:
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
       !>)
-          ==> (Ex tid2 #j. running2(Nonces, peer, 'server', nonces)@j & #j < #i)"
+          ==> (Ex tid2 #j_ea. running2(Nonces, peer, 'server', nonces)@j_ea & #j_ea < #i)"
 
 /*
   Integrity of handshake messages
@@ -24,7 +24,7 @@ lemma transcript_agreement [reuse]:
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
       !>)
-          ==> (Ex tid2 #j. running2(Transcript, peer, 'server', transcript)@j & #j < #i)"
+          ==> (Ex tid2 #j1. running2(Transcript, peer, 'server', transcript)@#j1 & #j1 < #i)"
 
 /*
   Mutual (entity) authentication
@@ -44,7 +44,7 @@ lemma mutual_entity_authentication [
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
       !>)
-          ==> (Ex tid2 #j. running2(Nonces, peer, 'client', nonces)@j & #j < #i)"
+          ==> (Ex tid2 #j_mea. running2(Nonces, peer, 'client', nonces)@#j_mea & #j_mea < #i)"
 
 /*
   Integrity of handshake messages
@@ -63,7 +63,7 @@ lemma mutual_transcript_agreement [reuse,
       not (Ex rms #r. RevealPSK(actor, rms)@r) &
       not (Ex rms #r. RevealPSK(peer, rms)@r)
       !>)
-          ==> (Ex tid2 #j. running2(Transcript, peer, 'client', transcript)@j & #j < #i)"
+          ==> (Ex tid2 #j_mta. running2(Transcript, peer, 'client', transcript)@#j_mta & #j_mta < #i)"
 
 /*
   Mutual (entity) authentication
@@ -80,5 +80,7 @@ lemma injective_mutual_entity_authentication [reuse, hide_lemma=posths_rms]:
       not (Ex rms #r. RevealPSK(peer, rms)@r)
       !>)
           ==> 
-          Ex role2 tid2 #j. running2(Nonces, peer, role2, nonces)@j & #j < #i & not role = role2 &
-          (All tid3 peer2 #k. running3(Nonces, peer2, role2, nonces)@k ==> #k = #j)"
+          Ex role2_imea tid2 #j. 
+            running2(Nonces, peer, role2_imea, nonces)@j & #j < #i & 
+            not role = role2_imea &
+            (All tid3 peer2 #k. running3(Nonces, peer2, role2_imea, nonces)@k ==> #k = #j)"
