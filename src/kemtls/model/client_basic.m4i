@@ -259,7 +259,7 @@ let
   
   messages = <messages, Certificate>
   
-  ss = kemss($k, ~seed)
+  ss = kemss($k, ~saseed)
   ciphertext = kemencaps($k, ss, certificate)
 
   messages = <messages, KemEncapsulation>
@@ -276,7 +276,7 @@ in
   [
     State(C2d, tid, C, S, PrevClientState)[no_precomp],
     !Pk(S, kempk($k, ~ltkS)),
-    Fr(~seed),
+    Fr(~saseed),
     In(senc{Certificate}hs_keys)
   ]
   --[
@@ -374,7 +374,7 @@ let
     C = $C
 
 
-    ciphertext = kemencaps($k, kemss($k, ~eseed), kempk($k, ~ltkC))
+    ciphertext = kemencaps($k, kemss($k, ~caseed), kempk($k, ~ltkC))
     clauth_ss = kemdecaps($k, ciphertext, ~ltkC)
     messages = <messages, KemEncapsulation>
 
