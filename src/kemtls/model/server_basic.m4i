@@ -262,7 +262,7 @@ rule server_receive_kemencaps:
 let
     set_state()
 
-    shared_secret = kemss($k, ~saseed)
+    shared_secret = kemss($k, saseed)
     ciphertext = kemencaps($k, shared_secret, kempk($k, ~ltkS))
 
     ss = kemdecaps($k, ciphertext, ~ltkS)

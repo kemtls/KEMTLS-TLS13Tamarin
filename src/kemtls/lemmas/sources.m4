@@ -8,7 +8,7 @@ define(<!CachePSK!>, <!F_CachePSK($@)!>)dnl
 define(<!SecretPSK!>, <!F_SecretPSK($@)!>)dnl
 
 
-theory TLS_13_invariants
+theory TLS_13_sources
 begin
 
 include(header.m4i)

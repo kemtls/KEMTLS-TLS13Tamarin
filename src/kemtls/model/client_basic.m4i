@@ -374,7 +374,7 @@ let
     C = $C
 
 
-    ciphertext = kemencaps($k, kemss($k, ~caseed), kempk($k, ~ltkC))
+    ciphertext = kemencaps($k, kemss($k, caseed), kempk($k, ~ltkC))
     clauth_ss = kemdecaps($k, ciphertext, ~ltkC)
     messages = <messages, KemEncapsulation>
 
