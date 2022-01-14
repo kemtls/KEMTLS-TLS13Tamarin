@@ -59,7 +59,7 @@ lemma kemencap_source_pk [sources, heuristic=s]:
     KemEncap(kem, certificate, ss)@j
     ==>
       (Ex #ch. (KU(Extension('40', kem, certificate))@#ch & #ch < #j)) |
-      (Ex certificate_request_context keys #crt. KU(senc{Certificate}keys)@#crt & #crt < #j)"
+      (Ex actor certificate_request_context keys #kg #crt. GenLtk(actor, sk)@#kg & KU(senc{Certificate}keys)@#crt & #crt < #j)"
 
 lemma kemdecap_source_ct [sources, heuristic=s]:
   "All kem ciphertext sk ss #j.
@@ -67,7 +67,7 @@ lemma kemdecap_source_ct [sources, heuristic=s]:
     ciphertext = kemencaps(kem, ss, kempk(kem, sk))
     ==>
       (Ex #sh. KU(Extension('40', kem, ciphertext))@#sh & #sh < #j) |
-      (Ex  keys #enc. KU(senc{KemEncapsulation}keys)@#enc & #enc < #j)"
+      (Ex keys act #kg #enc. GenLtk(act, sk)@#kg & KU(senc{KemEncapsulation}keys)@#enc & #enc < #j)"
 
 lemma kemdecap_source_sk [heuristic=c]:
   "All kem sk ss #j.

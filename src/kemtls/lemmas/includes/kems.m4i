@@ -52,7 +52,7 @@ lemma rev_ekem_before_hs  [reuse, heuristic=I]:
     #i < #j"
 
 // requirements
-lemma ekem_esk_can_only_be_revealed [reuse, heuristic=c]:
+lemma ekem_esk_can_only_be_revealed [heuristic=c]:
   "All tid a esk #i #j.
     (EKem(tid, a, esk)@#i & KU(esk)@#j)
     ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
@@ -62,32 +62,33 @@ lemma ekem_ss_needs_rev_esk [reuse, heuristic=i]:
     (EKem(tid, a, esk)@#a & KemEncap(ekem, kempk(ekem, esk), ess)@#i & KU(ess)@#j)
       ==> (Ex #r. RevEKemSk(tid, a, esk)@#r & #r < #j)"
 
-lemma ekem_getting_ess_requires_esk [reuse, heuristic=i]:
+lemma ekem_getting_ess_requires_esk [heuristic=i]:
   "All ekem esk ess #i #j.
     (KemEncap(ekem, kempk(ekem, esk), ess)@#i & KU(ess)@#j)
     ==>
     Ex #r. KU(esk)@#r & #r < #j"
 
 // static KEM
-lemma skem_getting_ss_requires_reveal [reuse, heuristic=i]:
+lemma skem_getting_ss_requires_reveal [heuristic=i]:
   "All a kem ltk ss #a #i #j.
   (GenLtk(a, ltk)@#a & KemEncap(kem, kempk(kem, ltk), ss)@#i & KU(ss)@#j)
   ==>
   (Ex #r. RevLtk(a)@#r & #r < #j)"
 
 // Ordering of the shared secret
+// this one seems necessary
 lemma rev_kem_seed_ordering [reuse, heuristic=i]:
   "All kem pk ss #i #j.
     KemEncap(kem, pk, ss)@i & KU(ss)@j ==> #i < #j"
 
-lemma kem_consistency [reuse, heuristic=s]:
+lemma kem_consistency [heuristic=s]:
   "All kem pk ss #i.
     KemEncap(kem, pk, ss)@i
     ==>
       (Ex sk. pk = kempk(kem, sk)) &
       (Ex seed. ss = kemss(kem, seed))"
 
-lemma kem_consistency_decaps [reuse, heuristic=s]:
+lemma kem_consistency_decaps [heuristic=s]:
   "All kem sk ss #i.
     KemDecaps(kem, sk, ss)@i
     ==>
@@ -102,9 +103,9 @@ lemma kem_consistency_chal [reuse, heuristic=c]:
       (Ex seed. ss = kemss(kem, seed))"
 
 lemma kem_encaps_unique [reuse, heuristic=c]:
-  "All kem pk ss #i #j.
+  "All kem pk pk2 ss #i #j.
     KemEncap(kem, pk, ss)@#i &
-    KemEncap(kem, pk, ss)@#j
+    KemEncap(kem, pk2, ss)@#j
     ==>
     #i = #j"
 
@@ -121,7 +122,7 @@ lemma kem_encaps_ordering [reuse, heuristic=o "oracles/kem_encaps_ordering.py"]:
 // this doesn't hold for static keys, as it's easy to
 // make the decapsing party decaps the same ct twice by
 // repeating the ciphertext
-lemma kem_ephemeral_decaps_unique [reuse, heuristic=s]:
+lemma kem_ephemeral_decaps_unique [heuristic=s]:
   "All tid a kem sk ss #k #i #j.
     EKem(tid, a, sk)@#k &
     KemDecaps(kem, sk, ss)@#i &
