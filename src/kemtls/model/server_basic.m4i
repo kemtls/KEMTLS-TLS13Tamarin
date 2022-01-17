@@ -57,9 +57,8 @@ let
     k2 = $k2
     client_sekem = <k1, k2>
     nc = new_nc
-    epk = new_epk
     ekem = $new_ekem
-    epk = kempk(ekem, new_epk)
+    epk = kempk(ekem, new_esk)
 
     // Abstract client identity - does not currently correspond to
     // anything concrete
