@@ -1,0 +1,321 @@
+dnl Extensions definitions for ClientHello with PDK
+define(<!ClientHelloExtensions!>, <!< dnl
+  SupportedVersions, dnl
+  NamedGroupList, dnl
+  KeyShareCH, dnl
+  PDKCiphertext, dnl
+  PDKClientAuth dnl
+>!>)
+rule server_recv_client_hello_pdk:
+let
+    set_state()
+
+    pdk = '1'
+
+    nc = new_nc
+    k1 = $k1
+    k2 = $k2
+    client_sekem = <k1, k2>
+    nc = new_nc
+    epk = new_epk
+    ekem = $new_ekem
+    epk = kempk(ekem, new_esk)
+
+    // accept if the client is trying to auth -- or not
+    edi = maybe_auth
+
+    // Abstract client identity - does not currently correspond to 
+    // anything concrete 
+    // From the server's perspective: associate with an open socket.
+    C = $C
+
+    // Server identity - can be interpreted as the hostname
+    S = $S
+
+    // Server nonce
+    ns = ~ns
+
+    // PDK ciphertext
+    ciphertext = kemencaps($kpdk, kemss($kpdk, new_pdkseed), kempk($kpdk, ~ltkS))
+    pdkss = kemdecaps($kpdk, ciphertext, ~ltkS)
+
+    es = EarlySecret(pdkss)
+
+    messages = <messages, ClientHello>
+
+    ead_keyc = keygen(early_traffic_secret(client), early_app_key_label())
+
+    // server is authed here!
+    auth_status = <'auth', '0'>
+in
+    [ State(S0, tid, S, C, PrevServerState)[no_precomp],
+      In(ClientHello),
+      Fr(ns),
+      !Ltk(S, ~ltkS)
+    ]
+  --[ S0_PDK(tid),
+      Neq(k1, k2),
+      running_server(Identity, S),
+      KemDecaps($kpdk, ~ltkS, pdkss),
+      KemChal($kpdk, ~ltkS, kempk($kpdk, ~ltkS), ciphertext, pdkss)
+    ]->
+    [
+      State(S1, tid, S, C, ServerState)
+    ]
+
+/*
+ * Handle client certificate
+ */
+/*
+    Server sends ServerHello for PDK accepting cert
+*/
+dnl Extensions definitions for PSK ServerHello
+define(<!ServerHelloExtensions!>, <!< dnl
+  SignatureSchemeList, dnl
+  KeyShareSH, dnl
+  PDKAccepted dnl
+>!>)
+rule server_recv_pdk_cert_emit_hello:
+  let
+    prev_pdk = '1'
+    prev_ekem = $k
+    prev_epk = kempk(prev_ekem, some_esk)
+    prev_ns = ~ns
+
+    prev_edi = 'cert'
+    set_state()
+
+    accepted_auth = 'cert'
+
+    S = $S
+    C = $C
+
+    // Kem ct
+    certificate_request_context = '0'
+    certificate = kempk($kc, ~ltkC) 
+    eseed = ~eseed   dnl fresh value
+    ess = kemss(ekem, eseed)
+    ect = kemencaps(ekem, ess, epk)
+
+    messages = <messages, Certificate>
+    messages = <messages, ServerHello>
+
+  in
+    [
+      State(S1, tid, S, C, PrevServerState)[no_precomp],
+      In(senc{Certificate}ead_keyc),
+      !Pk(C, certificate),
+      Fr(eseed)
+    ] --[ 
+      S1_PDK_cert(tid),
+      Instance(tid, S, 'server'),
+      KemChal(ekem, some_esk, epk, ect, ess),
+      KemEncap(ekem, epk, ess),
+      running_server(Nonces, nc, ns)
+    ]->
+    [
+      State(S2a_PDK, tid, S, C, ServerState),
+      PdkCertificate(tid, certificate),
+      Out(ServerHello)
+    ]
+
+
+/*
+    Server sends ServerHello for PDK rejecting cert
+*/
+dnl Extensions definitions for PSK ServerHello
+define(<!ServerHelloExtensions!>, <!< dnl
+  SignatureSchemeList, dnl
+  KeyShareSH, dnl
+  PDKAccepted dnl
+>!>)
+rule server_hello_pdk_no_cert:
+let
+    prev_pdk = '1'
+    prev_ekem = $k
+    prev_epk = kempk(prev_ekem, some_esk)
+    prev_ns = ~ns
+
+    set_state()
+
+    // don't accept client cert
+    accepted_auth = '0'
+
+    C = $C
+    S = $S
+
+    // Kem ct
+    eseed = ~eseed   dnl fresh value
+    ess = kemss(ekem, eseed)
+    ect = kemencaps(ekem, ess, epk)
+
+    messages = <messages, ServerHello>
+in
+    [ State(S1, tid, S, C, PrevServerState),
+      Fr(eseed)
+    ]
+  --[ S1_PDK_no_cert(tid),
+      Instance(tid, S, 'server'),
+      KemChal(ekem, some_esk, epk, ect, ess),
+      KemEncap(ekem, epk, ess),
+      running_server(Nonces, nc, ns)
+    ]->
+    [
+      State(S2a_PDK, tid, S, C, ServerState),
+      Out(ServerHello)
+    ]
+
+rule server_gen_keys_pdk:
+let
+    set_state()
+
+    S = $S
+    C = $C
+
+    hs = HandshakeSecret
+
+    hs_keys = keygen(handshake_traffic_secret(server), hs_key_label())
+    hs_keyc = keygen(handshake_traffic_secret(client), hs_key_label())
+in
+    [ State(S2a_PDK, tid, S, C, PrevServerState)[no_precomp]
+    ]
+  --[ S2a_PDK(tid),
+      Instance(tid, S, 'server'),
+      running_server(HS, hs)
+   ]->
+    [ State(S2b_PDK, tid, S, C, ServerState)
+    ]
+
+
+rule server_emit_encrypted_extensions_pdk:
+let
+    set_state()
+
+    S = $S
+    C = $C
+
+    messages = <messages, EncryptedExtensions>
+in
+    [ State(S2b_PDK, tid, S, C, PrevServerState)[no_precomp]
+    ]
+  --[ S2b_PDK(tid),
+      Test(hs_keys),
+      Instance(tid, S, 'server')
+      
+    ]->
+    [ State(S2c_PDK, tid, S, C, ServerState),
+      Out(senc{EncryptedExtensions}hs_keys)
+    ]
+
+  
+rule server_no_client_cert_pdk:
+let
+  prev_edi = '0'
+  set_state()
+  
+  S = $S
+  C = $C
+
+  clauth_ss = '0'
+
+in
+  [
+    State(S2c_PDK, tid, S, C, PrevServerState)[no_precomp]
+  ] --[
+    S2c_PDK_no_cert(tid),
+    Instance(tid, S, 'server')
+  ]-> [
+    State(S2d_PDK, tid, S, C, ServerState)
+  ]
+
+
+rule server_emit_ciphertext_pdk:
+let
+  prev_edi = 'cert'
+  set_state()
+  edi = '0'
+
+  S = $S
+  C = $C
+
+  certificate = kempk($kca, ~ltkC)
+  clauth_ss = kemss($kca, ~pdkcaseed)
+  ciphertext = kemencaps($kca, clauth_ss, certificate)
+
+  messages = <messages, KemEncapsulation>
+
+  auth_status = <'auth', 'auth'>
+in
+  [
+    State(S2c_PDK, tid, S, C, PrevServerState)[no_precomp],
+    Fr(~pdkcaseed),
+    PdkCertificate(tid, certificate)
+  ] --[
+    S2c_PDK_cert(tid),
+    Instance(tid, S, 'server'),
+    KemEncaps($kca, clauth_ss, certificate),
+    KemChal($kca, ~ltkC, certificate, ciphertext, clauth_ss)
+  ]-> [
+    Out(senc{KemEncapsulation}hs_keys),
+    State(S2d_PDK, tid, S, C, ServerState)
+  ]
+
+rule server_auth_pdk:
+let
+    set_state()
+
+    ahs = hs
+
+    ms = MasterSecret
+
+    C = $C
+    S = $S
+
+    verify_data = compute_finished(server)
+    finished_messages = messages
+
+    messages = <messages, Finished>
+
+    sats = application_traffic_secret_0(server)
+    app_keys = keygen(sats, app_key_label())
+
+in
+    [ State(S2d_PDK, tid, S, C, PrevServerState)[no_precomp]
+    ]
+  --[ S2d_PDK(tid),
+      Instance(tid, S, 'server'),
+      running_server(Transcript, finished_messages)
+    ]->
+    [ State(S3_PDK, tid, S, C, ServerState),
+      SendStream(tid, S, C, auth_status, app_keys),
+      Out(senc{Finished}hs_keys)
+    ]
+
+rule server_receive_finished_pdk:
+let
+  set_state()
+
+  S = $S
+  C = $C
+
+  exp_verify_data = compute_finished(client)
+  finished_messages = messages
+
+  messages = <messages, Finished>
+
+  cats = application_traffic_secret_0(client)
+  app_keyc = keygen(cats, app_key_label())
+  ems = exporter_master_secret()
+in
+  [
+    State(S3_PDK, tid, S, C, PrevServerState)[no_precomp],
+    In(senc{Finished}hs_keyc)
+  ] --[
+    S3_PDK(tid),
+    Eq(verify_data, exp_verify_data)
+  ]-> [
+    RecvStream(tid, S, C, auth_status, app_keyc),
+    State(S4, tid, S, C, ServerState)
+  ]
+
+   

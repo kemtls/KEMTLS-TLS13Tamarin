@@ -42,6 +42,7 @@ lemma exists_$1:
 dnl at_most_of(1, S1_retry, 1)
 dnl at_most_of(1, C1_retry, 1)
 
+ifdef(<!BASIC!>, <!
 create_lemma(C0, 1)
 create_lemma(C1_retry, 1)
 create_lemma(S1, 1)
@@ -100,14 +101,61 @@ create_lemma(S4_update_recv, 1)
 create_lemma(S4_update_fin, 1)
 !>)
 
+!>) dnl ENDIFDEF BASIC
+
+ifdef(<!PDK!>, <!
+/*
+ * PDK lemmas
+ */
+create_lemma(C0_PDK, 1)
+// emit cert?
+create_lemma(C1_PDK_cert, 1)
+create_lemma(C1_PDK_skip_cert, 1)
+// receive SH
+create_lemma(C1a_PDK_rej_cert, 1)
+create_lemma(C1a_PDK, 1)
+// gen keys
+create_lemma(C2a_PDK, 1)
+// eenc
+create_lemma(C2b_PDK, 1)
+//ciphertext
+create_lemma(C2c_PDK, 1)
+create_lemma(C2c_PDK_skip_ct, 1)
+// receive finished
+create_lemma(C2d_PDK, 1)
+// send finished
+create_lemma(C3_PDK, 1)
+
+// server side
+// receive CH
+create_lemma(S0_PDK, 1)
+// SH
+create_lemma(S1_PDK_cert, 1)
+create_lemma(S1_PDK_no_cert, 1)
+// genkeys
+create_lemma(S2a_PDK, 1)
+// eenc
+create_lemma(S2b_PDK, 1)
+// ct
+create_lemma(S2c_PDK_no_cert, 1)
+create_lemma(S2c_PDK_cert, 1)
+// send finished
+create_lemma(S2d_PDK, 1)
+// recv finished
+create_lemma(S3_PDK, 1)
+
+!>)
+
 AXIOMS
 
 dnl Uncomment this to have lemmas for all rules/states
-dnl LEMMAS
-
+ifdef(<!ALL!>, <!
+LEMMAS
+!>, <!
 lemma <!exists_!>RULE:
   exists-trace
     "Ex tid #i. RULE<!(tid)!>@i"
+!>)
 
 end
 

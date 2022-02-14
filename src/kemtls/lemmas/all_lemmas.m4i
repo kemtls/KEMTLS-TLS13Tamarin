@@ -129,7 +129,7 @@ lemma ku_hs [reuse, heuristic=s]:
   "All tid actor role es hs res_psk ess #i #j.
     running(HS, actor, role, hs)@i &
     hs = HandshakeSecret &
-    es = EarlySecret &
+    es = EarlySecret(res_psk) &
     KU(hs)@j ==>
       Ex #k #l. KU(ess)@k & KU(res_psk)@l & #k < #j & #l < #j"
 !>)

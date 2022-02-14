@@ -1,0 +1,19 @@
+rule start_server:
+let
+    C = $C
+    S = $S
+
+    // Initialises all variables to zero.
+    init_state()
+
+    tid = ~tid
+    sekem = $sekem
+in
+    [ Fr(tid)
+    ]
+  --[ Start(tid, S, 'server'),
+      running_server(Identity, S)
+    ]->
+    [
+      State(S0, tid, S, C, ServerState)
+    ]

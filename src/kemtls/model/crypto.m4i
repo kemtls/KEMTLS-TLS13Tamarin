@@ -20,7 +20,7 @@ dnl Usage: Derive_Secret(Secret, Label, HashValue)
 define(<!Derive_Secret!>, <!HKDF_Expand_Label($1, $2, <!$3!>)!>)
 define(<!HashValue!>, <!<h(messages)>!>)
 
-define(<!EarlySecret!>, <!Extract(res_psk, '0')!>)
+define(<!EarlySecret!>, <!Extract($1, '0')!>)
 define(<!binder_key!>, <!Derive_Secret(es, binder_key_label(psk_type), '0')!>)
 define(<!early_traffic_secret!>, <!Derive_Secret(es, 'TLS13clientearlytrafficsecret', <!<!HashValue!>!>)!>)
 define(<!early_exporter_master_secret!>, <!Derive_Secret(es, 'TLS13earlyexportermastersecret', <!<!HashValue!>!>)!>)

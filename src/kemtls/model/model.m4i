@@ -4,12 +4,19 @@ include(msgs.m4i)
 include(state.m4i)
 
 include(pki.m4i)
+include(server_common.m4i)
+ifdef(<!BASIC!>, <!
 include(client_basic.m4i)
 include(server_basic.m4i)
+!>)
 ifdef(<!PSK!>,<!
 include(client_psk.m4i)
 include(server_psk.m4i)
 include(zero_rtt.m4i)
+!>)
+ifdef(<!PDK!>, <!
+include(client_pdk.m4i)
+include(server_pdk.m4i)
 !>)
 include(record.m4i)
 ifdef(<!POST_HS!>, <!

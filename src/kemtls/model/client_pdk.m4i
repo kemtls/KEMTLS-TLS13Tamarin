@@ -1,0 +1,399 @@
+dnl(
+/*
+  Client rules for client hello in KEMTLS-PDK mode.
+
+   Subsequent Handshake:
+      ClientHello
+      + key_share
+      + pdk encaps              -------->
+                                                      ServerHello
+                                                     + key_share
+                                            {EncryptedExtensions}
+                                                       {Finished}
+                                <--------     [Application Data*]
+      {Finished}                -------->
+      [Application Data]        <------->      [Application Data]
+*/)
+
+
+include(msgs.m4i)
+include(crypto.m4i)
+include(state.m4i)  
+
+rule client_pdk_select_no_cert:
+ [Fr(~tid)] --> [ ClientPdkState(~tid, '0')]
+
+rule client_pdk_select_cert:
+  [Fr(~tid)] --> [ ClientPdkState(~tid, 'cert')]
+
+dnl Extensions definitions for ClientHello with PSK
+define(<!ClientHelloExtensions!>, <!< dnl
+  SupportedVersions, dnl
+  NamedGroupList, dnl
+  KeyShareCH, dnl
+  PDKCiphertext, dnl
+  PDKClientAuth dnl
+>!>)
+rule client_hello_pdk:
+let
+    // Initialises all state variables to zero.
+    init_state()
+
+    pdk = '1'
+
+    edi = maybe_auth
+
+    // Abstract client identity - does not currently correspond to 
+    // anything concrete 
+    C = $C
+
+    // Server identity - can be interpreted as the hostname
+    S = $S
+
+    // Client nonce, reuse tid
+    nc = tid
+
+    k1 = $k1
+    k2 = $k2
+    sekem = <k1, k2>
+    client_sekem = <k1, k2>
+
+    // ephemeral KEM Keygen
+    ekem = k1
+    esk = ~esk
+    epk = kempk(ekem, esk)
+
+    // PDK ciphertext
+    pdkseed = ~pdkseed
+    pdkss = kemss($kpdk, pdkseed)
+    pdkpubkey = kempk($kpdk, ~ltkS)
+    ciphertext = kemencaps($kpdk, pdkss, pdkpubkey)
+
+    es = EarlySecret(pdkss)
+    messages = <messages, ClientHello>
+
+    ead_keyc = keygen(early_traffic_secret(client), early_app_key_label())
+
+    // We start authed here!
+    auth_status = <'0', 'auth'>
+in
+    [
+      Fr(esk),
+      Fr(pdkseed),
+      ClientPdkState(tid, maybe_auth),
+      !Pk(S, kempk($kpdk, ~ltkS))
+    ]
+  --[ C0_PDK(tid),
+      Start(tid, C, 'client'),
+      running_client(Identity, C),
+      EKem(tid, C, esk),
+      KemEncaps($kpdk, pdkss, pdkpubkey),
+      KemChal($kpdk, ~ltkS, kempk($kpdk, ~ltkS), ciphertext, pdkss)
+    ]->
+    [
+      State(C1, tid, C, S, ClientState),
+      EKemSk(esk, tid, C),
+      // Write the ClientHelloMsg onto the wire *presumably* with destination S
+      Out(ClientHello)
+    ]
+
+
+rule client_emit_pdk_certificate:
+  let
+    prev_pdk = '1'
+    prev_edi = 'cert'
+    set_state()
+
+    C = $C
+    S = $S
+    certificate_request_context = '0'
+    certificate = kempk($k, ~ltkC)
+
+    messages = <messages, Certificate>
+  in
+  [
+    State(C1, tid, C, S, PrevClientState)[no_precomp],
+    !Ltk(C, ~ltkC),
+    !Pk(C, certificate)
+  ] --[
+    C1_PDK_cert(tid),
+    Eq(certificate, kempk($k, ~ltkC)),
+    Instance(tid, C, 'client')
+  ]->
+  [
+    State(C1a_PDK, tid, C, S, ClientState),
+    Out(senc{Certificate}ead_keyc)
+  ]
+
+rule client_skip_pdk_certificate:
+let
+  prev_pdk = '1'
+  prev_edi = '0'
+  set_state()
+
+  C = $C
+  S = $S
+
+in
+  [
+    State(C1, tid, C, S, PrevClientState)[no_precomp]
+  ] --[
+    C1_PDK_skip_cert(tid),
+    Instance(tid, C, 'client')
+  ]-> [
+    State(C1a_PDK, tid, C, S, ClientState)
+  ]
+
+dnl Extensions definitions for PDK ServerHello
+define(<!ServerHelloExtensions!>, <!< dnl
+  SignatureSchemeList, dnl
+  KeyShareSH, dnl
+  PDKAccepted dnl
+>!>)
+dnl requires server_basic.m4i to run
+rule client_recv_server_hello_pdk_rej_cert:
+let
+    prev_ekem = $k
+    prev_esk = ~esk
+    prev_pdk = '1'
+    prev_edi = 'cert'
+    ch = <'1', rest>
+    cert = <'11', certrest>
+    prev_messages = <<pmsg, ch>, cert>
+
+    set_state()
+    accepted_auth = '0'
+
+    ns = new_ns
+    ect = new_ect
+
+    C = $C
+    S = $S
+
+    ect = kemencaps(ekem, kemss(ekem, new_eseed), epk)
+
+    // Derive the shared secret
+    ess = kemdecaps(ekem, ect, esk)
+
+    messages = <<pmsg, ch>, ServerHello>
+in
+    [ State(C1a_PDK, tid, C, S, PrevClientState),
+      In(ServerHello)
+    ]
+  --[ C1a_PDK_rej_cert(tid),
+      Test(prev_messages),
+      Instance(tid, C, 'client'),
+      KemDecaps(ekem, esk, ess),
+      KemChal(ekem, esk, epk, ect, ess),
+      running_client(Nonces, nc, ns)
+    ]->
+    [
+      State(C2a_PDK, tid, C, S, ClientState)
+    ]
+
+
+dnl Extensions definitions for PDK ServerHello
+define(<!ServerHelloExtensions!>, <!< dnl
+  SignatureSchemeList, dnl
+  KeyShareSH, dnl
+  PDKAccepted dnl
+>!>)
+rule client_recv_server_hello_pdk:
+let
+    prev_ekem = $k
+    prev_esk = ~esk
+    prev_pdk = '1'
+
+    set_state()
+
+    ns = new_ns
+    ect = new_ect
+
+    C = $C
+    S = $S
+
+    ect = kemencaps(ekem, kemss(ekem, new_eseed), epk)
+
+    // Derive the shared secret
+    ess = kemdecaps(ekem, ect, esk)
+
+    messages = <messages, ServerHello>
+in
+    [ State(C1a_PDK, tid, C, S, PrevClientState),
+      In(ServerHello)
+    ]
+  --[ C1a_PDK(tid),
+      Neq(ect, ekem),
+      Eq(accepted_auth, prev_edi),
+      Instance(tid, C, 'client'),
+      KemDecaps(ekem, esk, ess),
+      KemChal(ekem, esk, epk, ect, ess),
+      running_client(Nonces, nc, ns)
+    ]->
+    [
+      State(C2a_PDK, tid, C, S, ClientState)
+    ]
+
+
+
+rule client_gen_keys_pdk:
+let
+    set_state()
+
+    C = $C
+    S = $S
+
+    hs = HandshakeSecret
+
+    hs_keyc = keygen(handshake_traffic_secret(client), hs_key_label())
+    hs_keys = keygen(handshake_traffic_secret(server), hs_key_label())
+
+in
+    [ State(C2a_PDK, tid, C, S, PrevClientState)[no_precomp],
+      EKemSk(esk, tid, C)
+    ]
+  --[ C2a_PDK(tid),
+      Instance(tid, C, 'client'),
+      running_client(HS, hs),
+      DelEKemSk(tid, C, esk)  dnl models that the ephemeral key is thrown away here.
+    ]->
+    [
+      State(C2b_PDK, tid, C, S, ClientState)
+    ]
+
+rule client_recv_encrypted_extensions_pdk:
+let
+    set_state()
+
+    S = $S
+    C = $C
+
+    messages = <messages, EncryptedExtensions>
+
+in
+    [ 
+      State(C2b_PDK, tid, C, S, PrevClientState)[no_precomp],
+      In(senc{EncryptedExtensions}hs_keys)
+    ] --[ 
+      C2b_PDK(tid),
+      Instance(tid, C, 'client')
+    ]->
+    [ 
+      State(C2c_PDK, tid, C, S, ClientState)
+    ]
+
+
+rule client_recv_pdk_ciphertext:
+let
+    prev_edi = 'cert' // XXX
+    set_state()
+    edi = '0'
+
+    S = $S
+    C = $C
+
+    ciphertext = kemencaps($kca, some_ss, kempk($kca, ~ltkC))
+    clauth_ss = kemdecaps($kca, ciphertext, ~ltkC)
+    messages = <messages, KemEncapsulation>
+
+    auth_status = <'auth', 'auth'>
+in
+  [
+    State(C2c_PDK, tid, C, S, PrevClientState)[no_precomp],
+    In(senc{KemEncapsulation}hs_keys),
+    !Pk(C, kempk($kca, ~ltkC)),
+    !Ltk(C, ~ltkC)
+  ] --[
+    C2c_PDK(tid),
+    Instance(tid, C, 'client'),
+    KemDecaps($kca, ~ltkC, clauth_ss),
+    KemChal($kca, ~ltkC, kempk($kca, ~ltkC), ciphertext, clauth_ss)
+  ]->
+  [
+    State(C2d_PDK, tid, C, S, ClientState)
+  ]
+
+rule client_skip_pdk_ciphertext:
+let
+    set_state()
+
+    S = $S
+    C = $C
+  in
+    [
+      State(C2c_PDK, tid, C, S, PrevClientState)[no_precomp]
+    ] --[
+      C2c_PDK_skip_ct(tid),
+      Instance(tid, C, 'client'),
+      Neq(edi, 'cert')
+    ]-> [
+      State(C2d_PDK, tid, C, S, ClientState)
+    ]
+
+rule client_recv_server_auth_pdk:
+let
+    set_state()
+
+    ahs = hs
+    ms = MasterSecret
+
+    S = $S
+    C = $C
+
+    exp_verify_data = compute_finished(server)
+    finished_messages = messages
+
+    messages = <messages, Finished>
+
+    sats = application_traffic_secret_0(server)
+    app_keys = keygen(sats, app_key_label())
+    ems = exporter_master_secret()
+in
+    [ State(C2d_PDK, tid, C, S, PrevClientState)[no_precomp],
+      In(senc{Finished}hs_keys)
+    ]
+  --[ C2d_PDK(tid),
+      Instance(tid, C, 'client'),
+      Eq(verify_data, exp_verify_data),
+      running_client(Mode, psk_ke_mode),
+      commit_client(Identity, S, auth_status),
+      commit_client(HS, hs),
+      commit_client(MS, ms),
+      commit_client(Nonces, nc, ns),
+      commit_client(Transcript, finished_messages)
+    ]->
+    [ State(C3_PDK, tid, C, S, ClientState),
+      RecvStream(tid, C, S, auth_status, app_keys)
+    ]
+
+rule client_emit_finished_pdk:
+let
+    set_state()
+
+    S = $S
+    C = $C
+
+    verify_data = compute_finished(client)
+    finished_messages = messages
+
+    messages = <messages, Finished>
+
+    cats = application_traffic_secret_0(client)
+    app_keyc = keygen(cats, app_key_label())
+    
+in
+  [
+    State(C3_PDK, tid, C, S, PrevClientState)[no_precomp]
+  ] --[
+    C3_PDK(tid),
+    Instance(tid, C, 'client'),
+    running_client(MS, clauth_ss, ms),
+    running_client(RMS, S, rms, messages),
+    running_client(Identity, S, auth_status),
+    running_client(Transcript, finished_messages)
+  ]-> [
+    Out(senc{Finished}hs_keyc),
+    SendStream(tid, C, S, auth_status, app_keyc),
+    State(C4, tid, C, S, ClientState)
+  ]
+

@@ -27,7 +27,12 @@ dnl(
 */)
 
 dnl Extensions definitions for basic ClientHello
-define(<!ClientHelloExtensions!>, <!<SupportedVersions, NamedGroupList, SignatureSchemeList, KeyShareCH >!>)
+define(<!ClientHelloExtensions!>, <!< dnl
+  SupportedVersions, dnl
+  NamedGroupList, dnl
+  SignatureSchemeList, dnl
+  KeyShareCH dnl
+>!>)
 rule client_emit_hello:
 let
     // Initialise state variables to zero.
@@ -57,7 +62,7 @@ let
     epk = kempk(ekem, esk)
 
     messages = <messages, ClientHello>
-    es = EarlySecret
+    es = EarlySecret(res_psk)
 in
     [ Fr(nc),
       Fr(esk)
@@ -85,6 +90,9 @@ let
     prev_sekem = <k1, k2>
     prev_ekem = k1
     prev_hrr = '0'
+
+    prev_pdk = '0'
+
     set_state()
     hrr = 'hrr'
     new_ekem = k2
@@ -105,7 +113,7 @@ let
 
     messages = <messages, HelloRetryRequest>
     messages = <messages, ClientHello>
-    es = EarlySecret
+    es = EarlySecret(res_psk)
 in
     [ State(C1, tid, C, S, PrevClientState),
       Fr(new_esk),
@@ -148,6 +156,9 @@ let
     // Received a basic server hello - abandon PSK mode (if attempted)
     psk_ke_mode = 'na'
     auth_status = <'0', '0'>
+    // reject PDK
+    pdk = '0'
+    es = EarlySecret(res_psk)
 
     messages = <messages, ServerHello>
 in
@@ -155,6 +166,7 @@ in
       In(ServerHello)
     ]
   --[ C1(tid),
+      Neq(edi, 'cert'),
       Instance(tid, C, 'client'),
       KemChal(ekem, esk, epk, ect, ess),
       KemDecaps(ekem, esk, ess),
@@ -163,6 +175,7 @@ in
     [
       State(C2a, tid, C, S, ClientState)
     ]
+
 
 rule client_gen_keys:
 let
@@ -210,7 +223,8 @@ in
 
 rule client_recv_certificate_request:
 let
-    prev_psk_ke_mode ='na'
+    prev_psk_ke_mode = 'na'
+    prev_pdk = '0'
     set_state()
 
     S = $S
@@ -248,6 +262,7 @@ in
 
 rule client_recv_server_cert_emit_kex:
 let
+  prev_pdk = '0'
   prev_psk_ke_mode = 'na'
   set_state()
 
@@ -300,6 +315,7 @@ rule client_skip_cert_emit_finished:
 let
     // If certificate was requested, cannot ignore
     prev_cert_req = '0'
+    prev_pdk = '0'
     set_state()
 
     S = $S
@@ -341,6 +357,7 @@ in
 
 rule client_send_client_cert:
 let
+    prev_pdk = '0'
     prev_cert_req = '1'
     prev_psk_ke_mode = 'na'
     set_state()

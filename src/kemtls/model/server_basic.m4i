@@ -23,26 +23,6 @@ dnl(
        v {Finished}                -------->
 */)
 
-rule start_server:
-let
-    C = $C
-    S = $S
-
-    // Initialises all variables to zero.
-    init_state()
-
-    tid = ~tid
-    sekem = $sekem
-in
-    [ Fr(tid)
-    ]
-  --[ Start(tid, S, 'server'),
-      running_server(Identity, S)
-    ]->
-    [
-      State(S0, tid, S, C, ServerState)
-    ]
-
 
 /*
     Server receives vanilla ClientHello
@@ -128,6 +108,7 @@ let
 
     // Server continuing in normal mode (no PSK mode)
     psk_ke_mode = 'na'
+    pdk = '0'
     auth_status = <'0', '0'>
 
     C = $C
@@ -138,7 +119,7 @@ let
     ess = kemss(ekem, eseed)
     ect = kemencaps(ekem, ess, epk)
 
-    es = EarlySecret
+    es = EarlySecret(res_psk)
     messages = <messages, ServerHello>
 in
     [ State(S1, tid, S, C, PrevServerState),

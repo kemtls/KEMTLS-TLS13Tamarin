@@ -1,10 +1,16 @@
 DEPS= $(wildcard *.m4i)
 M4= $(patsubst %.m4,%.spthy,$(wildcard *.m4))
+ifndef NOBASIC
+	FLAGS := ${FLAGS} -DBASIC
+endif
 ifdef PSK
 	FLAGS := ${FLAGS} -DPSK
 endif
 ifdef POST_HS
 	FLAGS := ${FLAGS} -DPOST_HS
+endif
+ifdef PDK
+	FLAGS := ${FLAGS} -DPDK
 endif
 
 # MAKE_RULES=C1 S0a S1 S1a S1b S1c  C2 C2a C2b C2c C2d S2 Send Recv S_NST C_NST C1_PSK S0a_PSK S1_PSK S1_PSK_DHE C2_PSK C2_PSK_DHE S1c_PSK C2c_PSK\
@@ -67,6 +73,29 @@ TEST_RULES := $(TEST_RULES) \
 	# C_ZeroRTT_Auth \
 	# S_RecvZeroRTTAuth
 endif
+ifdef PDK
+TEST_RULES := $(TEST_RULES) \
+	C0_PDK \
+	C1_PDK_cert \
+	C1_PDK_skip_cert \
+	C1a_PDK_rej_cert \
+	C1a_PDK \
+	C2a_PDK \
+	C2b_PDK \
+	C2c_PDK \
+	C2c_PDK_skip_ct \
+	C2d_PDK \
+	C3_PDK \
+	S0_PDK \
+	S1_PDK_cert \
+	S1_PDK_no_cert \
+	S2a_PDK \
+	S2b_PDK \
+	S2c_PDK_no_cert \
+	S2c_PDK_cert \
+	S2d_PDK \
+	S3_PDK
+endif
 
 MAKE_RULES=$(TEST_RULES)
 
@@ -76,6 +105,10 @@ PROOF_FILES= $(foreach rule,$(TEST_RULES),$(rule).proof)
 all: $(RULE_FILES)
 
 test: $(PROOF_FILES)
+
+all.spthy: reachability.m4 ../model/*.m4* ../*.m4
+	m4 -Q $(FLAGS) -DALL -I ../ -I../model -I . reachability.m4 > $@
+	@perl -0777pi -e 's/\n{3,}/\n\n/g' $@
 
 %.spthy: reachability.m4 ../model/*.m4* ../*.m4
 	m4 -Q $(FLAGS) -I ../ -I../model -I . -D RULE=$* reachability.m4 > $@

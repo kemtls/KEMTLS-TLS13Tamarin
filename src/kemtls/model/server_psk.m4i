@@ -40,7 +40,7 @@ let
     // Server nonce
     ns = ~ns
 
-    es = EarlySecret
+    es = EarlySecret(res_psk)
 
 
     tmp_binder = binder
@@ -100,7 +100,7 @@ let
 
     identity = psk_id
 
-    es = EarlySecret
+    es = EarlySecret(res_psk)
 
     messages = <messages, ServerHello>
 in
@@ -135,7 +135,7 @@ let
     C = $C
     S = $S
 
-    es = EarlySecret
+    es = EarlySecret(res_psk)
     messages = <messages, ServerHello>
 
     // y is not actually used anywhere - this isn't DHE mode

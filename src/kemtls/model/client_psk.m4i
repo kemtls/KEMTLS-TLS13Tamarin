@@ -71,7 +71,7 @@ let
     esk = ~esk
     epk = kempk(ekem, esk)
 
-    es = EarlySecret
+    es = EarlySecret(res_psk)
     binder = '0'
     binder_messages = <messages, ClientHello>
     binder = compute_binder()
@@ -107,6 +107,7 @@ let
     prev_sekem = <k1, k2>
     prev_ekem = k1
     prev_hrr = '0'
+    prev_pdk = '0'
 
     prev_psk_ke_mode = <psk_ke, psk_dhe_ke>
     set_state()
@@ -134,7 +135,7 @@ let
     epk = kempk(ekem, esk)
     nc = new_nc
 
-    es = EarlySecret
+    es = EarlySecret(res_psk)
     messages = <messages, HelloRetryRequest>
     tmp_messages = messages
     binder = '0'

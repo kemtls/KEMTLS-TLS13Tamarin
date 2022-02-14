@@ -2,7 +2,7 @@ DEPS= $(wildcard *.m4i) $(wildcard ../model/*.m4i) $(wildcard includes/*.m4i)
 M4= $(patsubst %.m4,%.spthy,$(wildcard *.m4))
 PIPE=--quit-on-warning 2>error.log 1>>success.log
 TAM=time tamarin-prover
-FLAGS=
+FLAGS=-DPDK -DBASIC
 
 all: $(M4)
 
