@@ -58,7 +58,10 @@ lemma kemencap_source_pk [sources, heuristic=s]:
     certificate = kempk(kem, sk) &
     KemEncap(kem, certificate, ss)@j
     ==>
-      (Ex #ch. (KU(Extension('40', kem, certificate))@#ch & #ch < #j)) |
+      (Ex #ch. (KU(Extension('40', kem, certificate))@#ch & #ch < #j)) | 
+      ifdef(<!PDK!>, <!
+      (Ex tid. C0_PDK(tid)@#j) |
+      !>)
       (Ex actor certificate_request_context keys #kg #crt. GenLtk(actor, sk)@#kg & KU(senc{Certificate}keys)@#crt & #crt < #j)"
 
 lemma kemdecap_source_ct [sources, heuristic=s]:
@@ -67,7 +70,13 @@ lemma kemdecap_source_ct [sources, heuristic=s]:
     ciphertext = kemencaps(kem, ss, kempk(kem, sk))
     ==>
       (Ex #sh. KU(Extension('40', kem, ciphertext))@#sh & #sh < #j) |
-      (Ex keys act #kg #enc. GenLtk(act, sk)@#kg & KU(senc{KemEncapsulation}keys)@#enc & #enc < #j)"
+      ifdef(<!PDK!>, <!
+        (Ex act #kg #ch. GenLtk(act, sk)@#kg & KU(Extension('47', ciphertext))@#ch & #ch < #j) |
+      !>)
+      (Ex keys act #kg #enc. 
+        GenLtk(act, sk)@#kg & 
+        KU(senc{KemEncapsulation}keys)@#enc & 
+        #enc < #j)"
 
 lemma kemdecap_source_sk [heuristic=c]:
   "All kem sk ss #j.
@@ -102,7 +111,11 @@ lemma source_recvstream [sources]:
     ==>
       (Ex #pred. Recv(tid)@#pred & #pred < #recv) |
       (Ex #creac. C3b(tid)@#creac & #creac < #recv) |
-      (Ex #sfin. S3fin(tid)@#sfin & #sfin < #recv)
+      (Ex #sfin. S3fin(tid)@#sfin & #sfin < #recv) 
+      ifdef(<!PDK!>, <! 
+      | (Ex #spdkfin. S3_PDK(tid)@#spdkfin & #spdkfin < #recv)
+      | (Ex #cpdkfin. C2d_PDK(tid)@#cpdkfin & #cpdkfin < #recv)
+      !>)
   "
 
 lemma source_sendstream [sources]:
@@ -113,22 +126,50 @@ lemma source_sendstream [sources]:
       (Ex #creac. C3a(tid)@#creac & #creac < #send) |
       (Ex #creanocrt. C3_skip_cert(tid)@#creanocrt & #creanocrt < #send) |
       (Ex #sfin. S3fin(tid)@#sfin & #sfin < #send)
+      ifdef(<!PDK!>, <!
+      | (Ex #cpdkfin. C3_PDK(tid)@#cpdkfin & #cpdkfin < #send)
+      | (Ex #spdkfin. S2d_PDK(tid)@#spdkfin & #spdkfin < #send)
+      !>)
   "
 
 lemma source_auth_status [sources]:
   "All tid actor role peer pas #i.
     commit(Identity, actor, role, peer, <'auth', pas>)@#i
     ==>
-      (role = 'server' & Ex #j. S2e(tid)@#j & #j < #i) |
-      (role = 'client' & (Ex #c. C3a(tid)@#c & #c < #i) & (Ex #req. C2c_req(tid)@#req & #req < i))
+      (role = 'server' & 
+        (
+          (Ex #j. S2e(tid)@#j & #j < #i)
+          ifdef(<!PDK!>, <!
+          | (Ex #jj. S0_PDK(tid)@#jj & #jj < #i)
+          !>)
+        )
+       ) |
+      (role = 'client' & (
+        ((Ex #c. C3a(tid)@#c & #c < #i) & (Ex #req. C2c_req(tid)@#req & #req < i)) 
+        ifdef(<!PDK!>, <!
+        | (Ex #cc. C2c_PDK(tid)@#cc & #cc < #i)
+        !>)
+      ))
   "
 
 lemma source_auth_status_peer [sources]:
   "All tid actor role peer aas #i.
     commit(Identity, actor, role, peer, <aas, 'auth'>)@#i
     ==>
-      (role = 'server' & (Ex #j. S3_cert(tid)@#j & #j < #i) & (Ex #req. S2c_req(tid)@#req & #req < #i)) |
-      (role = 'client' & (Ex #c. C2d(tid)@#c & #c < #i))
+      (role = 'server' & (
+        (Ex #j. S3_cert(tid)@#j & #j < #i) & (Ex #req. S2c_req(tid)@#req & #req < #i)) 
+        ifdef(<!PDK!>, <! 
+        | (Ex #jj. S1_PDK_cert(tid)@#jj & #jj < #i)
+        !>)
+      ) |
+      (role = 'client' & (
+        (Ex #c. C2d(tid)@#c & #c < #i) 
+        ifdef(<!PDK!>, <! 
+        |
+        (Ex #cc. C1a_PDK(tid)@#cc & #cc < #i) |
+        (Ex #ccc. C1a_PDK_rej_cert(tid)@#ccc & #ccc < #i)
+        !>)
+      ))
   "
 
 lemma unique_nonces_source [sources]:

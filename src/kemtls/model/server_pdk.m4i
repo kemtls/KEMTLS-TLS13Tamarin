@@ -8,6 +8,7 @@ define(<!ClientHelloExtensions!>, <!< dnl
 >!>)
 rule server_recv_client_hello_pdk:
 let
+    prev_hrr = '0'
     set_state()
 
     pdk = '1'
@@ -78,6 +79,7 @@ define(<!ServerHelloExtensions!>, <!< dnl
 rule server_recv_pdk_cert_emit_hello:
   let
     prev_pdk = '1'
+    prev_hrr = '0'
     prev_ekem = $k
     prev_epk = kempk(prev_ekem, some_esk)
     prev_ns = ~ns
@@ -132,6 +134,7 @@ define(<!ServerHelloExtensions!>, <!< dnl
 rule server_hello_pdk_no_cert:
 let
     prev_pdk = '1'
+    prev_hrr = '0'
     prev_ekem = $k
     prev_epk = kempk(prev_ekem, some_esk)
     prev_ns = ~ns
@@ -199,7 +202,6 @@ in
     [ State(S2b_PDK, tid, S, C, PrevServerState)[no_precomp]
     ]
   --[ S2b_PDK(tid),
-      Test(hs_keys),
       Instance(tid, S, 'server')
       
     ]->
@@ -253,8 +255,9 @@ in
   ] --[
     S2c_PDK_cert(tid),
     Instance(tid, S, 'server'),
-    KemEncaps($kca, clauth_ss, certificate),
-    KemChal($kca, ~ltkC, certificate, ciphertext, clauth_ss)
+    KemEncap($kca, certificate, clauth_ss),
+    KemChal($kca, ~ltkC, certificate, ciphertext, clauth_ss),
+    running_server(Identity, C, auth_status)
   ]-> [
     Out(senc{KemEncapsulation}hs_keys),
     State(S2d_PDK, tid, S, C, ServerState)
@@ -312,7 +315,13 @@ in
     In(senc{Finished}hs_keyc)
   ] --[
     S3_PDK(tid),
-    Eq(verify_data, exp_verify_data)
+    Eq(verify_data, exp_verify_data),
+    commit_server(HS, hs),
+    commit_server(AHS, ahs),
+    commit_server(MS, ms),
+    commit_server(Identity, C, auth_status),
+    commit_server(Transcript, finished_messages),
+    commit_server(Nonces, nc, ns)
   ]-> [
     RecvStream(tid, S, C, auth_status, app_keyc),
     State(S4, tid, S, C, ServerState)

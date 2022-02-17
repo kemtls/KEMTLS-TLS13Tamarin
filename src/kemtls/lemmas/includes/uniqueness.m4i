@@ -63,3 +63,58 @@ one_of(C1_PSK, C1)
 one_of(S2d, S2d_PSK)
 one_of(C2d, C2d_PSK)
 !>)
+
+ifdef(<!PDK!>, <!
+// PDK-related restrictions
+uniq(CPDK_start_nocert)
+uniq(CPDK_start_cert)
+one_of(CPDK_start_cert, CPDK_start_nocert)
+
+uniq(C0_PDK)
+one_of(C0, C0_PDK)
+
+uniq(C1_PDK_cert)
+uniq(C1_PDK_skip_cert)
+one_of(C1_PDK_cert, C1_PDK_skip_cert)
+
+uniq(C1a_PDK_rej_cert)
+uniq(C1a_PDK)
+one_of(C1a_PDK, C1a_PDK_rej_cert)
+
+uniq(C2a_PDK)
+one_of(C2a, C2a_PDK)
+
+uniq(C2b_PDK)
+
+uniq(C2c_PDK)
+uniq(C2c_PDK_skip_ct)
+one_of(C2c_PDK, C2c_PDK_skip_ct)
+
+uniq(C2d_PDK)
+uniq(C3_PDK)
+
+// server side
+uniq(S0_PDK)
+
+uniq(S1_PDK_cert)
+uniq(S1_PDK_no_cert)
+one_of(S1_PDK_cert, S1_PDK_no_cert)
+one_of(S1, S1_PDK_cert)
+one_of(S1, S1_PDK_no_cert)
+one_of(S1_retry, S1_PDK_cert)
+one_of(S1_retry, S1_PDK_no_cert)
+
+uniq(S2a_PDK)
+one_of(S2a, S2a_PDK)
+
+uniq(S2b_PDK)
+
+uniq(S2c_PDK_no_cert)
+uniq(S2c_PDK_cert)
+one_of(S2c_PDK_cert, S2c_PDK_no_cert)
+
+uniq(S2d_PDK)
+
+uniq(S3_PDK)
+
+!>)

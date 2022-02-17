@@ -21,10 +21,10 @@ include(crypto.m4i)
 include(state.m4i)  
 
 rule client_pdk_select_no_cert:
- [Fr(~tid)] --> [ ClientPdkState(~tid, '0')]
+ [Fr(~tid)] --[ CPDK_start_nocert(~tid) ]-> [ ClientPdkState(~tid, '0')]
 
 rule client_pdk_select_cert:
-  [Fr(~tid)] --> [ ClientPdkState(~tid, 'cert')]
+  [Fr(~tid)] --[ CPDK_start_cert(~tid) ]->  [ ClientPdkState(~tid, 'cert')]
 
 dnl Extensions definitions for ClientHello with PSK
 define(<!ClientHelloExtensions!>, <!< dnl
@@ -86,8 +86,9 @@ in
   --[ C0_PDK(tid),
       Start(tid, C, 'client'),
       running_client(Identity, C),
+      running_client(Identity, S, auth_status),
       EKem(tid, C, esk),
-      KemEncaps($kpdk, pdkss, pdkpubkey),
+      KemEncap($kpdk, pdkpubkey, pdkss),
       KemChal($kpdk, ~ltkS, kempk($kpdk, ~ltkS), ciphertext, pdkss)
     ]->
     [
@@ -181,7 +182,6 @@ in
       In(ServerHello)
     ]
   --[ C1a_PDK_rej_cert(tid),
-      Test(prev_messages),
       Instance(tid, C, 'client'),
       KemDecaps(ekem, esk, ess),
       KemChal(ekem, esk, epk, ect, ess),
@@ -306,7 +306,7 @@ in
   ] --[
     C2c_PDK(tid),
     Instance(tid, C, 'client'),
-    KemDecaps($kca, ~ltkC, clauth_ss),
+    KemDecaps($kca, ~ltkC, some_ss),
     KemChal($kca, ~ltkC, kempk($kca, ~ltkC), ciphertext, clauth_ss)
   ]->
   [

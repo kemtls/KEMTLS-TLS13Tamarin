@@ -6,7 +6,7 @@ import re
 from typing import Iterable, List, Optional, Tuple
 
 #: Fetch lemmas from incomplete output
-LEMMA_REGEX: re.Pattern = re.compile(r"^\s*(?P<lemma>[a-zA-Z_]+) \((all-traces|exists-trace)\): analysis incomplete \(1 steps\)\s*$")
+LEMMA_REGEX: re.Pattern = re.compile(r"^\s*(?P<lemma>[a-zA-Z0-9_]+) \((all-traces|exists-trace)\): analysis incomplete \(1 steps\)\s*$")
 
 #: Parse out steps
 STEPS_REGEX: str = r"^\s*{lemma} \((all-traces|exists-trace)\): verified \((?P<steps>\d+) steps\)\s*$"
@@ -55,19 +55,31 @@ def prove_lemmas(model, lemmas: Iterable[str]):
         steps = get_steps(output, lemma)
         if steps is None:
             print(output)
-            print(f"Proof failed after {duration}!?")
+            print(f"Proving {lemma} failed after {duration}!?")
             break
         print(f"\tCompleted in {steps: >4} steps in {duration}")
 
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) != 2:
-        print(f"Usage: {sys.argv[0]} model.spthy")
+    import itertools
+    if len(sys.argv) not in (2, 3):
+        print(f"Usage: {sys.argv[0]} model.spthy [start_lemma]")
         sys.exit(1)
     model = sys.argv[1]
-
     lemmas = get_lemmas(model)
+
+    if len(sys.argv) == 3:
+        opt_start_lemma = sys.argv[2]
+        lemmas = list(lemmas)
+        while len(lemmas) > 0:
+            if lemmas[0] != opt_start_lemma:
+                print(f"Skipping {lemmas[0]}")
+                lemmas.pop(0)
+            else:
+                break
+        assert len(lemmas) > 0, "Dropped all lemmas"
+
     start_time = datetime.now()
     prove_lemmas(model, lemmas)
     duration = datetime.now() - start_time
