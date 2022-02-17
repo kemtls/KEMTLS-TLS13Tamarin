@@ -37,7 +37,8 @@ let
     ns = ~ns
 
     // PDK ciphertext
-    ciphertext = kemencaps($kpdk, kemss($kpdk, new_pdkseed), kempk($kpdk, ~ltkS))
+    shared_secret = kemss($kpdk, new_pdkseed)
+    ciphertext = kemencaps($kpdk, shared_secret, kempk($kpdk, ~ltkS))
     pdkss = kemdecaps($kpdk, ciphertext, ~ltkS)
 
     es = EarlySecret(pdkss)
@@ -57,8 +58,8 @@ in
   --[ S0_PDK(tid),
       Neq(k1, k2),
       running_server(Identity, S),
-      KemDecaps($kpdk, ~ltkS, pdkss),
-      KemChal($kpdk, ~ltkS, kempk($kpdk, ~ltkS), ciphertext, pdkss)
+      KemDecaps($kpdk, ~ltkS, shared_secret),
+      KemChal($kpdk, ~ltkS, kempk($kpdk, ~ltkS), ciphertext, shared_secret)
     ]->
     [
       State(S1, tid, S, C, ServerState)

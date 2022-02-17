@@ -292,6 +292,7 @@ let
     S = $S
     C = $C
 
+    some_ss = kemss($kca, some_seed)
     ciphertext = kemencaps($kca, some_ss, kempk($kca, ~ltkC))
     clauth_ss = kemdecaps($kca, ciphertext, ~ltkC)
     messages = <messages, KemEncapsulation>

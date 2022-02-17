@@ -131,7 +131,7 @@ lemma kem_ephemeral_decaps_unique [heuristic=s]:
     #i = #j"
 
 // chal_dual
-lemma kem_chal_dual [reuse, heuristic=c]:
+lemma kem_chal_dual [reuse]:
   "All tid tid2 actor actor2 kem sk pk ct ss #i #j #r.
     KemChal(kem, sk, pk, ct, ss)@#i & Instance(tid, actor, 'client')@#i &
     KemChal(kem, sk, pk, ct, ss)@#j & Instance(tid2, actor2, 'server')@#j &
