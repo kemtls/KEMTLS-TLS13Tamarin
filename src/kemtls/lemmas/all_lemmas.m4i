@@ -98,8 +98,7 @@ lemma matching_rms_nonces [reuse, heuristic=c]:
     running2(RMS, actor2, 'client', peer2, rms, messages)@j &
     commit2(Nonces, actor2, 'client', nonces)@j ==>
       Ex #a.
-        commit(Nonces, actor, 'server', nonces)@a & 
-        #a < #i"
+        commit(Nonces, actor, 'server', nonces)@a"
 
 !>)
 

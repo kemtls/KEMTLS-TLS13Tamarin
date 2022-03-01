@@ -73,9 +73,6 @@ let
     messages = <messages, ClientHello>
 
     ead_keyc = keygen(early_traffic_secret(client), early_app_key_label())
-
-    // We start authed here!
-    auth_status = <'0', 'auth'>
 in
     [
       Fr(esk),
@@ -86,7 +83,6 @@ in
   --[ C0_PDK(tid),
       Start(tid, C, 'client'),
       running_client(Identity, C),
-      running_client(Identity, S, auth_status),
       EKem(tid, C, esk),
       KemEncap($kpdk, pdkpubkey, pdkss),
       KemChal($kpdk, ~ltkS, kempk($kpdk, ~ltkS), ciphertext, pdkss)
@@ -176,6 +172,9 @@ let
     // Derive the shared secret
     ess = kemdecaps(ekem, ect, esk)
 
+    // We start authed here as PDK was accepted
+    auth_status = <'0', 'auth'>
+
     messages = <<pmsg, ch>, ServerHello>
 in
     [ State(C1a_PDK, tid, C, S, PrevClientState),
@@ -185,7 +184,8 @@ in
       Instance(tid, C, 'client'),
       KemDecaps(ekem, esk, ess),
       KemChal(ekem, esk, epk, ect, ess),
-      running_client(Nonces, nc, ns)
+      running_client(Nonces, nc, ns),
+      running_client(Identity, S, auth_status)
     ]->
     [
       State(C2a_PDK, tid, C, S, ClientState)
@@ -218,6 +218,9 @@ let
     ess = kemdecaps(ekem, ect, esk)
 
     messages = <messages, ServerHello>
+
+    // We start authed here as PDK was accepted
+    auth_status = <'0', 'auth'>
 in
     [ State(C1a_PDK, tid, C, S, PrevClientState),
       In(ServerHello)
@@ -228,7 +231,8 @@ in
       Instance(tid, C, 'client'),
       KemDecaps(ekem, esk, ess),
       KemChal(ekem, esk, epk, ect, ess),
-      running_client(Nonces, nc, ns)
+      running_client(Nonces, nc, ns),
+      running_client(Identity, S, auth_status)
     ]->
     [
       State(C2a_PDK, tid, C, S, ClientState)
@@ -346,9 +350,9 @@ let
 
     messages = <messages, Finished>
 
+
     sats = application_traffic_secret_0(server)
     app_keys = keygen(sats, app_key_label())
-    ems = exporter_master_secret()
 in
     [ State(C2d_PDK, tid, C, S, PrevClientState)[no_precomp],
       In(senc{Finished}hs_keys)
@@ -357,6 +361,7 @@ in
       Instance(tid, C, 'client'),
       Eq(verify_data, exp_verify_data),
       running_client(Mode, psk_ke_mode),
+      running_client(MS, clauth_ss, ms),
       commit_client(Identity, S, auth_status),
       commit_client(HS, hs),
       commit_client(MS, ms),
@@ -374,6 +379,9 @@ let
     S = $S
     C = $C
 
+    // recompute here to make Tamarin's life easier?
+    app_keys = keygen(sats, app_key_label())
+
     verify_data = compute_finished(client)
     finished_messages = messages
 
@@ -381,6 +389,9 @@ let
 
     cats = application_traffic_secret_0(client)
     app_keyc = keygen(cats, app_key_label())
+
+    rms = resumption_master_secret()
+    ems = exporter_master_secret()
     
 in
   [
@@ -391,7 +402,9 @@ in
     running_client(MS, clauth_ss, ms),
     running_client(RMS, S, rms, messages),
     running_client(Identity, S, auth_status),
-    running_client(Transcript, finished_messages)
+    running_client(Transcript, finished_messages),
+    running_client(RMS, S, rms, messages),
+    SessionKey(tid, C, S, auth_status, <app_keyc, app_keys>)
   ]-> [
     Out(senc{Finished}hs_keyc),
     SendStream(tid, C, S, auth_status, app_keyc),

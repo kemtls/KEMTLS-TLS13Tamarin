@@ -34,7 +34,7 @@ lemma matching_hsahsms_all [reuse, heuristic=c]:
 !>)
 
 define(<!lemma_matching_ahsms_ms!>, <!
-lemma matching_ahsms_ms [reuse, heuristic=c]:
+lemma matching_ahsms_ms [reuse]:
   "All tid actor role ahs ms ms2 clauth_ss #i #j.
     commit(MS, actor, role, ms2)@i &
     running(AHSMS, actor, role, ahs, ms, clauth_ss)@j ==>
@@ -87,7 +87,7 @@ lemma matching_transcripts_posths [reuse, heuristic=s]:
     running2(RMS, peer, role2, actor2, rms2, messages)@j & not (role = role2) ==>
      rms = rms2"
 
-lemma matching_rms_posths [reuse, heuristic=c]:
+lemma matching_rms_posths [reuse]:
   "All tid tid2 actor peer actor2 peer2 role role2 rms messages messages2 #i #j.
     running(RMS, actor, role, peer2, rms, messages)@i &
     running2(RMS, peer, role2, actor2, rms, messages2)@j & not (role = role2) ==>

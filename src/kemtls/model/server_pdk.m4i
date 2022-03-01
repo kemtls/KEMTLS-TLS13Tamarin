@@ -46,9 +46,6 @@ let
     messages = <messages, ClientHello>
 
     ead_keyc = keygen(early_traffic_secret(client), early_app_key_label())
-
-    // server is authed here!
-    auth_status = <'auth', '0'>
 in
     [ State(S0, tid, S, C, PrevServerState)[no_precomp],
       In(ClientHello),
@@ -103,6 +100,8 @@ rule server_recv_pdk_cert_emit_hello:
     messages = <messages, Certificate>
     messages = <messages, ServerHello>
 
+    // server is authed here!
+    auth_status = <'auth', '0'>
   in
     [
       State(S1, tid, S, C, PrevServerState)[no_precomp],
@@ -114,7 +113,8 @@ rule server_recv_pdk_cert_emit_hello:
       Instance(tid, S, 'server'),
       KemChal(ekem, some_esk, epk, ect, ess),
       KemEncap(ekem, epk, ess),
-      running_server(Nonces, nc, ns)
+      running_server(Nonces, nc, ns),
+      running_server(Identity, C, auth_status)
     ]->
     [
       State(S2a_PDK, tid, S, C, ServerState),
@@ -154,6 +154,9 @@ let
     ect = kemencaps(ekem, ess, epk)
 
     messages = <messages, ServerHello>
+
+    // server is authed here!
+    auth_status = <'auth', '0'>
 in
     [ State(S1, tid, S, C, PrevServerState),
       Fr(eseed)
@@ -162,7 +165,8 @@ in
       Instance(tid, S, 'server'),
       KemChal(ekem, some_esk, epk, ect, ess),
       KemEncap(ekem, epk, ess),
-      running_server(Nonces, nc, ns)
+      running_server(Nonces, nc, ns),
+      running_server(Identity, C, auth_status)
     ]->
     [
       State(S2a_PDK, tid, S, C, ServerState),
@@ -204,7 +208,6 @@ in
     ]
   --[ S2b_PDK(tid),
       Instance(tid, S, 'server')
-      
     ]->
     [ State(S2c_PDK, tid, S, C, ServerState),
       Out(senc{EncryptedExtensions}hs_keys)
@@ -258,7 +261,8 @@ in
     Instance(tid, S, 'server'),
     KemEncap($kca, certificate, clauth_ss),
     KemChal($kca, ~ltkC, certificate, ciphertext, clauth_ss),
-    running_server(Identity, C, auth_status)
+    running_server(Identity, C, auth_status),
+    running_server(AuthSecret, clauth_ss, auth_status)
   ]-> [
     Out(senc{KemEncapsulation}hs_keys),
     State(S2d_PDK, tid, S, C, ServerState)
@@ -288,7 +292,9 @@ in
     ]
   --[ S2d_PDK(tid),
       Instance(tid, S, 'server'),
-      running_server(Transcript, finished_messages)
+      running_server(Transcript, finished_messages),
+      running_server(MS, clauth_ss, ms),
+      running_server(Identity, C, auth_status)
     ]->
     [ State(S3_PDK, tid, S, C, ServerState),
       SendStream(tid, S, C, auth_status, app_keys),
@@ -302,6 +308,9 @@ let
   S = $S
   C = $C
 
+  // recompute because easier
+  app_keys = keygen(sats, app_key_label())
+
   exp_verify_data = compute_finished(client)
   finished_messages = messages
 
@@ -310,6 +319,7 @@ let
   cats = application_traffic_secret_0(client)
   app_keyc = keygen(cats, app_key_label())
   ems = exporter_master_secret()
+  rms = resumption_master_secret()
 in
   [
     State(S3_PDK, tid, S, C, PrevServerState)[no_precomp],
@@ -318,11 +328,12 @@ in
     S3_PDK(tid),
     Eq(verify_data, exp_verify_data),
     commit_server(HS, hs),
-    commit_server(AHS, ahs),
     commit_server(MS, ms),
     commit_server(Identity, C, auth_status),
     commit_server(Transcript, finished_messages),
-    commit_server(Nonces, nc, ns)
+    commit_server(Nonces, nc, ns),
+    running_server(RMS, C, rms, messages),
+    SessionKey(tid, S, C, auth_status, <app_keys, app_keyc>)
   ]-> [
     RecvStream(tid, S, C, auth_status, app_keyc),
     State(S4, tid, S, C, ServerState)
