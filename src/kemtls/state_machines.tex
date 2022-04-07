@@ -52,9 +52,9 @@
   \node[state] (C4) [right of=C3b] {C4};
 
   % Server states
-  \node[initial,state] (S0) [below of=C0, node distance=180, xshift=20] {S0};
-  \node[state] (S1) [right of=S0] {S1};
-  \node[state] (S2a) [right of=S1] {S2a};
+  \node[initial,state] (S0) [below of=C0, node distance=180, xshift=0] {S0};
+  \node[state] (S1) [right of=S0,xshift=50] {S1};
+  \node[state] (S2a) [below of=C2a, node distance=180] {S2a};
   \node[state] (S2b) [right of=S2a] {S2b};
   \node[state] (S2c) [right of=S2b] {S2c};
   \node[state] (S2d) [right of=S2c] {S2d};
@@ -120,14 +120,14 @@
         (S1) edge [bend left] node [above, rule] (sh) {server\_hello} (S2a)
         (S2d) edge [bend left] node [above, rule] (sa) {server\_auth} (S3)
       \else
-        (S0) edge [] node [above, rule] (rch) {recv\_client\_hello} (S1)
+        (S0) edge [bend right] node [above, rule] (rch) {recv\_client\_hello} (S1)
         (S1) edge [] node [above, rule] (sh) {server\_hello} (S2a)
         (S3fin) edge [] node [above, rule] (sa) {server\_auth} (S4)
       \fi
       \ifzerortt
         (S1) edge [loop above] node [above, rule] (rzra) {recv\_zero\_rtt\_auth} (S1)
       \else
-        (S1) edge [] node [above, rule] (hrr) {hello\_retry\_request} (S0)
+        (S1) edge [bend right] node [above, rule] (hrr) {hello\_retry\_request} (S0)
       \fi
         (S2a) edge [] node [above, rule] {server\_gen\_keys} (S2b)
         (S2b) edge [] node [above, rule] (ee) {encrypted\_extensions} (S2c)
@@ -151,8 +151,8 @@
         ([yshift=-5]zra.250) edge [msg edge] node [sloped, above, msg] {Finished} ([yshift=5]rzra.80)
       \else
         % HelloRetryRequest
-        ([yshift=35, xshift=-10]hrr.0) edge [msg edge] node [sloped, above, msg] {HelloRetryRequest} ([yshift=-5, xshift=-10]rhrr)
-        ([yshift=-5, xshift=10]rhrr.south) edge [msg edge] node [sloped, above, msg] {ClientHello} ([yshift=35, xshift=10]hrr.10)
+        ([yshift=15, xshift=-10]hrr.0) edge [msg edge] node [sloped, above, msg] {HelloRetryRequest} ([yshift=-5, xshift=-10]rhrr)
+        ([yshift=-5, xshift=10]rhrr.south) edge [msg edge] node [sloped, above, msg] {ClientHello} ([yshift=15, xshift=10]hrr.10)
       \fi
         % ServerHello
         ([yshift=5]sh.north) edge [msg edge] node [sloped, above, msg] {ServerHello}
