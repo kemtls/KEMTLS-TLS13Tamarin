@@ -143,7 +143,7 @@ lemma kem_consistency_decaps_ephem [heuristic=s]:
     ==>
       (Ex seed. ss = Ephem_kemss(kem, seed))"
 
-ifdef(<!SKIP_KEM!>, <!
+ifdef(<!SPLIT_KEM!>, <!
 lemma kem_consistency_decaps_server [heuristic=s]:
   "All kem sk ss #i.
     Server_KemDecaps(kem, sk, ss)@i
@@ -216,7 +216,7 @@ lemma kem_encaps_ordering [reuse, heuristic=o "oracles/kem_encaps_ordering.py"]:
     ==>
     #i < #j"
 
-ifdef(<!SKIP_KEM!>, <!
+ifdef(<!SPLIT_KEM!>, <!
 lemma kem_encaps_ordering_server [reuse, heuristic=o "oracles/kem_encaps_ordering.py"]:
   "All kem pk sk ss #i #j.
     Server_KemEncap(kem, pk, ss)@i &
