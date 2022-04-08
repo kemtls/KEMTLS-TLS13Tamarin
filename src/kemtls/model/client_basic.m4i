@@ -168,8 +168,8 @@ in
   --[ C1(tid),
       Neq(edi, 'cert'),
       Instance(tid, C, 'client'),
-      KemChal(ekem, esk, epk, ect, ess),
-      KemDecaps(ekem, esk, ess),
+      Ephem_KemDecaps(ekem, esk, ess),
+      Ephem_KemChal(ekem, esk, epk, ect, ess),
       running_client(Nonces, nc, ns)
     ]->
     [
@@ -303,8 +303,8 @@ in
     running_client(Mode, psk_ke_mode),
     running_client(Identity, S, auth_status),
     running_client(AuthSecret, ss, auth_status),
-    KemEncap($k, certificate, ss),
-    KemChal($k, ~ltkS, certificate, ciphertext, ss)
+    Server_KemEncap($k, certificate, ss),
+    Server_KemChal($k, ~ltkS, certificate, ciphertext, ss)
   ]->
   [
     State(C3, tid, C, S, ClientState),
@@ -419,8 +419,8 @@ in
     ]
   --[ C3a(tid),
       Instance(tid, C, 'client'),
-      KemDecaps($k, ~ltkC, clauth_ss),
-      KemChal($k, ~ltkC, Client_kempk($k, ~ltkC), ciphertext, clauth_ss),
+      Client_KemDecaps($k, ~ltkC, clauth_ss),
+      Client_KemChal($k, ~ltkC, Client_kempk($k, ~ltkC), ciphertext, clauth_ss),
       running_client(Transcript, finished_messages),
       running_client(MS, clauth_ss, ms),
       running_client(AHSMS, ahs, ms, clauth_ss),

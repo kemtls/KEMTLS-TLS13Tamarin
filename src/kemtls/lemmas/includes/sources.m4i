@@ -36,6 +36,125 @@ lemma ephemeral_isnt_ltk [sources, heuristic=s]:
   "All tid actor actor2 esk #i #j.
     EKem(tid, actor, esk)@#i & GenLtk(actor2, esk)@#j ==> F"
 
+ifdef(<!SPLIT_KEM!>, <!
+lemma kemencapsulation_origin_server [sources, heuristic=s]:
+  "All kem ciphertext ss pk keys #i. 
+    KU(senc{KemEncapsulation}keys)@i &
+    (ciphertext = Server_kemencaps(kem, ss, pk))
+    ==>
+      (Ex #j. KU(ss)@j & #j < #i) |
+      (Ex #j. Server_KemEncap(kem, pk, ss)@j & #j < #i)"
+
+lemma kemencapsulation_origin_client [sources, heuristic=s]:
+  "All kem ciphertext ss pk keys #i. 
+    KU(senc{KemEncapsulation}keys)@i &
+    (ciphertext = Client_kemencaps(kem, ss, pk))
+    ==>
+      (Ex #j. KU(ss)@j & #j < #i) |
+      (Ex #j. Client_KemEncap(kem, pk, ss)@j & #j < #i)"
+
+lemma kemencap_source_ephem [sources, heuristic=c]:
+  "All kem pk sk ss #j.
+    pk = Ephem_kempk(kem, sk) &
+    Ephem_KemEncap(kem, pk, ss)@j
+    ==>
+      (Ex #i. KU(sk)@i & #i < #j) | 
+      (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j)"
+
+lemma kemencap_source_server [sources, heuristic=c]:
+  "All kem pk sk ss #j.
+    pk = Server_kempk(kem, sk) &
+    Server_KemEncap(kem, pk, ss)@j
+    ==>
+      (Ex #i. KU(sk)@i & #i < #j) | 
+      (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
+
+lemma kemencap_source_client [sources, heuristic=c]:
+  "All kem pk sk ss #j.
+    pk = Client_kempk(kem, sk) &
+    Client_KemEncap(kem, pk, ss)@j
+    ==>
+      (Ex #i. KU(sk)@i & #i < #j) | 
+      (Ex a #i. GenLtk(a, sk)@i & #i < #j)"
+
+lemma kemencap_source_pk_ephem [sources, heuristic=s]:
+  "All kem certificate sk ss #j.
+    certificate = Ephem_kempk(kem, sk) &
+    Ephem_KemEncap(kem, certificate, ss)@j
+    ==>
+      (Ex #ch. (KU(Extension('40', kem, certificate))@#ch & #ch < #j))"
+
+lemma kemencap_source_pk_client [sources, heuristic=s]:
+  "All kem certificate sk ss #j.
+    certificate = Client_kempk(kem, sk) &
+    Client_KemEncap(kem, certificate, ss)@j
+    ==>
+      ifdef(<!PDK!>, <!
+      (Ex tid. C0_PDK(tid)@#j) |
+      !>)
+      (Ex actor certificate_request_context keys #kg #crt. 
+        GenLtk(actor, sk)@#kg & KU(senc{Certificate}keys)@#crt & #crt < #j)"
+
+lemma kemencap_source_pk_server [sources, heuristic=s]:
+  "All kem certificate sk ss #j.
+    certificate = Server_kempk(kem, sk) &
+    Server_KemEncap(kem, certificate, ss)@j
+    ==>
+      ifdef(<!PDK!>, <!
+      (Ex tid. C0_PDK(tid)@#j) |
+      !>)
+      (Ex actor certificate_request_context keys #kg #crt. 
+        GenLtk(actor, sk)@#kg & KU(senc{Certificate}keys)@#crt & #crt < #j)"
+
+lemma kemdecap_source_ct_ephem [sources, heuristic=s]:
+  "All kem ciphertext sk ss #j.
+    Ephem_KemDecaps(kem, sk, ss)@j &
+    ciphertext = Ephem_kemencaps(kem, ss, Ephem_kempk(kem, sk))
+    ==>
+      (Ex #sh. KU(Extension('40', kem, ciphertext))@#sh & #sh < #j)"
+  
+lemma kemdecap_source_ct_server [sources, heuristic=s]:
+  "All kem ciphertext sk ss #j.
+    Server_KemDecaps(kem, sk, ss)@j &
+    ciphertext = Server_kemencaps(kem, ss, Server_kempk(kem, sk))
+    ==>
+      ifdef(<!PDK!>, <!
+        (Ex act #kg #ch. GenLtk(act, sk)@#kg & KU(Extension('47', ciphertext))@#ch & #ch < #j) |
+      !>)
+      (Ex keys act #kg #enc. 
+        GenLtk(act, sk)@#kg & 
+        KU(senc{KemEncapsulation}keys)@#enc & 
+        #enc < #j)"
+
+lemma kemdecap_source_ct_client [sources, heuristic=s]:
+  "All kem ciphertext sk ss #j.
+    Client_KemDecaps(kem, sk, ss)@j &
+    ciphertext = Client_kemencaps(kem, ss, Client_kempk(kem, sk))
+    ==>
+      (Ex keys act #kg #enc. 
+        GenLtk(act, sk)@#kg & 
+        KU(senc{KemEncapsulation}keys)@#enc & 
+        #enc < #j)"
+
+lemma kemdecap_source_sk_ephem [heuristic=c]:
+  "All kem sk ss #j.
+    Ephem_KemDecaps(kem, sk, ss)@j
+    ==>
+      (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j)"
+
+lemma kemdecap_source_sk_server [heuristic=c]:
+  "All kem sk ss #j.
+    Server_KemDecaps(kem, sk, ss)@j
+    ==>
+      (Ex a #l. GenLtk(a, sk)@l & #l < #j)"
+
+lemma kemdecap_source_sk_client [heuristic=c]:
+  "All kem sk ss #j.
+    Client_KemDecaps(kem, sk, ss)@j
+    ==>
+      (Ex a #l. GenLtk(a, sk)@l & #l < #j)"
+
+!>,<!
 lemma kemencapsulation_origin [sources, heuristic=s]:
   "All kem ciphertext ss pk keys #i. 
     KU(senc{KemEncapsulation}keys)@i &
@@ -62,7 +181,8 @@ lemma kemencap_source_pk [sources, heuristic=s]:
       ifdef(<!PDK!>, <!
       (Ex tid. C0_PDK(tid)@#j) |
       !>)
-      (Ex actor certificate_request_context keys #kg #crt. GenLtk(actor, sk)@#kg & KU(senc{Certificate}keys)@#crt & #crt < #j)"
+      (Ex actor certificate_request_context keys #kg #crt. 
+        GenLtk(actor, sk)@#kg & KU(senc{Certificate}keys)@#crt & #crt < #j)"
 
 lemma kemdecap_source_ct [sources, heuristic=s]:
   "All kem ciphertext sk ss #j.
@@ -84,6 +204,7 @@ lemma kemdecap_source_sk [heuristic=c]:
     ==>
       (Ex tid a #i. EKem(tid, a, sk)@i & #i < #j) |
       (Ex a #l. GenLtk(a, sk)@l & #l < #j)"
+!>)
 
 lemma client_finished_running [sources, heuristic=s]:
     "

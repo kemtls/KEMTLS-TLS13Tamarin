@@ -98,33 +98,58 @@ define(<!Ephem_kemss!>, <!e_kemss($@)!>)
 define(<!Ephem_kemencaps!>, <!e_kemencaps($@)!>)
 define(<!Ephem_kemdecaps!>, <!e_kemdecaps($@)!>)
 
+define(<!Ephem_KemEncap!>, <!EKemEncap($@)!>)
+define(<!Ephem_KemDecaps!>, <!EKemDecaps($@)!>)
+define(<!Ephem_KemChal!>, <!EKemChal($@)!>)
+
 KEM_API(<!Client!>, <!c_!>)
 define(<!Client_kempk!>, <!c_kempk($@)!>)
 define(<!Client_kemss!>, <!c_kemss($@)!>)
 define(<!Client_kemencaps!>, <!c_kemencaps($@)!>)
 define(<!Client_kemdecaps!>, <!c_kemdecaps($@)!>)
 
+define(<!Client_KemEncap!>, <!CKemEncap($@)!>)
+define(<!Client_KemDecaps!>, <!CKemDecaps($@)!>)
+define(<!Client_KemChal!>, <!CKemChal($@)!>)
+
 KEM_API(<!Server!>, <!s_!>)
 define(<!Server_kempk!>, <!s_kempk($@)!>)
 define(<!Server_kemss!>, <!s_kemss($@)!>)
 define(<!Server_kemencaps!>, <!s_kemencaps($@)!>)
 define(<!Server_kemdecaps!>, <!s_kemdecaps($@)!>)
+
+define(<!Server_KemEncap!>, <!SKemEncap($@)!>)
+define(<!Server_KemDecaps!>, <!SKemDecaps($@)!>)
+define(<!Server_KemChal!>, <!SKemChal($@)!>)
+
+
 !>, 
 <!
+// NO SPLIT KEMS
+
 KEM_API(<!!>, <!!>)
 
 define(<!Ephem_kempk!>, <!kempk($@)!>)
 define(<!Ephem_kemss!>, <!kemss($@)!>)
 define(<!Ephem_kemencaps!>, <!kemencaps($@)!>)
 define(<!Ephem_kemdecaps!>, <!kemdecaps($@)!>)
+define(<!Ephem_KemEncap!>, <!KemEncap($@)!>)
+define(<!Ephem_KemDecaps!>, <!KemDecaps($@)!>)
+define(<!Ephem_KemChal!>, <!KemChal($@)!>)
 
 define(<!Client_kempk!>, <!kempk($@)!>)
 define(<!Client_kemss!>, <!kemss($@)!>)
 define(<!Client_kemencaps!>, <!kemencaps($@)!>)
 define(<!Client_kemdecaps!>, <!kemdecaps($@)!>)
+define(<!Client_KemEncap!>, <!KemEncap($@)!>)
+define(<!Client_KemDecaps!>, <!KemDecaps($@)!>)
+define(<!Client_KemChal!>, <!KemChal($@)!>)
 
 define(<!Server_kempk!>, <!kempk($@)!>)
 define(<!Server_kemss!>, <!kemss($@)!>)
 define(<!Server_kemencaps!>, <!kemencaps($@)!>)
 define(<!Server_kemdecaps!>, <!kemdecaps($@)!>)
+define(<!Server_KemEncap!>, <!KemEncap($@)!>)
+define(<!Server_KemDecaps!>, <!KemDecaps($@)!>)
+define(<!Server_KemChal!>, <!KemChal($@)!>)
 !>)

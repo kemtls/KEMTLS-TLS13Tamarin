@@ -129,8 +129,8 @@ in
       Eq(ekem, sekem),
       Instance(tid, S, 'server'),
       running_server(Nonces, nc, ns),
-      KemChal(ekem, some_esk, epk, ect, ess),
-      KemEncap(ekem, epk, ess)
+      Ephem_KemChal(ekem, some_esk, epk, ect, ess),
+      Ephem_KemEncap(ekem, epk, ess)
     ]->
     [
       State(S2a, tid, S, C, ServerState),
@@ -269,8 +269,8 @@ in
       running_server(Identity, C, auth_status),
       running_server(MutualAuthSecret, ss, auth_status),
       Eq(psk_ke_mode, 'na'),
-      KemDecaps($k, ~ltkS, ss),
-      KemChal($k, ~ltkS, Server_kempk($k, ~ltkS), ciphertext, ss)
+      Server_KemDecaps($k, ~ltkS, ss),
+      Server_KemChal($k, ~ltkS, Server_kempk($k, ~ltkS), ciphertext, ss)
     ]-> [
       State(S3, tid, S, C, ServerState)
     ]
@@ -303,8 +303,8 @@ in
     ]
   --[ S3_cert(tid),
       Instance(tid, S, 'server'),
-      KemEncap($k, certificate, clauth_ss),
-      KemChal($k, ~ltkC, certificate, ciphertext, clauth_ss),
+      Client_KemEncap($k, certificate, clauth_ss),
+      Client_KemChal($k, ~ltkC, certificate, ciphertext, clauth_ss),
       running_server(AuthSecret, clauth_ss, auth_status),
       running_server(Identity, C, auth_status)
     ]->

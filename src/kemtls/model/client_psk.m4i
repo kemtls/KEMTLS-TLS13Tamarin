@@ -200,7 +200,8 @@ in
   --[ C1_PSK_DHE(tid),
       Neq(ect, ekem),
       Instance(tid, C, 'client'),
-      KemChal(ekem, esk, epk, ect, ess),
+      Ephem_KemDecaps(ekem, esk, ess),
+      Ephem_KemChal(ekem, esk, epk, ect, ess),
       running_client(Nonces, nc, ns)
     ]->
     [

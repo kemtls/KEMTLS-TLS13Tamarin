@@ -84,8 +84,8 @@ in
       Start(tid, C, 'client'),
       running_client(Identity, C),
       EKem(tid, C, esk),
-      KemEncap($kpdk, pdkpubkey, pdkss),
-      KemChal($kpdk, ~ltkS, Server_kempk($kpdk, ~ltkS), ciphertext, pdkss)
+      Server_KemEncap($kpdk, pdkpubkey, pdkss),
+      Server_KemChal($kpdk, ~ltkS, Server_kempk($kpdk, ~ltkS), ciphertext, pdkss)
     ]->
     [
       State(C1, tid, C, S, ClientState),
@@ -179,8 +179,8 @@ in
       Neq(ect, ekem),
       Eq(accepted_auth, prev_edi),
       Instance(tid, C, 'client'),
-      KemDecaps(ekem, esk, ess),
-      KemChal(ekem, esk, epk, ect, ess),
+      Ephem_KemDecaps(ekem, esk, ess),
+      Ephem_KemChal(ekem, esk, epk, ect, ess),
       running_client(Nonces, nc, ns),
       running_client(Identity, S, auth_status)
     ]->
@@ -246,7 +246,7 @@ let
     S = $S
     C = $C
 
-    some_ss = Server_kemss($kca, some_seed)
+    some_ss = Client_kemss($kca, some_seed)
     ciphertext = Client_kemencaps($kca, some_ss, Client_kempk($kca, ~ltkC))
     clauth_ss = Client_kemdecaps($kca, ciphertext, ~ltkC)
     messages = <messages, KemEncapsulation>
@@ -261,8 +261,8 @@ in
   ] --[
     C2c_PDK(tid),
     Instance(tid, C, 'client'),
-    KemDecaps($kca, ~ltkC, some_ss),
-    KemChal($kca, ~ltkC, Client_kempk($kca, ~ltkC), ciphertext, clauth_ss)
+    Client_KemDecaps($kca, ~ltkC, some_ss),
+    Client_KemChal($kca, ~ltkC, Client_kempk($kca, ~ltkC), ciphertext, clauth_ss)
   ]->
   [
     State(C2d_PDK, tid, C, S, ClientState)

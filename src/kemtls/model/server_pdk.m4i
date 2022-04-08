@@ -55,8 +55,8 @@ in
   --[ S0_PDK(tid),
       Neq(k1, k2),
       running_server(Identity, S),
-      KemDecaps($kpdk, ~ltkS, shared_secret),
-      KemChal($kpdk, ~ltkS, Server_kempk($kpdk, ~ltkS), ciphertext, shared_secret)
+      Server_KemDecaps($kpdk, ~ltkS, shared_secret),
+      Server_KemChal($kpdk, ~ltkS, Server_kempk($kpdk, ~ltkS), ciphertext, shared_secret)
     ]->
     [
       State(S1, tid, S, C, ServerState)
@@ -113,8 +113,8 @@ rule server_recv_pdk_cert_emit_hello:
     ] --[ 
       S1_PDK_cert(tid),
       Instance(tid, S, 'server'),
-      KemChal(ekem, some_esk, epk, ect, ess),
-      KemEncap(ekem, epk, ess),
+      Ephem_KemChal(ekem, some_esk, epk, ect, ess),
+      Ephem_KemEncap(ekem, epk, ess),
       running_server(Nonces, nc, ns),
       running_server(Identity, C, auth_status)
     ]->
@@ -166,8 +166,8 @@ in
     ]
   --[ S1_PDK_no_cert(tid),
       Instance(tid, S, 'server'),
-      KemChal(ekem, some_esk, epk, ect, ess),
-      KemEncap(ekem, epk, ess),
+      Ephem_KemChal(ekem, some_esk, epk, ect, ess),
+      Ephem_KemEncap(ekem, epk, ess),
       running_server(Nonces, nc, ns),
       running_server(Identity, C, auth_status)
     ]->
@@ -262,8 +262,8 @@ in
   ] --[
     S2c_PDK_cert(tid),
     Instance(tid, S, 'server'),
-    KemEncap($kca, certificate, clauth_ss),
-    KemChal($kca, ~ltkC, certificate, ciphertext, clauth_ss),
+    Client_KemEncap($kca, certificate, clauth_ss),
+    Client_KemChal($kca, ~ltkC, certificate, ciphertext, clauth_ss),
     running_server(Identity, C, auth_status),
     running_server(AuthSecret, clauth_ss, auth_status)
   ]-> [
