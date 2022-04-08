@@ -17,7 +17,7 @@ let
     nc = new_nc
     epk = new_epk
     ekem = $new_ekem
-    epk = kempk(ekem, new_esk)
+    epk = Ephem_kempk(ekem, new_esk)
 
     ticket_age_add = ~ticket_age_add
     ticket = ~ticket
@@ -81,7 +81,7 @@ define(<!ServerHelloExtensions!>, <!< dnl
 rule server_hello_psk_dhe:
 let
     prev_ekem = $k
-    prev_epk = kempk(prev_g, some_esk)
+    prev_epk = Ephem_kempk(prev_ekem, some_esk)
     prev_psk_ke_mode = <psk_ke, psk_dhe_ke> dnl <'0', '1'>
     prev_ns = ~ns
     prev_psk_id = ~ticket
@@ -95,8 +95,8 @@ let
 
     // Kem ct
     eseed = ~eseed   dnl fresh value
-    ess = kemss(ekem, eseed)
-    ect = kemencaps(ekem, ess, epk)
+    ess = Ephem_kemss(ekem, eseed)
+    ect = Ephem_kemencaps(ekem, ess, epk)
 
     identity = psk_id
 

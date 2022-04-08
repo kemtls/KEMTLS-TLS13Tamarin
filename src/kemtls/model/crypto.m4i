@@ -78,16 +78,53 @@ define(<!resumption_master_secret!>, <!Derive_Secret(ms, 'rms', <!<!HashValue!>!
 !>)
 
 
-dnl KEM operations
-functions: kempk/2,kemencaps/3,kemdecaps/3,kemss/2
-
-dnl(
+define(<!KEM_API!>, <!
+dnl $1 kem functions
+functions: $2kempk/2, $2kemencaps/3, $2kemdecaps/3, $2kemss/2
 /*
-    kempk(kem, secret) = pk
-    kemencaps(kem, kemss(kem, seed), pk) = ct
-    kemdecaps(kem, ct, sk) = kemss(kem, seed)
+    $2kempk(kem, secret) = pk
+    $2kemencaps(kem, $2kemss(kem, seed), pk) = ct
+    $2kemdecaps(kem, ct, sk) = $2kemss(kem, seed)
 */
-)
-
 equations:
-    kemdecaps(kem, kemencaps(kem, kemss(kem, seed), kempk(kem, sk)), sk) = kemss(kem, seed)
+    $2kemdecaps(kem, $2kemencaps(kem, $2kemss(kem, seed), $2kempk(kem, sk)), sk) = $2kemss(kem, seed)
+
+!>)
+
+ifdef(<!SPLIT_KEM!>, <!
+KEM_API(<!Ephem!>, <!e_!>)
+define(<!Ephem_kempk!>, <!e_kempk($@)!>)
+define(<!Ephem_kemss!>, <!e_kemss($@)!>)
+define(<!Ephem_kemencaps!>, <!e_kemencaps($@)!>)
+define(<!Ephem_kemdecaps!>, <!e_kemdecaps($@)!>)
+
+KEM_API(<!Client!>, <!c_!>)
+define(<!Client_kempk!>, <!c_kempk($@)!>)
+define(<!Client_kemss!>, <!c_kemss($@)!>)
+define(<!Client_kemencaps!>, <!c_kemencaps($@)!>)
+define(<!Client_kemdecaps!>, <!c_kemdecaps($@)!>)
+
+KEM_API(<!Server!>, <!s_!>)
+define(<!Server_kempk!>, <!s_kempk($@)!>)
+define(<!Server_kemss!>, <!s_kemss($@)!>)
+define(<!Server_kemencaps!>, <!s_kemencaps($@)!>)
+define(<!Server_kemdecaps!>, <!s_kemdecaps($@)!>)
+!>, 
+<!
+KEM_API(<!!>, <!!>)
+
+define(<!Ephem_kempk!>, <!kempk($@)!>)
+define(<!Ephem_kemss!>, <!kemss($@)!>)
+define(<!Ephem_kemencaps!>, <!kemencaps($@)!>)
+define(<!Ephem_kemdecaps!>, <!kemdecaps($@)!>)
+
+define(<!Client_kempk!>, <!kempk($@)!>)
+define(<!Client_kemss!>, <!kemss($@)!>)
+define(<!Client_kemencaps!>, <!kemencaps($@)!>)
+define(<!Client_kemdecaps!>, <!kemdecaps($@)!>)
+
+define(<!Server_kempk!>, <!kempk($@)!>)
+define(<!Server_kemss!>, <!kemss($@)!>)
+define(<!Server_kemencaps!>, <!kemencaps($@)!>)
+define(<!Server_kemdecaps!>, <!kemdecaps($@)!>)
+!>)

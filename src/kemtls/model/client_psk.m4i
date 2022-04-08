@@ -69,7 +69,7 @@ let
     // KEM Keygen
     ekem = k1
     esk = ~esk
-    epk = kempk(ekem, esk)
+    epk = Ephem_kempk(ekem, esk)
 
     es = EarlySecret(res_psk)
     binder = '0'
@@ -132,7 +132,7 @@ let
     new_nc = ~new_nc
     new_esk = ~new_esk
     esk = new_esk
-    epk = kempk(ekem, esk)
+    epk = Ephem_kempk(ekem, esk)
     nc = new_nc
 
     es = EarlySecret(res_psk)
@@ -185,10 +185,10 @@ let
     C = $C
     S = $S
 
-    ect = kemencaps(ekem, kemss(ekem, new_eseed), epk)
+    ect = Ephem_kemencaps(ekem, Ephem_kemss(ekem, new_eseed), epk)
 
     // Derive the shared secret
-    ess = kemdecaps(ekem, ect, esk)
+    ess = Ephem_kemdecaps(ekem, ect, esk)
 
     identity = psk_id
 

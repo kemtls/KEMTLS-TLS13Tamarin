@@ -12,6 +12,9 @@ endif
 ifdef PDK
 	FLAGS := ${FLAGS} -DPDK
 endif
+ifdef SPLIT_KEM
+	FLAGS := ${FLAGS} -DSPLIT_KEM
+endif
 
 # MAKE_RULES=C1 S0a S1 S1a S1b S1c  C2 C2a C2b C2c C2d S2 Send Recv S_NST C_NST C1_PSK S0a_PSK S1_PSK S1_PSK_DHE C2_PSK C2_PSK_DHE S1c_PSK C2c_PSK\
  C_ZeroRTT_Auth S_RecvZeroRTTAuth C_EndZeroRTT C_SendZeroRTT S_RecvZeroRTT S_RecvEndZeroRTT

@@ -38,7 +38,7 @@ let
     client_sekem = <k1, k2>
     nc = new_nc
     ekem = $new_ekem
-    epk = kempk(ekem, new_esk)
+    epk = Ephem_kempk(ekem, new_esk)
 
     // Abstract client identity - does not currently correspond to
     // anything concrete
@@ -103,7 +103,7 @@ define(<!ServerHelloExtensions!>, <!<SignatureSchemeList, KeyShareSH>!>)
 rule server_emit_hello:
 let
     prev_ekem = $prev_ekem
-    prev_epk = kempk(prev_ekem, some_esk)
+    prev_epk = Ephem_kempk(prev_ekem, some_esk)
     set_state()
 
     // Server continuing in normal mode (no PSK mode)
@@ -116,8 +116,8 @@ let
 
     // Kem ct 
     eseed = ~eseed dnl fresh value
-    ess = kemss(ekem, eseed)
-    ect = kemencaps(ekem, ess, epk)
+    ess = Ephem_kemss(ekem, eseed)
+    ect = Ephem_kemencaps(ekem, ess, epk)
 
     es = EarlySecret(res_psk)
     messages = <messages, ServerHello>
@@ -222,7 +222,7 @@ let
     S = $S
 
     certificate_request_context = '0'
-    certificate = kempk($k, ~ltkS)
+    certificate = Server_kempk($k, ~ltkS)
 
     messages = <messages, Certificate>
 in
@@ -242,10 +242,10 @@ rule server_receive_kemencaps:
 let
     set_state()
 
-    shared_secret = kemss($k, saseed)
-    ciphertext = kemencaps($k, shared_secret, kempk($k, ~ltkS))
+    shared_secret = Server_kemss($k, saseed)
+    ciphertext = Server_kemencaps($k, shared_secret, Server_kempk($k, ~ltkS))
 
-    ss = kemdecaps($k, ciphertext, ~ltkS)
+    ss = Server_kemdecaps($k, ciphertext, ~ltkS)
 
     ahs = AuthHandshakeSecret
 
@@ -270,7 +270,7 @@ in
       running_server(MutualAuthSecret, ss, auth_status),
       Eq(psk_ke_mode, 'na'),
       KemDecaps($k, ~ltkS, ss),
-      KemChal($k, ~ltkS, kempk($k, ~ltkS), ciphertext, ss)
+      KemChal($k, ~ltkS, Server_kempk($k, ~ltkS), ciphertext, ss)
     ]-> [
       State(S3, tid, S, C, ServerState)
     ]
@@ -283,13 +283,13 @@ let
     C = $C
     S = $S
 
-    certificate = kempk($k, ~ltkC)
+    certificate = Client_kempk($k, ~ltkC)
     certificate_request_context = '0' 
     messages = <messages, Certificate>
 
     dnl clauth_ss is part of the state and passed through to ms later
-    clauth_ss = kemss($k, ~caseed)  
-    ciphertext = kemencaps($k, clauth_ss, certificate)
+    clauth_ss = Client_kemss($k, ~caseed)  
+    ciphertext = Client_kemencaps($k, clauth_ss, certificate)
     messages = <messages, KemEncapsulation>
 
     cert_req = '0'
@@ -297,7 +297,7 @@ let
     auth_status = <'auth', 'auth'>
 in
     [ State(S3, tid, S, C, PrevServerState)[no_precomp],
-      !Pk(C, kempk($k, ~ltkC)),
+      !Pk(C, Client_kempk($k, ~ltkC)),
       Fr(~caseed),
       In(senc{Certificate}ahs_keyc)
     ]
