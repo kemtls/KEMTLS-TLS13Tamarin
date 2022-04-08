@@ -44,29 +44,81 @@ lemma ku_rms [reuse, heuristic=o "oracles/ku_rms.py"]:
     KU(rms)@j ==>
       Ex #k #l. KU(ms)@k & KU(messages)@l & #k < #j & #l < #j"
 
-lemma ku_expand_extract_ss [reuse]:
+lemma ku_expand_extract_ss_ephem [reuse]:
   "All kem seed lab1 lab2 l1 #i.
     KU(Expand(
           Extract(
-            kemss(kem, seed), 
+            Ephem_kemss(kem, seed), 
             lab1), 
         lab2, l1)
     )@#i 
     ==> 
-    (Ex #j. KU(kemss(kem, seed))@#j & #j < #i)"
+    (Ex #j. KU(Ephem_kemss(kem, seed))@#j & #j < #i)"
 
-lemma ku_expand_expand_extract_ss [reuse]:
+ifdef(<!SPLIT_KEM!>, <!
+lemma ku_expand_extract_ss_client [reuse]:
+  "All kem seed lab1 lab2 l1 #i.
+    KU(Expand(
+          Extract(
+            Client_kemss(kem, seed), 
+            lab1), 
+        lab2, l1)
+    )@#i 
+    ==> 
+    (Ex #j. KU(Client_kemss(kem, seed))@#j & #j < #i)"
+
+lemma ku_expand_extract_ss_server [reuse]:
+  "All kem seed lab1 lab2 l1 #i.
+    KU(Expand(
+          Extract(
+            Server_kemss(kem, seed), 
+            lab1), 
+        lab2, l1)
+    )@#i 
+    ==> 
+    (Ex #j. KU(Server_kemss(kem, seed))@#j & #j < #i)"
+!>)
+
+lemma ku_expand_expand_extract_ss_ephem [reuse]:
   "All kem seed lab1 lab2 lab3 l1 l2 #i.
     KU(Expand(
         Expand(
           Extract(
-            kemss(kem, seed), 
+            Ephem_kemss(kem, seed), 
             lab1), 
         lab2, l1), 
       lab3, l2)
     )@#i 
     ==> 
-    (Ex #j. KU(kemss(kem, seed))@#j & #j < #i)"
+    (Ex #j. KU(Ephem_kemss(kem, seed))@#j & #j < #i)"
+
+ifdef(<!SPLIT_KEM!>, <!
+lemma ku_expand_expand_extract_ss_server [reuse]:
+  "All kem seed lab1 lab2 lab3 l1 l2 #i.
+    KU(Expand(
+        Expand(
+          Extract(
+            Server_kemss(kem, seed), 
+            lab1), 
+        lab2, l1), 
+      lab3, l2)
+    )@#i 
+    ==> 
+    (Ex #j. KU(Server_kemss(kem, seed))@#j & #j < #i)"
+
+lemma ku_expand_expand_extract_ss_client [reuse]:
+  "All kem seed lab1 lab2 lab3 l1 l2 #i.
+    KU(Expand(
+        Expand(
+          Extract(
+            Client_kemss(kem, seed), 
+            lab1), 
+        lab2, l1), 
+      lab3, l2)
+    )@#i 
+    ==> 
+    (Ex #j. KU(Client_kemss(kem, seed))@#j & #j < #i)"
+!>)
 
 lemma ku_finished_hmac [hide_lemma=kem_chal_dual]:
   "All clauth_ss ahs label messages verify_data #i.
