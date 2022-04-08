@@ -141,56 +141,6 @@ in
     State(C1a_PDK, tid, C, S, ClientState)
   ]
 
-dnl Extensions definitions for PDK ServerHello
-define(<!ServerHelloExtensions!>, <!< dnl
-  SignatureSchemeList, dnl
-  KeyShareSH, dnl
-  PDKAccepted dnl
->!>)
-dnl requires server_basic.m4i to run
-rule client_recv_server_hello_pdk_rej_cert:
-let
-    prev_ekem = $k
-    prev_esk = ~esk
-    prev_pdk = '1'
-    prev_edi = 'cert'
-    ch = <'1', rest>
-    cert = <'11', certrest>
-    prev_messages = <<pmsg, ch>, cert>
-
-    set_state()
-    accepted_auth = '0'
-
-    ns = new_ns
-    ect = new_ect
-
-    C = $C
-    S = $S
-
-    ect = kemencaps(ekem, kemss(ekem, new_eseed), epk)
-
-    // Derive the shared secret
-    ess = kemdecaps(ekem, ect, esk)
-
-    // We start authed here as PDK was accepted
-    auth_status = <'0', 'auth'>
-
-    messages = <<pmsg, ch>, ServerHello>
-in
-    [ State(C1a_PDK, tid, C, S, PrevClientState),
-      In(ServerHello)
-    ]
-  --[ C1a_PDK_rej_cert(tid),
-      Instance(tid, C, 'client'),
-      KemDecaps(ekem, esk, ess),
-      KemChal(ekem, esk, epk, ect, ess),
-      running_client(Nonces, nc, ns),
-      running_client(Identity, S, auth_status)
-    ]->
-    [
-      State(C2a_PDK, tid, C, S, ClientState)
-    ]
-
 
 dnl Extensions definitions for PDK ServerHello
 define(<!ServerHelloExtensions!>, <!< dnl

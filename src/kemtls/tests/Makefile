@@ -78,7 +78,6 @@ TEST_RULES := $(TEST_RULES) \
 	C0_PDK \
 	C1_PDK_cert \
 	C1_PDK_skip_cert \
-	C1a_PDK_rej_cert \
 	C1a_PDK \
 	C2a_PDK \
 	C2b_PDK \
@@ -99,8 +98,8 @@ endif
 
 MAKE_RULES=$(TEST_RULES)
 
-RULE_FILES= $(foreach rule,$(TEST_RULES),$(rule).spthy)
-PROOF_FILES= $(foreach rule,$(TEST_RULES),$(rule).proof)
+RULE_FILES= $(foreach rule,$(TEST_RULES),$(rule).spthy) sanity-check.spthy
+PROOF_FILES= $(foreach rule,$(TEST_RULES),$(rule).proof) sanity-check.proof
 
 all: $(RULE_FILES)
 
@@ -108,6 +107,10 @@ test: $(PROOF_FILES)
 
 all.spthy: reachability.m4 ../model/*.m4* ../*.m4
 	m4 -Q $(FLAGS) -DALL -I ../ -I../model -I . reachability.m4 > $@
+	@perl -0777pi -e 's/\n{3,}/\n\n/g' $@
+
+sanity-check.spthy: sanity-check.m4 ../model/*.m4* ../*.m4
+	m4 -Q $(FLAGS) -I ../ -I../model -I . sanity-check.m4 > $@
 	@perl -0777pi -e 's/\n{3,}/\n\n/g' $@
 
 %.spthy: reachability.m4 ../model/*.m4* ../*.m4

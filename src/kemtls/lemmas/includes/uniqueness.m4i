@@ -77,10 +77,7 @@ uniq(C1_PDK_cert)
 uniq(C1_PDK_skip_cert)
 one_of(C1_PDK_cert, C1_PDK_skip_cert)
 
-uniq(C1a_PDK_rej_cert)
 uniq(C1a_PDK)
-one_of(C1a_PDK, C1a_PDK_rej_cert)
-
 uniq(C2a_PDK)
 one_of(C2a, C2a_PDK)
 

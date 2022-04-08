@@ -166,8 +166,7 @@ lemma source_auth_status_peer [sources]:
         (Ex #c. C2d(tid)@#c & #c < #i) 
         ifdef(<!PDK!>, <! 
         |
-        (Ex #cc. C1a_PDK(tid)@#cc & #cc < #i) |
-        (Ex #ccc. C1a_PDK_rej_cert(tid)@#ccc & #ccc < #i)
+        (Ex #cc. C1a_PDK(tid)@#cc & #cc < #i)
         !>)
       ))
   "

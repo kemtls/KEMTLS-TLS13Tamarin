@@ -124,7 +124,7 @@ rule server_recv_pdk_cert_emit_hello:
 
 
 /*
-    Server sends ServerHello for PDK rejecting cert
+    Server sends ServerHello for PDK without cert
 */
 dnl Extensions definitions for PSK ServerHello
 define(<!ServerHelloExtensions!>, <!< dnl
@@ -139,6 +139,7 @@ let
     prev_ekem = $k
     prev_epk = kempk(prev_ekem, some_esk)
     prev_ns = ~ns
+    prev_edi = '0'
 
     set_state()
 

@@ -112,7 +112,6 @@ create_lemma(C0_PDK, 1)
 create_lemma(C1_PDK_cert, 1)
 create_lemma(C1_PDK_skip_cert, 1)
 // receive SH
-create_lemma(C1a_PDK_rej_cert, 1)
 create_lemma(C1a_PDK, 1)
 // gen keys
 create_lemma(C2a_PDK, 1)
