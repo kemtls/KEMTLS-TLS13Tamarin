@@ -5,7 +5,7 @@ from typing import Iterator, List
 
 
 def order_actions(lines: List[str], lemma: str, *args) -> Iterator[str]:
-    if lemma != "kem_encaps_ordering":
+    if not lemma.startswith("kem_encaps_ordering"):
         return
 
 
