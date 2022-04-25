@@ -1,3 +1,5 @@
 *.spthy
 *.log
 *.proof
+*.out
+*.stats
