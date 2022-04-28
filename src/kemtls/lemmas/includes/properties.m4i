@@ -1,11 +1,13 @@
 
 lemma secret_session_keys [
       hide_lemma=kem_chal_dual,
+      hide_lemma=kem_chal_dual_ephem,
+      hide_lemma=kem_chal_dual_client,
+      hide_lemma=kem_chal_dual_server,
       hide_lemma=ku_expand,
       hide_lemma=mutual_transcript_agreement,
       hide_lemma=transcript_agreement,
-      hide_lemma=posths_rms,
-      heuristic=O "oracles/master_secret_pfs.py"]:
+      hide_lemma=posths_rms]:
   "All tid actor peer kw kr pas #i.
       SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i &
       not (Ex #r. RevLtk(peer)@r & #r < #i) &
@@ -18,37 +20,15 @@ lemma secret_session_keys [
       !>)
     ==> not Ex #j. K(kr)@j"
 
-lemma secret_session_keys_pfs [
-        hide_lemma=kem_chal_dual,
-        hide_lemma=entity_authentication,
-        hide_lemma=mutual_entity_authentication,
-        hide_lemma=mutual_transcript_agreement,
-        hide_lemma=transcript_agreement,
-        hide_lemma=ku_ms,
-        hide_lemma=invariant_nonces,
-        hide_lemma=consistent_nonces,
-        hide_lemma=matching_nonces,
-        hide_lemma=posths_rms]:
-  "All tid actor peer role kw kr pas psk_ke_mode #i.
-      SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i &
-      running(Mode, actor, role, psk_ke_mode)@i &
-      not (Ex #r. RevLtk(peer)@r & #r < #i) &
-      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
-      not (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i) &
-      not (psk_ke_mode = psk_ke)
-      ifdef(<!PSK!>, <!
-      &
-      not (Ex rms #r. RevealPSK(actor, rms)@r & #r < #i) &
-      not (Ex rms #r. RevealPSK(peer, rms)@r & #r < #i) &
-      !>)
-    ==> not Ex #j. K(kr)@j"
-
 lemma session_key_auth_agreement [
     reuse,
     hide_lemma=authenticated_handshake_secret_server,
     hide_lemma=handshake_secret,
     hide_lemma=handshake_secret_pfs,
     hide_lemma=kem_chal_dual,
+    hide_lemma=kem_chal_dual_ephem,
+    hide_lemma=kem_chal_dual_client,
+    hide_lemma=kem_chal_dual_server,
     hide_lemma=authenticated_handshake_secret,
     hide_lemma=entity_authentication,
     hide_lemma=mutual_entity_authentication,
@@ -85,6 +65,9 @@ lemma session_key_agreement [
     hide_lemma=handshake_secret,
     hide_lemma=handshake_secret_pfs,
     hide_lemma=kem_chal_dual,
+    hide_lemma=kem_chal_dual_ephem,
+    hide_lemma=kem_chal_dual_client,
+    hide_lemma=kem_chal_dual_server,
     hide_lemma=authenticated_handshake_secret,
     hide_lemma=entity_authentication,
     hide_lemma=mutual_entity_authentication,
