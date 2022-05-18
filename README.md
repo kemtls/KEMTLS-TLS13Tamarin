@@ -2,7 +2,9 @@
 
 We've been adapting the Tamarin model for TLS 1.3 to analyse KEMTLS.
 
-We're making notes / updating the documentation in the `docs/` subfolder and it lives at https://thomwiggers.github.io/TLS13Tamarin/.
+We've made some small progress making notes / updating the documentation in the `docs/` subfolder and it lives at https://thomwiggers.github.io/TLS13Tamarin/.
+
+The KEMTLS model lives at `src/kemtls`; the proofs are in the `lemmas/proofs` subfolder.
 
 # Original README below:
 # TLS13Tamarin
