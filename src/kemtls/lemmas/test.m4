@@ -8,7 +8,7 @@ define(<!CachePSK!>, <!F_CachePSK($@)!>)dnl
 define(<!SecretPSK!>, <!F_SecretPSK($@)!>)dnl
 
 
-theory TLS_13_work
+theory KEMTLS_work
 begin
 
 include(header.m4i)

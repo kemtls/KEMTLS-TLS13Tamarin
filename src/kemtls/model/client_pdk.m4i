@@ -63,7 +63,7 @@ let
     esk = ~esk
     epk = Ephem_kempk(ekem, esk)
 
-    // PDK ciphertext
+    // <!PDK!> ciphertext
     pdkseed = ~pdkseed
     pdkss = Server_kemss($kpdk, pdkseed)
     pdkpubkey = Server_kempk($kpdk, ~ltkS)

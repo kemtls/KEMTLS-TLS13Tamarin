@@ -5,7 +5,7 @@ pushdef(<!F_State_S4!>, <!L_State_S4($@)!>)dnl
 pushdef(<!F_State_C4!>, <!L_State_C4($@)!>)dnl
 define(<!State!>,<!F_State_$1(shift($@))!>)dnl
 dnl
-theory TLS13_uniqueness
+theory KEMTLS_uniqueness
 begin
 
 include(header.m4i)

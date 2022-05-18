@@ -1,14 +1,19 @@
 builtins: diffie-hellman, hashing, symmetric-encryption, signing
 
-section{* TLS 1.3 *}
+section{* KEMTLS *}
 
-/*
- * Protocol:    TLS 1.3 Handshake and Record Protocols
- * Modeler:     Cas Cremers, Marko Horvat, Sam Scott, Thyla van der Merwe
- * Year:        2016
- * Source:      http://tlswg.github.io/tls13-spec/
+/dnl escape newline so ifdef works below
+*
+ * Protocol:            KEMTLS 1.3 Handshake and Record Protocols
+ * TLS 1.3 Modelers:    Cas Cremers, Marko Horvat, Sam Scott, Thyla van der Merwe
+ * Year:                2022
+ * Source:              https://thomwiggers.nl/project/kemtls/
+ * Source:              http://tlswg.github.io/tls13-spec/
  *
- * Status:  in progress....
+ * Options:
+ *  Basic KEMTLS:       ifdef(<!BASIC!>,<!Yes!>,<!No!>)
+ *  <!PDK!>:                ifdef(<!PDK!>,<!Yes!>,<!No!>)
+ *  Split KEM:          ifdef(<!SPLIT_KEM!>,<!Yes!>,<!No!>)
  */
 
 // Hash declarations

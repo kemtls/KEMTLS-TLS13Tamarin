@@ -8,7 +8,7 @@ define(<!ServerCertReq!>,<!L_ServerCertReq($@)!>)dnl
 define(<!CachePSK!>, <!F_CachePSK($@)!>)dnl
 
 
-theory TLS_13_auth_helpers
+theory KEMTLS_auth_helpers
 begin
 
 include(header.m4i)

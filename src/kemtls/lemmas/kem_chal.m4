@@ -11,7 +11,7 @@ define(<!ClientPSK!>, <!L_ClientPSK($@)!>)
 define(<!ServerPSK!>, <!L_ServerPSK($@)!>)
 
 
-theory TLS_13_kem_chal
+theory KEMTLS_kem_chal
 begin
 
 include(header.m4i)

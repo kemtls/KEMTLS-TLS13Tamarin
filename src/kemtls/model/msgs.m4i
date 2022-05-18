@@ -47,7 +47,7 @@ define(<!ServerHello!>, <!handshake_record('2', dnl
   ServerHelloExtensions dnl
 )!>)
 
-// KEMTLS-PDK
+// KEMTLS-<!PDK!>
 define(<!PDKCiphertext!>, <!Extension('47', ciphertext)!>)  
 define(<!PDKAccepted!>, <!Extension('47b', accepted_auth)!>)
 define(<!PDKClientAuth!>, <!Extension('48', maybe_auth)!>)
