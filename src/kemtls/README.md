@@ -1,10 +1,9 @@
-# TLS 1.3 Tamarin Model
+# KEMTLS Tamarin Model
 
-Welcome to the TLS 1.3 Tamarin model. This README contains some basic
+Welcome to the KEMTLS Tamarin model. This README contains some basic
 information on navigating the source code.
 
-In-depth modelling details can be found
-at https://samscott89.github.io/TLS13_Tamarin/.
+This description is largely based on Sam Scott's description of the original model, as present in the `src/rev21` folder.
 
 ## TLS Model
 
@@ -13,38 +12,32 @@ The rules defining the TLS model are found in the [model](model/) folder.
 [client_basic](model/client_basic.m4i) and
 [server_basic](model/server_basic.m4i) contain the basic initial TLS handshake -
 from client hello up to the final client finished.
+Some shared state is included in `server_common`.
 
 [pki](model/pki.m4i) contains the rules dictating the public-key infrastructure.
 
-[client_psk](model/client_psk.m4i) and [server_psk](model/server_psk.m4i) contain the rules for pre-shared key TLS handshakes.
+[client_pdk](model/client_pdk.m4i) and [server_pdk](model/server_pdk.m4i) contain the rules for KEMTLS-PDK handshakes.
 
-[post_hs](model/post_hs.m4i) contains rules for the post-handshake
-messages: new session tickets, client authentication and key updates.
-
-[record](model/record.m4i) contains rules for sending/receiving data. These are 
+[record](model/record.m4i) contains rules for sending/receiving data. These are
 written to be role-agnostic, i.e., the same rules work for both client/server.
-
-[zero_rtt](model/zero_rtt.m4i) contains the rules for sending/receving 0RTT data, 
-including the authentication message, which can take place after a client hello
-message in PSK mode.
 
 These files should be included in a theory by using the [model](model/model.m4i)
 file which subsequently includes the above. The model can be temporarily simplified
 for testing by removing lines from this file.
 
-In addition to these files which contain the rules for the model, there are extra 
+In addition to these files which contain the rules for the model, there are extra
 auxiliary files which are used to keep the model files relatively clean.
 
 [crypto](model/crypto.m4i) contains the definitions for the cryptographic parts of
 the model. For example, key deriviation definitions.
 
-[msgs](model/msgs.m4i) contains the definitions of the TLS messages which are sent 
+[msgs](model/msgs.m4i) contains the definitions of the TLS messages which are sent
 by the rules, e.g., ClientHello. It is important to consult these definitions
 when using them in rules in order to determine what unbound variables need to be
 defined in the scope of the rule.
 
-[state](model/state.m4i) contains the definition of the client/server state - 
-a large tuple representing all the information which a client or server would 
+[state](model/state.m4i) contains the definition of the client/server state -
+a large tuple representing all the information which a client or server would
 be expected to store. By re-using this definition in facts, this helps to reduce
 the likelihood of introducing errors.
 
@@ -67,7 +60,7 @@ For example, the `set_state()` macro will carry forwards state variables, `nc = 
 
 On the other hand, definitions simply expand out a tuple, for example `ClientHello`.
 
-Upper snake case variables such as `SIMPLE_MODEL` are reserved for preprocessor
+Upper snake case variables such as `SIMPLE_MODEL`, `PDK` are reserved for preprocessor
 flags.
 
 #### Using `set_state()`
@@ -86,9 +79,9 @@ Similary, any state variable which will be changed on the output state can
 simply be assigned *after* the `set_state()` macro.
 
 **Important**: if a variable is to be assigned based on an incoming messages (
-for example a server key share gy). This needs to be overriden after
-`set_state()`, i.e., use `gy = new_gy`. Otherwise, the `set_state()` macro will
-have assigned `gy = prev_gy` which is invalid.
+for example a keyshare `pk`). This needs to be overriden after
+`set_state()`, i.e., use `pk = new_pk`. Otherwise, the `set_state()` macro will
+have assigned `pk = prev_pk` which is invalid.
 
 #### Session hash convention
 
@@ -96,7 +89,7 @@ The TLS session hash is defined by accumulating all messages *processed* up to
 that point. These hashes are used at various points to generate cryptographic
 material.
 
-For example, the server's CertificateVerify message contains a signature of the session
+For example, the server's ``Finished`` message contains a MAC over the session
 hash up to this point. Therefore, we must use the partial session hash which is
 computed at this point.
 
@@ -108,7 +101,7 @@ the rolling hash by simply appending to the `messages` variable:
     ...
     // compute signature
     ...
-    messages = <messages, CertificateVerify>
+    messages = <messages, KemEncapsulation>
     ...
     // compute finished messages
     ...
@@ -127,15 +120,31 @@ be updated as soon as possible in every `let` block.
 The builtins we are using are:
 
  - hashing: provides the symbol h(), representing hash functions
- - signing: the functions `sign(data, sk) = sign{data}sk` and `verify(sig,
-   data, pk)` where `verify(sign{data}sk, data, pk) = true`
  - symmetric-encryption: senc, sdec where `sdec(senc(data, key), key) = data`
- - diffie-hellman: a finite equations variant of DH to find solutions to the
-   equation g^xy
 
 Each function declaration will automatically generate an adversary rule to
 allow the adversary to compute the same function, i.e., all functions
 essentially act as random oracles.
+
+### KEMs
+
+KEMs are described in `model/crypto.m4i`. They are implemented as a set
+of functions and equations that model the KEM api.
+
+```
+functions: kempk/2, kemencaps/3, kemdecaps/3, kemss/2
+/*
+    kempk(kem, secret) = pk
+    kemencaps(kem, kemss(kem, seed), pk) = ct
+    kemdecaps(kem, ct, sk) = kemss(kem, seed)
+*/
+equations:
+    kemdecaps(kem, kemencaps(kem, kemss(kem, seed), kempk(kem, sk)), sk) = kemss(kem, seed)
+```
+
+We use macros to optionally split these KEMs into separate definitions for
+ephemeral key exchange, server authentication and client authentication.
+This is controlled by the `SPLIT_KEM` preprocessor flag.
 
 #### Public key infrastructure
 
@@ -175,16 +184,15 @@ We define additional rules to give the adversary the ability to compromise
 different components of the protocol.
 
 The `Reveal_Ltk` rule allows the attacker to reveal the private key of the
-an actor, used for signing, whereas the `Reveal_DHExp` rule allows the attacker
-to reveal the Diffie-Hellman exponent of a particular actor. Note that this
+an actor, used for signing, whereas the `RevEKemSk` rule allows the attacker
+to reveal the ephemeral KEM secret key of a particular client session. Note that this
 could either correspond to a compromise of an actor, or a cryptographic break.
 
-Future work includes adding the following capabilities:
- - Compromise of pre-shared keys
- - Weakening of cryptographic primitives, including modelling bad randomness
-   and weak hash functions
 
 #### Implicit vs Explicit checking
+
+(nb: this text was written for the TLS model and mentions signatures, which are not used in KEMTLS.
+The principle still applies.)
 
 There are two possibilities when modelling cryptographic checks, for example,
 checking that a signature is valid.
@@ -206,13 +214,13 @@ Now we only require the public key fact `!Pk($A, pk(~ltkA))` as a premise. Note
 that this has the same outcome: all traces which do not have valid signatures
 are excluded.
 
-We currently use explicit checking for signatures and finished messages.
+We currently use explicit checking for ~~signatures and~~ finished messages.
 However, for encryption we use the implicit pattern matching.
 
 #### Threads vs Actors
 
 There are two distinct ways to refer to a party: using the thread
-identifier (tid) or the identity ($A).
+identifier (tid) or the identity (`$A`).
 
 The tid models a single instance of the protocol. A tid is
 generated precisely once, and helps the Tamarin tool to unravel state facts.
@@ -224,13 +232,13 @@ party.
 
 When a new thread starts, the party is assigned an identity. This binding is
 strict in that a new thread with identity $A precisely represents that party
-$A has started a new thread.
+`$A` has started a new thread.
 
 #### Actions
 
-Actions serve as means to log the possible operations that an actor might 
-perform given the premises. These are necessary for the constuction of lemmas 
-(explained in the TLS Lemmas section below). 
+Actions serve as means to log the possible operations that an actor might
+perform given the premises. These are necessary for the constuction of lemmas
+(explained in the TLS Lemmas section below).
 
 ##### Running and Commit
 
@@ -259,29 +267,29 @@ features.
 
 #### Conventions
 
-We use '<!' and '!>' as the macro opening and closing markers, as opposed to
+We use `<!` and `!>` as the macro opening and closing markers, as opposed to
 the default use of primes. This ensures that we do not conflict with other
 Tamarin syntax. However, the m4 comment is defined to be the same as a C block:
-/* ... */
+`/* ... */`
 This means we can use m4 macro names in Tamarin block comments without issue.
 
 If a macro name is directly followed by an opening bracket (no space
 inbetween), the bracketed parts are considered to be parameters to the macro.
-They can be addressed as $1,$2,... or as $@ for all of them.
+They can be addressed as `$1,$2,...` or as `$@` for all of them.
 
 Examples:
 
-  define(<!SessionKey!>,<!KDF(I,R,...)!>)
+    define(<!SessionKey!>,<!KDF(I,R,...)!>)
 
-  define(<!State!>,<!F_State($@)!>)
+    define(<!State!>,<!F_State($@)!>)
 
 
 #### File extensions
 
-The top-level files have extension '.m4' to indicate that they should be
+The top-level files have extension `.m4` to indicate that they should be
 processed by m4 and then Tamarin.
 
-Included files have the extension '.m4i' to indicate they might use m4 macros
+Included files have the extension `.m4i` to indicate they might use m4 macros
 but are not meant to be processed by m4 directly.
 
 ## TLS Lemmas
@@ -317,16 +325,18 @@ install's Tutorial.spthy file):
 
 ```cpp
 lemma secret_session_keys:
-"/* For all session keys `k` set up between actors and peers */
-  All actor peer k #i. SessionKey(actor, peer, 'client', k)@i ==>
+  /* For all session keys kw, kr set up between actors and peers */
+  "All tid actor peer kw kr pas #i.
+      SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i &
+      /* as long as the adversary has not revealed the long-term key of the peer before the key is established */
+      not (Ex #r. RevLtk(peer)@r & #r < #i) &
+      /* and not revealed the ephemeral key of the actor before the key is established */
+      not (Ex tid3 esk #r. RevEKemSk(tid3, peer, esk)@r & #r < #i) &
+      /* and not revealed the ephemeral key of the peer before the key is established */
+      not (Ex tid4 esk #r. RevEKemSk(tid4, actor, esk)@r & #r < #i)
+    ==>
     /* the adversary does not know `k` */
-    not Ex #j. KU(k)@j &
-      /* as long as the adversary has not revealed the long-term key of the peer */
-      not ((Ex #r. RevLtk(peer)@r & #r < #i) |
-           /* or not revealed the Diffie-Hellman exponent of the actor */
-           (Ex #r x. RevDHExp(actor, x)@r) |
-           /* or not revealed the Diffie-Hellman exponent of the peer. */
-           (Ex #r x. RevDHExp(peer, x)@r))"
+    not Ex #j. K(kr)@j"
 ```
 
 ### Axioms

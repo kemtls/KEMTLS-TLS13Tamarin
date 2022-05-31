@@ -2,10 +2,28 @@
 
 We've been adapting the Tamarin model for TLS 1.3 to analyse KEMTLS.
 
-We've made some small progress making notes / updating the documentation in the `docs/` subfolder and it lives at https://thomwiggers.github.io/TLS13Tamarin/.
+See the [`src/kemtls`](src/kemtls) folder for our updated model.
+The previous versions of the model, as available on the [original project page](https://github.com/tls13tamarin/TLS13Tamarin) are included as a reference.
 
-The KEMTLS model lives at `src/kemtls`; the proofs are in the `lemmas/proofs` subfolder.
-This folder might be in a tar.
+The `src/kemtls/README.md` file contains more details about the model.
+
+## Running the proofs
+
+The completed proofs of the KEMTLS model live in `src/kemtls/proofs`.
+We include archived versions of this folder in the `src/kemtls` folder.
+They can be validated through `tamarin-prover <proof.spthy>`.
+In `src/kemtls/proofs`, there is a file for each individual lemma.
+The `.stats` file includes some runtime and memory statistics.
+If you want to run the proofs themselves, in `src/kemtls/lemmas`, run ``make all.spthy`` and run
+``tamarin-prover all.spthy --prove``.
+You an also run `python3 run_proofs.py all.spthy` to prove the lemmas one-at-a-time.
+Output will be written in the `proofs` folder.
+
+On a 80-core machine with 192 GiB of RAM, proving all lemmas takes 1 day and 18 hours with Tamarin 1.6.1.
+
+## The docs
+
+We've made some updates to the documentation in the `docs/` subfolder and it lives at https://thomwiggers.github.io/TLS13Tamarin/.
 
 # Original README below:
 # TLS13Tamarin
