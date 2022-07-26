@@ -9,10 +9,10 @@ The `src/kemtls/README.md` file contains more details about the model.
 
 ## Running the proofs
 
-The completed proofs of the KEMTLS model live in `src/kemtls/proofs`.
-We include archived versions of this folder in the `src/kemtls` folder.
+The completed proofs of the KEMTLS model live in `src/kemtls/lemmas/proofs`.
+We include archived versions of this folder in the `src/kemtls/lemmas` folder.
 They can be validated through `tamarin-prover <proof.spthy>`.
-In `src/kemtls/proofs`, there is a file for each individual lemma.
+In `src/kemtls/lemmas/proofs`, there is a file for each individual lemma.
 The `.stats` file includes some runtime and memory statistics.
 If you want to run the proofs themselves, in `src/kemtls/lemmas`, run ``make all.spthy`` and run
 ``tamarin-prover all.spthy --prove``.
