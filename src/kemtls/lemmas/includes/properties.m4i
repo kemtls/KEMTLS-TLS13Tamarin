@@ -20,6 +20,36 @@ lemma secret_session_keys [
       !>)
     ==> not Ex #j. K(kr)@j"
 
+lemma secret_session_keys_allow_ephem_reveal [
+      hide_lemma=handshake_secret,
+      hide_lemma=handshake_secret_pfs,
+      hide_lemma=master_secret,
+      hide_lemma=master_secret_pfs,
+      hide_lemma=authenticated_handshake_secret,
+      hide_lemma=authenticated_handshake_secret_server,
+      hide_lemma=authenticated_handshake_secret_pfs,
+      hide_lemma=kem_chal_dual,
+      hide_lemma=kem_chal_dual_ephem,
+      hide_lemma=kem_chal_dual_client,
+      hide_lemma=kem_chal_dual_server,
+      hide_lemma=ku_expand,
+      hide_lemma=mutual_transcript_agreement,
+      hide_lemma=entity_authentication,
+      hide_lemma=mutual_entity_authentication,
+      hide_lemma=ku_extract,
+      hide_lemma=injective_mutual_entity_authentication,
+      hide_lemma=transcript_agreement,
+      hide_lemma=posths_rms]:
+  "All tid actor peer kw kr pas #i.
+      SessionKey(tid, actor, peer, <pas, 'auth'>, <kw, kr>)@i &
+      not (Ex #r. RevLtk(peer)@r)
+      ifdef(<!PSK!>, <!
+      &
+      not (Ex rms #r. RevealPSK(actor, rms)@r) &
+      not (Ex rms #r. RevealPSK(peer, rms)@r)
+      !>)
+    ==> not Ex #j. K(kr)@j"
+
 lemma session_key_auth_agreement [
     reuse,
     hide_lemma=authenticated_handshake_secret_server,
