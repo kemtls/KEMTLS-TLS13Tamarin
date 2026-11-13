@@ -123,7 +123,7 @@ sanity-check.spthy: sanity-check.m4 ../model/*.m4* ../*.m4
 	@perl -0777pi -e 's/\n{3,}/\n\n/g' $@
 
 %.proof: %.spthy
-	$(TAMARIN) $(TAMARIN_FLAGS) --quit-on-warning --heuristic=S --prove=exists_* $< --output=$@.wip 2> $*-output.log | tee $*-stdout.log
+	$(TAMARIN) $(TAMARIN_FLAGS) --derivcheck-timeout=0 --quit-on-warning --heuristic=S --prove=exists_* $< --output=$@.wip 2> $*-output.log | tee $*-stdout.log
 	@grep -q verified $*-stdout.log
 	rm $*-stdout.log
 	mv $@.wip $@
