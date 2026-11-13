@@ -37,6 +37,9 @@ jobs:
         run: |
           make test
         working-directory: src/kemtls/tests
+        env:
+          # The parallel runtime sometimes aborts with <<loop>> on the runners.
+          TAMARIN_FLAGS: +RTS -N1 -RTS
       - name: Show tamarin output
         if: failure()
         run: tail -n 50 "$(ls -t *-output.log | head -n 1)"
