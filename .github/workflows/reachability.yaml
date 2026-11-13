@@ -16,30 +16,50 @@ on:
 jobs:
   reachability:
     runs-on: ubuntu-latest
+    env:
+      TAMARIN_RS_REV: 0bff22d80c64bd05747356d7b173692692b6c889
     steps:
-      - name: Set up homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-      - name: Record homebrew cache location
-        run: echo "CACHE_DIR=$(brew --cache)" >> "$GITHUB_OUTPUT"
-        id: cache_path
-      - name: Cache homebrew stuffs
+      - uses: actions/checkout@v7
+      - name: Install Maude 3.5.1
+        run: |
+          curl -sSL -o "$RUNNER_TEMP/maude.zip" https://github.com/maude-lang/Maude/releases/download/Maude3.5.1/Maude-3.5.1-linux-x86_64.zip
+          sudo mkdir -p /opt/maude
+          sudo unzip -q "$RUNNER_TEMP/maude.zip" -d /opt/maude
+          sudo chmod +x /opt/maude/maude
+          echo /opt/maude >> "$GITHUB_PATH"
+      - name: Cache tamarin-rs
+        id: cache-tamarin-rs
         uses: actions/cache@v6
         with:
-          path: ${{ steps.cache_path.outputs.CACHE_DIR }}
-          key: ${{ runner.os }}-homebrew
-      - name: Install tamarin
+          path: ~/.local/bin/tamarin-rs
+          key: tamarin-rs-${{ runner.os }}-${{ env.TAMARIN_RS_REV }}
+      - name: Check out tamarin-rs
+        if: steps.cache-tamarin-rs.outputs.cache-hit != 'true'
+        uses: actions/checkout@v7
+        with:
+          repository: kmilner/tamarin-rs
+          ref: ${{ env.TAMARIN_RS_REV }}
+          path: tamarin-rs
+          submodules: true
+      - name: Set up Node.js
+        if: steps.cache-tamarin-rs.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Build tamarin-rs
+        if: steps.cache-tamarin-rs.outputs.cache-hit != 'true'
         run: |
-          brew tap tamarin-prover/tap
-          brew trust tamarin-prover/tap
-          brew install tamarin-prover/tap/tamarin-prover
-      - uses: actions/checkout@v7
+          rustup update stable --no-self-update
+          rustup default stable
+          make install
+        working-directory: tamarin-rs
+      - name: Add tamarin-rs to PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - name: Run reachability tests
         run: |
-          make test
+          tamarin-rs --version
+          make test TAMARIN=tamarin-rs
         working-directory: src/kemtls/tests
-        env:
-          # The parallel runtime sometimes aborts with <<loop>> on the runners.
-          TAMARIN_FLAGS: +RTS -N1 -RTS
       - name: Show tamarin output
         if: failure()
         run: tail -n 50 "$(ls -t *-output.log | head -n 1)"
