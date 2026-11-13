@@ -37,3 +37,7 @@ jobs:
         run: |
           make test
         working-directory: src/kemtls/tests
+      - name: Show tamarin output
+        if: failure()
+        run: tail -n 50 "$(ls -t *-output.log | head -n 1)"
+        working-directory: src/kemtls/tests
